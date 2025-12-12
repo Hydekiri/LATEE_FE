@@ -1,21 +1,122 @@
+
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --font-latee: var(--font-latee);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* INTER */
+    --font-inter-thin: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-thin-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-extralight: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-extralight-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-light: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-light-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-r: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-medium: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-medium-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-semibold: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-semibold-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-b: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-bold-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-extrabold: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-extrabold-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-black: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+    --font-inter-black-i: var(--font-inter, "Inter"), ui-sans-serif, system-ui;
+
+    /* LATO */
+    --font-lato-thin: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-thin-i: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-l: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-light-i: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-r: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-i: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-medium: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-medium-i: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-semibold: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-semibold-i: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-bold: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-bold-i: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-h: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-h-i: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-black: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+    --font-lato-black-i: var(--font-lato, "Lato"), ui-sans-serif, system-ui;
+
+    /* TAHOMA */
+    --font-tahoma: "Tahoma", Geneva, Verdana, sans-serif;
+    --font-tahoma-b: "Tahoma", Geneva, Verdana, sans-serif;
+
+    /* SPACE MONO or code font */
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
   }
+
+  html {
+    font-family: var(--font-inter-r);
+  }
+
+  .font-sans { font-family: var(--font-inter-r); }
+  .font-mono { font-family: var(--font-mono); }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-latee), system-ui, -apple-system, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+
+
+@layer utilities {
+  /* INTER */
+  .font-inter-thin { font-family: var(--font-inter-thin) !important; }
+  .font-inter-thin-i { font-family: var(--font-inter-thin-i) !important; font-style: italic; }
+
+  .font-inter-extralight { font-family: var(--font-inter-extralight) !important; }
+  .font-inter-extralight-i { font-family: var(--font-inter-extralight-i) !important; font-style: italic; }
+
+  .font-inter-light { font-family: var(--font-inter-light) !important; }
+  .font-inter-light-i { font-family: var(--font-inter-light-i) !important; font-style: italic; }
+
+  .font-inter-r { font-family: var(--font-inter-r) !important; }
+  .font-inter-i { font-family: var(--font-inter-i) !important; font-style: italic; }
+
+  .font-inter-medium { font-family: var(--font-inter-medium) !important; }
+  .font-inter-medium-i { font-family: var(--font-inter-medium-i) !important; font-style: italic; }
+
+  .font-inter-semibold { font-family: var(--font-inter-semibold) !important; }
+  .font-inter-semibold-i { font-family: var(--font-inter-semibold-i) !important; font-style: italic; }
+
+  .font-inter-b { font-family: var(--font-inter-b) !important; }
+  .font-inter-bold-i { font-family: var(--font-inter-bold-i) !important; font-style: italic; }
+
+  .font-inter-extrabold { font-family: var(--font-inter-extrabold) !important; }
+  .font-inter-extrabold-i { font-family: var(--font-inter-extrabold-i) !important; font-style: italic; }
+
+  .font-inter-black { font-family: var(--font-inter-black) !important; }
+  .font-inter-black-i { font-family: var(--font-inter-black-i) !important; font-style: italic; }
+
+  /* LATO */
+  .font-lato-thin { font-family: var(--font-lato-thin) !important; }
+  .font-lato-thin-i { font-family: var(--font-lato-thin-i) !important; font-style: italic; }
+
+  .font-lato-l { font-family: var(--font-lato-l) !important; }
+  .font-lato-light-i { font-family: var(--font-lato-light-i) !important; font-style: italic; }
+
+  .font-lato-r { font-family: var(--font-lato-r) !important; }
+  .font-lato-i { font-family: var(--font-lato-i) !important; font-style: italic; }
+
+  .font-lato-medium { font-family: var(--font-lato-medium) !important; }
+  .font-lato-medium-i { font-family: var(--font-lato-medium-i) !important; font-style: italic; }
+
+  .font-lato-semibold { font-family: var(--font-lato-semibold) !important; }
+  .font-lato-semibold-i { font-family: var(--font-lato-semibold-i) !important; font-style: italic; }
+
+  .font-lato-bold { font-family: var(--font-lato-bold) !important; }
+  .font-lato-bold-i { font-family: var(--font-lato-bold-i) !important; font-style: italic; }
+
+  .font-lato-h { font-family: var(--font-lato-h) !important; }
+  .font-lato-heavy-i { font-family: var(--font-lato-h-i) !important; font-style: italic; }
+
+  .font-lato-black { font-family: var(--font-lato-black) !important; }
+  .font-lato-black-i { font-family: var(--font-lato-black-i) !important; font-style: italic; }
+
+  /* TAHOMA */
+  .font-tahoma { font-family: var(--font-tahoma) !important; }
+  .font-tahoma-b { font-family: var(--font-tahoma-b) !important; }
+
+  /* CODE */
+  .font-code { font-family: var(--font-mono) !important; }
 }
