@@ -3,33 +3,34 @@
 import Image from "next/image";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface NavbarProps {
     currentPage?:
     | "home"
-    | "practicemode"
+    | "practice"
     | "assessment"
     | "progress"
     | "blog"
-    | "about";
+    | "aboutUs";
 }
 
 export default function Navbar({ currentPage = "home" }: NavbarProps) {
     const [isOpen, setIsOpen] = useState(false);
-
+    const userRouter = useRouter();
     const isActive = (page: string) => currentPage === page;
 
     const hasNotifications = false;
     const notificationImageUrl = hasNotifications
-        ? "/Asset/Notificationalert.png"
-        : "/Asset/notification.png";
+        ? "/images/notiwithalert.png"
+        : "/images/noti.png";
 
     return (
-        <nav className="w-full fixed top-0 left-0 bg-gradient-to-r from-[#1ba7d9] to-[#235697] shadow z-50 flex justify-center">
+        <nav className="w-full top-0 left-0 bg-gradient-to-r from-[#1ba7d9] to-[#235697] shadow z-50 flex justify-center">
             <div className="w-[90%] flex items-center justify-between py-[22px]">
 
                 {/* Logo */}
-                <img src="/Asset/LATEE2.png" alt="LATEE Logo" className="w-[13%]" />
+                <img src="/images/LATEE2.png" alt="LATEE Logo" className="w-[13%]" />
 
                 {/* Desktop Menu */}
                 <div className="max-w-[80%] hidden xl:flex items-center gap-[54px] text-white">
@@ -39,11 +40,11 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
 
                         {/* HOME */}
                         <a
-                            href="#home"
+                            onClick={() => userRouter.push('/home')}
                             className={`relative text-[16px] transition px-2
                                 ${isActive("home")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
-                                    : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
+                                    ? "after:content-[''] after:absolute font-inter-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[5px] after:bg-white after:rounded-full"
+                                    : "hover:after:content-[''] font-lato-r hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
                                 }
                             `}
                         >
@@ -52,10 +53,10 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
 
                         {/* PRACTICE MODE */}
                         <a
-                            href="#practicemode"
+                            onClick={() => userRouter.push('/practice')}
                             className={`relative text-[16px] transition px-2
-                                ${isActive("practicemode")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[100%] after:h-[5px] after:bg-white after:rounded-full"
+                                ${isActive("practice")
+                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
                                     : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
                                 }
                             `}
@@ -65,10 +66,10 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
 
                         {/* ASSESSMENT */}
                         <a
-                            href="#assessment"
+                            onClick={() => userRouter.push('/assessment')}
                             className={`relative text-[16px] transition px-2
                                 ${isActive("assessment")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[100%] after:h-[5px] after:bg-white after:rounded-full"
+                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
                                     : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
                                 }
                             `}
@@ -78,10 +79,10 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
 
                         {/* PROGRESS */}
                         <a
-                            href="#progress"
+                            onClick={() => userRouter.push('/progress')}
                             className={`relative text-[16px] transition px-2
                                 ${isActive("progress")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[100%] after:h-[5px] after:bg-white after:rounded-full"
+                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
                                     : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
                                 }
                             `}
@@ -91,10 +92,10 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
 
                         {/* BLOG */}
                         <a
-                            href="#blog"
+                            onClick={() => userRouter.push('/blog')}
                             className={`relative text-[16px] transition px-2
                                 ${isActive("blog")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[100%] after:h-[5px] after:bg-white after:rounded-full"
+                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
                                     : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
                                 }
                             `}
@@ -104,10 +105,10 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
 
                         {/* ABOUT */}
                         <a
-                            href="#about"
+                            onClick={() => userRouter.push('/aboutUs')}
                             className={`relative text-[16px] transition px-2
                                 ${isActive("about")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[100%] after:h-[5px] after:bg-white after:rounded-full"
+                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
                                     : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
                                 }
                             `}
@@ -128,7 +129,7 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
                         <span className="text-[16px] px-4 py-2">Nguyen's Tu</span>
 
                         <Image
-                            src="/Asset/VirtualPatient/VP5.jpeg"
+                            src="/images/VirtualPatient/VP5.jpeg"
                             alt="student"
                             width={50}
                             height={50}
@@ -158,15 +159,15 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
 
                             {[
                                 ["home", "Home"],
-                                ["practicemode", "Practice Mode"],
+                                ["practice", "Practice Mode"],
                                 ["assessment", "Assessment"],
                                 ["progress", "Progress"],
                                 ["blog", "Blog"],
-                                ["about", "About us"],
+                                ["aboutUs", "About us"],
                             ].map(([key, label]) => (
                                 <a
                                     key={key}
-                                    href={`#${key}`}
+                                    onClick={() => userRouter.push(`/${key}`)}
                                     className={`transition text-center ${isActive(key)
                                         ? "border-b-[5px] border-white pb-1"
                                         : "border-b-2 border-transparent hover:border-white"
@@ -179,7 +180,7 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
                             {/* Avatar */}
                             <div className="flex justify-center">
                                 <Image
-                                    src="/Asset/VirtualPatient/VP5.jpeg"
+                                    src="/images/VirtualPatient/VP5.jpeg"
                                     alt="student"
                                     width={60}
                                     height={60}

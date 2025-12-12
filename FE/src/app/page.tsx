@@ -10,7 +10,6 @@ export default function Home() {
       <Navbar currentPage="home" />
 
       {/* Hero Section */}
-      {/* Tooi se thay doi phan nay, o day la breakpoint de toi ctrl z */}
       <section className="w-full mx-auto bg-gradient-to-r from-[#1ba7d9] to-[#235697] text-white  relative rounded-b-[60px] flex justify-center">
         <div className="w-[86%] grid grid-cols-1 sm:grid-cols-2 gap-12 xl:gap-[52px] xl:pb-0">
 
@@ -99,30 +98,28 @@ export default function Home() {
 
       {/* What You Get */}
       <section id="get" className="w-full mx-auto  mt-[120px] xl:mt-[224px] flex justify-center">
-        <div className=" max-w-[86%] xl:w-[86%] grid grid-cols-2 gap-0">
-          <div className="relative flex justify-center">
+        <div className="w-[86%] grid grid-cols-2 gap-0">
+          <div className="relative flex">
             <Image
-              src="/images/doctor3.png"
+              src="/images/doctorwbg.png"
               alt="doctor"
               width={650}
               height={650}
-              className="rounded-xl ml-10 xl:ml-0 z-10 w-500 xl:w-full xl:h-[549px]"
+              className="rounded-xl ml-10 xl:ml-0 z-10 w-full h-auto"
             />
-
-            <div className="bg-[#83d7f4] absolute w-45 xl:w-[430px] h-45 xl:h-[430px] inset-0 translate-x-[15%] translate-y-[20%] xl:translate-y-[4%] rounded-3xl z-0"></div>
           </div>
 
-          <div className="flex flex-col gap-4 px-4 xl:pl-[5%]">
-            <h3 className="text-[20px] xl:text-[36px] font-inter-semibold">
+          <div className="flex flex-col gap-4">
+            <h3 className="text-[24px] xl:text-[36px] font-inter-semibold">
               What Will You <span className="text-[#1ba7d9]">Get</span>?
             </h3>
 
             <div className="bg-[radial-gradient(circle,#c9f3ff_10%,#ffffff_80%)] xl:rounded-6xl">
-              <h3 className="text-[10px] xl:text-[20px] xl:max-w-[90%] xl:mb-5 text-gray-600 font-lato-medium max-w-[90%]">
+              <h3 className="text-[14px] xl:text-[20px] xl:mb-5 text-gray-600 font-lato-medium">
                 Enhance your diagnostic thinking through clinical simulations and a personalized learning journey.
               </h3>
 
-              <ul className="space-y-4 xl:max-w-[80%] xl:pl-10 xl:ml-[-40px]">
+              <ul className="space-y-6 xl:max-w-[95%]">
                 {[
                   {
                     title: "Interactive case simulations",
@@ -157,16 +154,16 @@ export default function Home() {
       {/* connect expert */}
       <section id="work" className="w-full mx-auto mt-[120px] xl:mt-[224px] flex justify-center">
         <div className="w-[86%] grid grid-cols-12 ">
-          <div className="col-span-7">
-            <h3 className="text-[48px] font-inter font-semibold mb-6">
+          <div className="col-span-7 flex flex-col justify-start">
+            <h3 className="text-[36px] xl:text-[48px] font-inter font-semibold mb-6">
               Experience interactive learning and connect with experts!
             </h3>
 
             <ul className="space-y-0">
-              <li className="text-[24px] text-gray-500 font-lato">
+              <li className="text-[16px] xl:text-[24px] text-[#6c6c6c] font-lato-r">
                 Learn effectively with modules designed by medical experts.
               </li>
-              <li className="text-[24px] text-gray-500 font-lato">
+              <li className="text-[16px] xl:text-[24px] text-[#6c6c6c] font-lato-r">
                 Latee offers realistic learning through simulated patient cases, AI-powered feedback, and expert guidance.
               </li>
             </ul>
@@ -181,7 +178,7 @@ export default function Home() {
             </div>
           </div>
           <div className="col-span-5">
-            <Image src="/images/expertlandingpage.png" alt="expert" width={600} height={600} className="rounded-xl w-[530px] h-[500px] justify-end" />
+            <Image src="/images/expertlandingpage.png" alt="expert" width={600} height={600} className="rounded-xl w-full h-autojustify-end" />
           </div>
         </div>
       </section>
