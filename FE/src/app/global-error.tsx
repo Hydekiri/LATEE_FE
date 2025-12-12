@@ -1,0 +1,1 @@
+// # Error Handling toàn app
