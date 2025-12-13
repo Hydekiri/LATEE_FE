@@ -61,7 +61,7 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
                             className={`relative text-[16px] px-4 text-white py-2 transition
                             ${isActive("blog")
                                     ? "after:content-[''] font-inter-semibold after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[-6px] after:w-[80%] after:h-[5px] after:bg-white after:rounded-full"
-                                    : "hover:after:content-[''] font-lato-r hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-4px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
+                                    : "hover:after:content-[''] font-lato-r hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-4px] hover:after:w-[80%] hover:after:h-px hover:after:bg-white hover:after:rounded-full"
                                 }`}
                         >
                             Blog

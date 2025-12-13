@@ -8,7 +8,7 @@ import Link from "next/link";
 import { getCookie, deleteCookie } from "@/src/utils/cookies";
 
 
-type PageType = "Home" | "Module" | "Practice" | "Assessment" | "Progress" | "Blog" | "About";
+type PageType = "Home" | "Practice" | "Assessment" | "Progress" | "Blog" | "About";
 
 interface NavbarProps {
     page?: PageType; 
@@ -83,7 +83,6 @@ export default function Navbar({ page }: NavbarProps) {
                     {/* A. MENU LINKS */}
                     <div className="flex items-center gap-5 2xl:gap-10">
                         <Link href="/home" className={getLinkClasses("/home", "Home")}>Home</Link>
-                        <Link href="/module" className={getLinkClasses("/module", "Module")}>Module</Link>
                         <Link href="/practice" className={getLinkClasses("/practice", "Practice")}>Practice Mode</Link>
                         <Link href="/assessment" className={getLinkClasses("/assessment", "Assessment")}>Assessment</Link>
                         <Link href="/progress" className={getLinkClasses("/progress", "Progress")}>Progress</Link>
@@ -163,7 +162,6 @@ export default function Navbar({ page }: NavbarProps) {
                         <div className="flex flex-col gap-4 text-lg font-medium mt-4">
                             {/* Mobile Links - Cập nhật truyền tham số thứ 2 giống Desktop */}
                             <Link href="/" className={getLinkClasses("/home", "Home")}>Home</Link>
-                            <Link href="/module" className={getLinkClasses("/module", "Module")}>Module</Link>
                             <Link href="/practice" className={getLinkClasses("/practice", "Practice")}>Practice Mode</Link>
                             <Link href="/assessment" className={getLinkClasses("/assessment", "Assessment")}>Assessment</Link>
                             <Link href="/progress" className={getLinkClasses("/progress", "Progress")}>Progress</Link>

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { CaseOverview } from './subComponents/CaseOverview';
 import { PatientInfo } from './subComponents/PatientInfo';
 import { AboutPatient } from './subComponents/tabs/AboutPatient';
-
+import { PatientData } from '@/src/types/practice';
 interface PracticeDetailProps {
     data: PatientData; 
 }

@@ -6,22 +6,36 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Navbar() {
+
+
+type PageType = "Home" | "Module" | "Blog" | "About";
+
+interface NavbarProps {
+    page?: PageType; 
+}
+
+export default function Navbar({ page }: NavbarProps) {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
 
-    const getLinkClasses = (path: string) => {
-        const isActive = path === "/" ? pathname === "/" : pathname.startsWith(path);
+    const getLinkClasses = (path: string, targetPage: PageType) => {
+        let isActive = false;
 
-        return `relative text-[16px] px-2 xl:px-4 text-white py-2 transition whitespace-nowrap
-        ${isActive
-                ? "after:content-[''] font-bold after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[-6px] after:w-[80%] after:h-[5px] after:bg-white after:rounded-full"
-                : "hover:after:content-[''] font-medium hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-4px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
+        if (page) {
+            isActive = page === targetPage;
+        } else {
+            isActive = path === "/" ? pathname === "/home" : pathname.startsWith(path);
+        }
+
+        return `relative text-base px-2 py-2 text-white transition whitespace-nowrap
+            ${isActive
+            ? "font-inter-semibold after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[4px] after:bg-white after:rounded-full"
+            : "font-inter-medium after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[4px] after:bg-white/50 after:rounded-full hover:after:w-full transition-all duration-300"
             }`;
-    };
+    }
 
     return (
-        <nav className="w-full top-0 left-0 bg-gradient-to-r from-[#1ba7d9] to-[#235697] z-50 flex justify-center sticky">
+        <nav className="w-full top-0 left-0 bg-linear-to-r from-[#1ba7d9] to-[#235697] z-50 flex justify-center sticky">
             <div className="w-[86%] py-3 border-b-[3px] border-white flex justify-between items-center">
                 
                 {/* --- PHẦN 1: LOGO (Luôn nằm bên trái) --- */}
@@ -43,11 +57,10 @@ export default function Navbar() {
                     
                     {/* --- PHẦN 2: LINKS  --- */}
                     <div className="flex items-center gap-4 2xl:gap-8 mr-8 2xl:mr-16">
-                        <Link href="/" className={getLinkClasses("/")}>Home</Link>
-                        <Link href="/module" className={getLinkClasses("/module")}>Module</Link>
-                        <Link href="/practice/patientDetail" className={getLinkClasses("/practice")}>Practice</Link>
-                        <Link href="/blog" className={getLinkClasses("/blog")}>Blog</Link>
-                        <Link href="/about" className={getLinkClasses("/about")}>About us</Link>
+                        <Link href="/home" className={getLinkClasses("/home", "Home")}>Home</Link>
+                        <Link href="/module" className={getLinkClasses("/module", "Module")}>Module</Link>
+                        <Link href="/blog" className={getLinkClasses("/blog", "Blog")}>Blog</Link>
+                        <Link href="/about" className={getLinkClasses("/about", "About")}>About us</Link>
                     </div>
 
                     {/* --- PHẦN 3: AUTH BUTTONS (Căn phải ngoài cùng) --- */}
@@ -73,12 +86,12 @@ export default function Navbar() {
 
             {/* --- MOBILE MENU OVERLAY --- */}
             {isOpen && (
-                <div className="fixed inset-y-0 right-0 z-[60] flex justify-end w-full">
+                <div className="fixed inset-y-0 right-0 z-15 flex justify-end w-full">
                     {/* Backdrop */}
                     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setIsOpen(false)}></div>
                     
                     {/* Drawer Content */}
-                    <div className="w-72 bg-gradient-to-b from-[#1ba7d9] to-[#235697] h-full shadow-2xl p-6 pt-10 relative animate-slide-left z-50 flex flex-col">
+                    <div className="w-72 bg-linear-to-b from-[#1ba7d9] to-[#235697] h-full shadow-2xl p-6 pt-10 relative animate-slide-left z-50 flex flex-col">
                         <button
                             onClick={() => setIsOpen(false)}
                             className="absolute top-4 right-4 hover:bg-white/10 rounded-full p-1 transition"
@@ -92,9 +105,6 @@ export default function Navbar() {
                             </Link>
                             <Link href="/module" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/module") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
                                 Module
-                            </Link>
-                            <Link href="/practice/patientDetail" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/practice") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
-                                Practice
                             </Link>
                             <Link href="/blog" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/blog") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
                                 Blog
