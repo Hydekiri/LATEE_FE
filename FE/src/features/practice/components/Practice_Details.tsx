@@ -7,26 +7,26 @@ import { PatientInfo } from './subComponents/PatientInfo';
 import { AboutPatient } from './subComponents/tabs/AboutPatient';
 
 interface PracticeDetailProps {
-    sessionId: string; 
+    data: PatientData; 
 }
 
 
-export const PracticeDetail = ({ sessionId }: PracticeDetailProps) => {
+export default function PracticeDetail({ data }: PracticeDetailProps) {
     
-    console.log("Đang tải dữ liệu cho bài:", sessionId);
+    console.log("Đang tải dữ liệu cho bài:", data);
     const [activeTab, setActiveTab] = useState('About Patient');
     const tabs = ['About Patient', 'Experts', 'Evaluation', 'Result', 'FQA'];
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'About Patient':
-                return <AboutPatient />;
+                return <AboutPatient data={data} />;
             case 'Evaluation':
                 return <div className="p-8 text-center text-gray-500">Evaluation Content Coming Soon...</div>;
             case 'Result':
                 return <div className="p-8 text-center text-gray-500">Result Analysis Content...</div>;
             default:
-                return <AboutPatient/>;
+                return <AboutPatient data={data} />;
         }
     };
 
@@ -34,7 +34,7 @@ export const PracticeDetail = ({ sessionId }: PracticeDetailProps) => {
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden min-h-200">
             
             {/* --- 1. TABS NAVIGATION (Luôn cố định ở trên cùng) --- */}
-            <div className="border-b border-gray-200 px-8 pt-6">
+            <div className="border-b border-gray-200 px-12 pt-6">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     <div className="lg:col-span-8 flex justify-between gap-2.5">
                         {tabs.map((tab) => (
@@ -56,15 +56,15 @@ export const PracticeDetail = ({ sessionId }: PracticeDetailProps) => {
                 </div>
             </div>
 
-            <div className="p-8">
+            <div className="px-13 py-6">
                 {/* --- 2. MAIN GRID LAYOUT --- */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-13.5">
                     
                     {/* === CỘT TRÁI (Chiếm 2/3) === */}
                     <div className="lg:col-span-8">
                         
                         {/* A. Phần TĨNH: Header & Profile Summary */}
-                        <PatientInfo />
+                        <PatientInfo data={data} />
 
                         {/* B. Phần ĐỘNG: Thay đổi theo Tab */}
                         <div className="mt-8 animate-fadeIn">
@@ -75,7 +75,7 @@ export const PracticeDetail = ({ sessionId }: PracticeDetailProps) => {
 
                     {/* === CỘT PHẢI (Chiếm 1/3) - TĨNH === */}
                     <div className="lg:col-span-4">
-                        <CaseOverview />
+                        <CaseOverview data={data} />
                     </div>
 
                 </div>

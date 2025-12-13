@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Footer from "@/src/components/layout/Footer";
-import Navbar from "@/src/components/layout/navbarlandingpage";
+import Navbar from "@/src/components/layout/NavLanding";
 import Testimonial from "@/src/components/layout/testimonial";
+import { CalendarDaysIcon } from '@heroicons/react/24/solid'
 
 export default function Home() {
   return (
@@ -52,15 +53,25 @@ export default function Home() {
             />
 
             {/* BADGE — 250k Assisted Student */}
-            <div className="absolute left-1/15 -translate-x-7/10 xl:-translate-x-3/4 -translate-y-45  xl:-translate-y-40 mt-[500px] xl:mt-[570px] bg-white text-[#595959] 
-                  px-4 py-2 xl:px-6 xl:py-3 text-[12px] xl:text-[22px]
-                  max-w-[300px] xl:w-[300px] xl:h-[100px]
-                  rounded-xl shadow-xl font-bold flex items-center gap-7">
-              <img src="/images/calendericon.png" alt="icon"
-                className="bg-[#23bdee] w-6 xl:w-[50px] xl:h-[50px] p-3 rounded-xl"
-              />
-              <div><p className="font-inter-b text-[14px] xl:text-[24px]">250k</p> <p className="font-lato-r text-[14px] xl:text-[20px]">Assisted Student</p></div>
+            <div
+              className="absolute left-1/15 -translate-x-7/10 xl:-translate-x-3/4 -translate-y-45 xl:-translate-y-40
+                        mt-[500px] xl:mt-[570px] bg-white text-[#595959]
+                        px-4 py-2 xl:px-6 xl:py-3 text-[12px] xl:text-[22px]
+                        max-w-[300px] xl:w-[300px] xl:h-[100px]
+                        rounded-xl shadow-xl font-bold flex items-center gap-7"
+            >
+                <div className="relative w-6 h-6 xl:w-[50px] xl:h-[50px] bg-[#23bdee] p-3 rounded-xl flex items-center justify-center">
+                  <CalendarDaysIcon className="w-8 h-8 xl:w-10 xl:h-10 text-white" />
+                </div>
+
+                <div>
+                    <p className="font-inter-b text-[14px] xl:text-[24px]">250k</p>
+                    <p className="font-lato-r text-[14px] xl:text-[20px]">
+                      Assisted Student
+                    </p>
+                </div>
             </div>
+
           </div>
 
         </div>
@@ -189,7 +200,7 @@ export default function Home() {
         <div className="w-[86%] grid grid-cols-2 gap-0 ">
           <div className="bg-[radial-gradient(circle,#c9f3ff_10%,#ffffff_90%)]">
             <h3 className="xl:text-[36px] font-inter-semibold mb-6">
-              Here's how it <span className="text-[#1ba7d9]">works</span>
+              Here&apos;s how it <span className="text-[#1ba7d9]">works</span>
             </h3>
 
             <ul className="space-y-4">

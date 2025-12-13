@@ -1,32 +1,33 @@
+
 // src/features/practice/components/sub-components/PatientInfo.tsx
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
-export const PatientInfo = () => {
+export const PatientInfo = ({ data }: { data: PatientData }) => {
     return (
         <>
             {/* Header: PatientID & Case */}
             <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100">
-                <h2 className="text-3xl font-bold text-gray-800">PatientID: 025112</h2>
-                <h2 className="text-3xl font-bold text-[#235697]">Case: #TH1872</h2>
+                <h2 className="text-3xl font-bold text-gray-800">PatientID: {data.id}</h2>
+                <h2 className="text-3xl font-bold text-[#235697]">Case: #{data.caseId}</h2>
             </div>
 
             {/* Profile Summary Section */}
             <div className="flex items-center gap-8 mb-12">
                 {/* Avatar */}
                 <div className="w-32 h-32 rounded-full overflow-hidden relative shrink-0">
-                    <Image src="/LVP1.jpeg" fill alt="Patient Avatar" className="object-cover" />
+                    <Image src={data.img} alt={data.name} fill className="object-cover" />
                 </div>
 
                 {/* Content Text */}
                 <div className="flex-1">
                     <div className="mb-2">
-                        <span className="text-[#235697] font-bold text-xl block">Level 1</span>
+                        <span className="text-[#235697] font-bold text-xl block">Level {data.level}</span>
                     </div>
                     <p className="text-gray-700 font-medium text-base mb-3 leading-relaxed">
-                        A 52-year-old female teacher comes to the clinic for evaluation of a recent health concern.
+                        {data.description}
                     </p>
-                    <span className="text-[#2AA8D8] text-sm font-bold">Times practiced: 2</span>
+                    <span className="text-[#2AA8D8] text-sm font-bold">Times practiced: {data.timesPracticed}</span>
                 </div>
 
                 {/* Nút Start */}

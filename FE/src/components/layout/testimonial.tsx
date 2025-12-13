@@ -20,6 +20,7 @@ export default function Testimonial() {
                             alt="quote"
                             width={120}
                             height={120}
+                            sizes="(max-width: 768px) 120px, 180px"
                             className="w-10 xl:w-[49px] h-15 xl:h-[40px]"
                         />
                     </div>
@@ -32,7 +33,7 @@ export default function Testimonial() {
                             <Image src="/images/star.png" alt="star" width={20} height={20} className="w-3 h-3 sm:w-4 sm:h-4 xl:w-5 xl:h-5" />
                         </div>
                         <p className="text-[#90a3b4] italic font-inter text-[16px] mb-2 sm:mb-4 xl:mb-6 text-left sm:text-left">
-                            "Latee makes learning clinical reasoning more intuitive and effective. It keeps me motivated and helps me continuously improve."
+                            &rdquo;Latee makes learning clinical reasoning more intuitive and effective. It keeps me motivated and helps me continuously improve. &rdquo;
                         </p>
                         <div className="flex items-center justify-start sm:justify-start xl:gap-[10px]">
                             <Image

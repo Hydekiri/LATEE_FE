@@ -1,140 +1,93 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 
 interface NavbarProps {
-    currentPage?:
-    | "home"
-    | "practice"
-    | "assessment"
-    | "progress"
-    | "blog"
-    | "aboutUs";
+    currentPage?: "home" | "module" | "blog" | "about";
 }
 
 export default function Navbar({ currentPage = "home" }: NavbarProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const userRouter = useRouter();
-    const isActive = (page: string) => currentPage === page;
 
-    const hasNotifications = false;
-    const notificationImageUrl = hasNotifications
-        ? "/images/notiwithalert.png"
-        : "/images/noti.png";
+    // Helper function để check active page
+    const isActive = (page: string) => currentPage === page;
 
     return (
         <nav className="w-full top-0 left-0 bg-gradient-to-r from-[#1ba7d9] to-[#235697] shadow z-50 flex justify-center">
-            <div className="w-[90%] flex items-center justify-between py-[22px]">
-
-                {/* Logo */}
-                <img src="/images/LATEE2.png" alt="LATEE Logo" className="w-[13%]" />
+            <div className="w-[86%] flex items-center justify-between border-b-[3px] py-3 border-white">
+                
+                <div className="relative w-[120px] h-10 sm:w-[150px] sm:h-[50px] lg:w-[200px] lg:h-16">
+                    <Image
+                        src="/images/LATEE2.png"
+                        alt="LATEE Logo"
+                        fill
+                        sizes="(max-width: 768px) 150px, 200px"
+                        className="object-contain object-left"
+                        priority
+                    />
+                </div>
 
                 {/* Desktop Menu */}
-                <div className="max-w-[80%] hidden xl:flex items-center gap-[54px] text-white">
-
-                    {/* Navigation */}
-                    <div className="flex items-center gap-[40px]">
-
-                        {/* HOME */}
-                        <a
-                            onClick={() => userRouter.push('/home')}
-                            className={`relative text-[16px] transition px-2
-                                ${isActive("home")
-                                    ? "after:content-[''] after:absolute font-inter-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[5px] after:bg-white after:rounded-full"
-                                    : "hover:after:content-[''] font-lato-r hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
+                <div className="max-w-[70%] hidden xl:flex xl:gap-[70px] text-gray-700 font-medium">
+                    <div className="flex items-center gap-[80px]">
+                        <Link
+                            href="/"
+                            className={`
+                            relative text-[16px] px-4 text-white py-2 transition
+                            ${isActive("home")
+                                    ? "after:content-[''] font-inter-semibold after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[-6px] after:w-[80%] after:h-[5px] after:bg-white after:rounded-full"
+                                    : "hover:after:content-[''] font-lato-r hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-4px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
                                 }
-                            `}
+                        `}
                         >
                             Home
-                        </a>
+                        </Link>
 
-                        {/* PRACTICE MODE */}
-                        <a
-                            onClick={() => userRouter.push('/practice')}
-                            className={`relative text-[16px] transition px-2
-                                ${isActive("practice")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
-                                    : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
-                                }
-                            `}
+                        <Link
+                            href="/module"
+                            className={`relative text-[16px] px-4 text-white py-2 transition
+                            ${isActive("module")
+                                    ? "after:content-[''] font-inter-semibold after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[-6px] after:w-[80%] after:h-[5px] after:bg-white after:rounded-full"
+                                    : "hover:after:content-[''] font-lato-r hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-4px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
+                                }`}
                         >
-                            Practice Mode
-                        </a>
-
-                        {/* ASSESSMENT */}
-                        <a
-                            onClick={() => userRouter.push('/assessment')}
-                            className={`relative text-[16px] transition px-2
-                                ${isActive("assessment")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
-                                    : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
-                                }
-                            `}
-                        >
-                            Assessment
-                        </a>
-
-                        {/* PROGRESS */}
-                        <a
-                            onClick={() => userRouter.push('/progress')}
-                            className={`relative text-[16px] transition px-2
-                                ${isActive("progress")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
-                                    : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
-                                }
-                            `}
-                        >
-                            Progress
-                        </a>
-
-                        {/* BLOG */}
-                        <a
-                            onClick={() => userRouter.push('/blog')}
-                            className={`relative text-[16px] transition px-2
-                                ${isActive("blog")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
-                                    : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
-                                }
-                            `}
+                            Module
+                        </Link>
+                        <Link
+                            href="/blog"
+                            className={`relative text-[16px] px-4 text-white py-2 transition
+                            ${isActive("blog")
+                                    ? "after:content-[''] font-inter-semibold after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[-6px] after:w-[80%] after:h-[5px] after:bg-white after:rounded-full"
+                                    : "hover:after:content-[''] font-lato-r hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-4px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
+                                }`}
                         >
                             Blog
-                        </a>
-
-                        {/* ABOUT */}
-                        <a
-                            onClick={() => userRouter.push('/aboutUs')}
-                            className={`relative text-[16px] transition px-2
-                                ${isActive("about")
-                                    ? "after:content-[''] after:absolute font-inter after:font-semibold after:left-1/2 after:-translate-x-1/2 after:bottom-[-9px] after:w-[110%] after:h-[3px] after:bg-white after:rounded-full"
-                                    : "hover:after:content-[''] font-lato hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-7px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
-                                }
-                            `}
+                        </Link>
+                        <Link
+                            href="/about"
+                            className={`relative text-[16px] px-4 text-white py-2 transition
+                            ${isActive("about")
+                                    ? "after:content-[''] font-inter-semibold after:absolute after:left-1/2 after:-translate-x-1/2 after:bottom-[-6px] after:w-[80%] after:h-[5px] after:bg-white after:rounded-full"
+                                    : "hover:after:content-[''] font-lato-r hover:after:absolute hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:bottom-[-4px] hover:after:w-[80%] hover:after:h-[1px] hover:after:bg-white hover:after:rounded-full"
+                                }`}
                         >
                             About us
-                        </a>
+                        </Link>
                     </div>
-
-                    {/* User Area */}
-                    <div className="flex items-center gap-[10px]">
-                        <Image
-                            src={notificationImageUrl}
-                            alt="Notifications"
-                            width={24}
-                            height={24}
-                            className="cursor-pointer w-[30px] h-[28px]"
-                        />
-                        <span className="text-[16px] px-4 py-2">Nguyen's Tu</span>
-
-                        <Image
-                            src="/images/VirtualPatient/VP5.jpeg"
-                            alt="student"
-                            width={50}
-                            height={50}
-                            className="rounded-xl w-[48px] h-[48px] cursor-pointer"
-                        />
+                    <div className="flex items-center gap-[29px]">
+                        <a href="/login"
+                            className="text-[16px] bg-white px-6 py-2 rounded-xl hover:text-white hover:bg-blue-400 text-blue-400 font-semibold"
+                        >
+                            Log in
+                        </a>
+                        <a href="/signup"
+                            className="text-[16px] px-4 py-2 rounded-xl bg-blue-400 hover:text-blue-400 hover:bg-white text-white font-semibold"
+                        >
+                            Sign up
+                        </a>
                     </div>
                 </div>
 
@@ -144,51 +97,69 @@ export default function Navbar({ currentPage = "home" }: NavbarProps) {
                 </button>
             </div>
 
-            {/* MOBILE MENU */}
+            {/* Mobile Menu */}
             {isOpen && (
-                <div className="fixed inset-y-0 right-0 z-[60] flex justify-end">
-                    <div className="w-50 bg-gradient-to-r from-[#1ba7d9] to-[#235697] shadow-xl p-6 pt-10 relative animate-slide-left rounded-xl">
-
-                        {/* Close */}
-                        <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4">
+                <div className="fixed inset-y-0 right-0 z-[60] flex justify-end rounded-xl">
+                    <div className="w-64 bg-gradient-to-r from-[#1ba7d9] to-[#235697] h-full shadow-xl p-6 pt-10 relative animate-slide-left rounded-l-xl">
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className="absolute top-4 right-4"
+                        >
                             <X className="w-6 h-6 text-white" />
                         </button>
 
-                        {/* Mobile Nav */}
-                        <div className="flex flex-col gap-6 text-white mt-6 text-center text-[14px] font-medium">
+                        <div className="flex flex-col gap-6 text-gray-700 text-lg font-medium mt-10">
+                            <Link
+                                href="/"
+                                className={`text-white hover:text-gray-200 transition text-center ${isActive("home")
+                                    ? "font-bold border-b-2 border-white pb-1"
+                                    : ""
+                                    }`}
+                            >
+                                Home
+                            </Link>
+                            <Link
+                                href="/module"
+                                className={`text-white hover:text-gray-200 transition text-center ${isActive("module")
+                                    ? "font-bold border-b-2 border-white pb-1"
+                                    : ""
+                                    }`}
+                            >
+                                Module
+                            </Link>
+                            <Link
+                                href="/blog"
+                                className={`text-white hover:text-gray-200 transition text-center ${isActive("blog")
+                                    ? "font-bold border-b-2 border-white pb-1"
+                                    : ""
+                                    }`}
+                            >
+                                Blog
+                            </Link>
+                            <Link
+                                href="/about"
+                                className={`text-white hover:text-gray-200 transition text-center ${isActive("about")
+                                    ? "font-bold border-b-2 border-white pb-1"
+                                    : ""
+                                    }`}
+                            >
+                                About us
+                            </Link>
 
-                            {[
-                                ["home", "Home"],
-                                ["practice", "Practice Mode"],
-                                ["assessment", "Assessment"],
-                                ["progress", "Progress"],
-                                ["blog", "Blog"],
-                                ["aboutUs", "About us"],
-                            ].map(([key, label]) => (
-                                <a
-                                    key={key}
-                                    onClick={() => userRouter.push(`/${key}`)}
-                                    className={`transition text-center ${isActive(key)
-                                        ? "border-b-[5px] border-white pb-1"
-                                        : "border-b-2 border-transparent hover:border-white"
-                                        }`}
-                                >
-                                    {label}
-                                </a>
-                            ))}
+                            <div className="h-[1px] bg-white/30 w-full my-2"></div>
 
-                            {/* Avatar */}
-                            <div className="flex justify-center">
-                                <Image
-                                    src="/images/VirtualPatient/VP5.jpeg"
-                                    alt="student"
-                                    width={60}
-                                    height={60}
-                                    className="rounded-xl mt-4"
-                                />
-                            </div>
-
-                            <p className="text-white mt-2">Nguyen's Tu</p>
+                            <a
+                                href="/login"
+                                className="bg-white rounded-xl hover:bg-gray-100 text-blue-500 text-center py-2 font-bold"
+                            >
+                                Log in
+                            </a>
+                            <a
+                                href="/signup"
+                                className="rounded-xl border border-white hover:bg-white/10 text-white text-center py-2 font-bold"
+                            >
+                                Sign up
+                            </a>
                         </div>
                     </div>
                 </div>
