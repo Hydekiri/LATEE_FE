@@ -31,7 +31,7 @@ export default function HeroSection({ image, title, content }: HeroBannerProps) 
                 </h1>
 
                 {/* Content */}
-                <p className="text-white font-lato-bold text-[24px] xl:text-[32px]">
+                <p className="text-white font-lato-medium text-[24px] xl:text-[32px]">
                     {content}
                 </p>
             </div>

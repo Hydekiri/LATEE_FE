@@ -104,7 +104,7 @@ export default function Navbar({ page }: NavbarProps) {
 
                                 <div className="flex items-center gap-3 pl-2">
                                     <div className="w-10 h-10 rounded-full bg-white overflow-hidden relative border-2 border-white/50">
-                                        <Image src="/images/LVP1.jpeg" alt="Avatar" fill className="object-cover" />
+                                        <Image src="/images/ava1.jpg" alt="Avatar" fill className="object-cover" />
                                     </div>
                                     <div className="flex flex-col text-white">
                                         <span className="font-bold text-sm max-w-[100px] truncate">{userInfo.name}</span>

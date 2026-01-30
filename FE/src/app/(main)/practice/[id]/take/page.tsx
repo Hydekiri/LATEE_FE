@@ -1,4 +1,4 @@
-import { TakePracticePage } from '@/src/features/practice/take-practice/components/TakePracticePage';
+import { TakePracticePage } from '@/src/features/practice/takePractice/components/TakePracticePage';
 
 interface PageProps {
     params: {
@@ -7,6 +7,6 @@ interface PageProps {
 }
 
 export default function TakePracticeRoute({ params }: PageProps) {
-    consologe.log('Taking practice session with ID:', params.id);
+    console.log('Taking practice session with ID:', params.id);
     return <TakePracticePage />;
 }

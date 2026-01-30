@@ -2,7 +2,7 @@
 "use client";
 
 import Home_Header from "@/src/components/layout/Home_Header";
-import HeroSection from "@/src/components/layout/herosection"; // Check casing: HeroSection vs herosection
+import HeroSection from "@/src/components/layout/herosection"; 
 import Testimonial from "@/src/components/layout/testimonial";
 import Footer from "@/src/components/layout/Footer";
 import PatientCard from "@/src/features/practice/components/Practice_Card";
@@ -20,7 +20,7 @@ export default function PracticePageFeature() {
             <HeroSection
                 image="/images/bgLearner2.jpg"
                 title="Lavender Teeducation"
-                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
+                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
             />
 
             <section className="relative w-full flex flex-col items-center bg-cover bg-center bg-no-repeat"

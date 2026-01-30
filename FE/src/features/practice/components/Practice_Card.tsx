@@ -21,7 +21,7 @@ export default function PatientCard({ item }: PatientCardProps) {
 
     return (
         /* --- LỚP 1: BASE CONTAINER --- */
-        <div className="group relative w-full h-[400px] sm:h-[440px] xl:h-[480px] bg-white rounded-[10px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#235697]/30 hover:-translate-y-1">
+        <div className="group relative w-full h-100 sm:h-110 xl:h-120 bg-white rounded-[10px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#235697]/30 hover:-translate-y-1">
 
             {/* --- LỚP 2: IMAGE LAYER --- */}
             <div className="absolute top-0 left-0 w-full h-[50%] bg-gray-50 overflow-hidden">
@@ -31,7 +31,7 @@ export default function PatientCard({ item }: PatientCardProps) {
                     fill
                     className="w-full h-full object-cover object-[0%_50%] transition-transform duration-700 ease-out group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-linear-to-t from-black/10 via-transparent to-transparent"></div>
             </div>
 
             {/* --- LỚP 3: CONTENT LAYER --- */}
@@ -49,7 +49,7 @@ export default function PatientCard({ item }: PatientCardProps) {
                                 <ChartBarIcon className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-[#235697]" />
                                 <span>{item.level}</span>
                             </div>
-                            <div className="w-[1px] h-3 bg-gray-300"></div>
+                            <div className="w-px h-3 bg-gray-300"></div>
                             <div className="flex items-center gap-1">
                                 <ClockIcon className="w-3 h-3 xl:w-3.5 xl:h-3.5 text-[#235697]" />
                                 <span>{item.time}</span>
@@ -71,10 +71,10 @@ export default function PatientCard({ item }: PatientCardProps) {
 
                     {/* Introduction */}
                     <div>
-                        <p className="text-[#235697] font-lato-bold text-sm xl:text-base mb-[1px]">
+                        <p className="text-[#235697] font-lato-bold text-sm xl:text-base mb-px">
                             Introduction
                         </p>
-                        <p className="text-[#0E2A46] font-lato-r text-[13px] xl:text-sm leading-relaxed line-clamp-2 truncate text-gray-600">
+                        <p className="text-[#0E2A46] font-lato-r text-[13px] xl:text-sm leading-relaxed line-clamp-2 truncate">
                             {item.description}
                         </p>
                     </div>
@@ -82,7 +82,7 @@ export default function PatientCard({ item }: PatientCardProps) {
 
                 {/* --- PHẦN CHÂN  --- */}
                 <div className="text-sm">
-                    <p className="text-[#235697] font-lato-bold text-sm xl:text-base mb-[1px]">
+                    <p className="text-[#235697] font-lato-bold text-sm xl:text-base mb-px">
                         Chief concern
                     </p>
 

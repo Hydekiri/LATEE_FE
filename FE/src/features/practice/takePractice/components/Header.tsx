@@ -11,7 +11,7 @@ export const Header = ({ isAiSidebarOpen, onToggleAi }: HeaderProps) => {
         <header className="h-16 bg-[#235697] flex items-center justify-between px-6 shadow-md shrink-0 z-50">
         <div className="flex items-center gap-2">
             <div className="relative w-[120px] h-10 lg:w-[140px] lg:h-12">
-            <Image src="/LATEE2.png" alt="LATEE Logo" fill className="object-contain object-left" priority />
+            <Image src="/images/LATEE2.png" alt="LATEE Logo" fill className="object-contain object-left" priority />
             </div>
         </div>
 
@@ -39,7 +39,7 @@ export const Header = ({ isAiSidebarOpen, onToggleAi }: HeaderProps) => {
             <div className="flex items-center gap-2 text-white ml-2">
             <span className="font-semibold text-sm hidden md:block">Nguyen Tu</span>
             <div className="w-9 h-9 rounded-lg bg-gray-300 overflow-hidden border border-white/50">
-                <Image src="/ITS_LOGO1.png" width={36} height={36} alt="User" className="object-cover" />
+                <Image src="/images/ava1.jpg" width={36} height={36} alt="User" className="object-cover" />
             </div>
             </div>
         </div>
