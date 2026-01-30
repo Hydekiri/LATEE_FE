@@ -60,12 +60,12 @@ export default function Navbar({ page }: NavbarProps) {
     };
 
     return (
-        <nav className="w-full top-0 left-0 bg-gradient-to-r from-[#1ba7d9] to-[#235697] shadow-md z-50 flex justify-center sticky">
+        <nav className="w-full top-0 left-0 bg-linear-to-r from-[#1ba7d9] to-[#235697] shadow-md z-50 flex justify-center sticky">
             <div className="w-[86%] flex items-center justify-between py-3">
                 
                 {/* --- 1. LOGO --- */}
-                <div className="flex-shrink-0">
-                    <Link href="/" className="relative block w-[120px] h-10 sm:w-[150px] sm:h-12 lg:w-[180px] lg:h-14">
+                <div className="shrink-0">
+                    <Link href="/" className="relative block w-30 h-10 sm:w-37.5 sm:h-12 lg:w-45 lg:h-14">
                         <Image
                             src="/images/LATEE2.png"
                             alt="LATEE Logo"
@@ -91,7 +91,7 @@ export default function Navbar({ page }: NavbarProps) {
                     </div>
 
                     {/* B. SPACER */}
-                    <div className="h-8 w-[1px] bg-white/20 ml-[30px] mr-[30px] 2xl:ml-[50px] 2xl:mr-[50px]"></div>
+                    <div className="h-8 w-px bg-white/20 ml-7.5 mr-7.5 2xl:ml-12.5 2xl:mr-12.5"></div>
 
                     {/* C. USER ACTION AREA */}
                     <div className="flex items-center gap-4">
@@ -104,10 +104,10 @@ export default function Navbar({ page }: NavbarProps) {
 
                                 <div className="flex items-center gap-3 pl-2">
                                     <div className="w-10 h-10 rounded-full bg-white overflow-hidden relative border-2 border-white/50">
-                                        <Image src="/images/LVP1.jpeg" alt="Avatar" fill className="object-cover" />
+                                        <Image src="/images/ava1.jpg" alt="Avatar" fill className="object-cover" />
                                     </div>
                                     <div className="flex flex-col text-white">
-                                        <span className="font-bold text-sm max-w-[100px] truncate">{userInfo.name}</span>
+                                        <span className="font-bold text-sm max-w-25 truncate">{userInfo.name}</span>
                                         <button 
                                             onClick={handleLogout}
                                             className="text-xs text-blue-200 hover:text-white text-left underline transition"
@@ -138,10 +138,10 @@ export default function Navbar({ page }: NavbarProps) {
 
             {/* --- 4. MOBILE MENU OVERLAY --- */}
             {isOpen && (
-                <div className="fixed inset-y-0 right-0 z-[60] flex justify-end w-full">
+                <div className="fixed inset-y-0 right-0 z-60 flex justify-end w-full">
                     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setIsOpen(false)}></div>
                     
-                    <div className="w-72 bg-gradient-to-b from-[#1ba7d9] to-[#235697] h-full shadow-2xl p-6 pt-10 relative animate-slide-left z-50 flex flex-col overflow-y-auto">
+                    <div className="w-72 bg-linear-to-b from-[#1ba7d9] to-[#235697] h-full shadow-2xl p-6 pt-10 relative animate-slide-left z-50 flex flex-col overflow-y-auto">
                         <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 hover:bg-white/10 rounded-full p-1 transition">
                             <X className="w-7 h-7 text-white" />
                         </button>
@@ -168,7 +168,7 @@ export default function Navbar({ page }: NavbarProps) {
                             <Link href="/blog" className={getLinkClasses("/blog", "Blog")}>Blog</Link>
                             <Link href="/about" className={getLinkClasses("/about", "About")}>About us</Link>
 
-                            <div className="h-[1px] bg-white/20 w-full my-4"></div>
+                            <div className="h-px bg-white/20 w-full my-4"></div>
 
                             {/* Mobile Buttons */}
                             {userInfo ? (

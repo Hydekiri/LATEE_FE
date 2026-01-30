@@ -2,7 +2,7 @@
 "use client";
 
 import Home_Header from "@/src/components/layout/Home_Header";
-import HeroSection from "@/src/components/layout/herosection"; // Check casing: HeroSection vs herosection
+import HeroSection from "@/src/components/layout/herosection"; 
 import Testimonial from "@/src/components/layout/testimonial";
 import Footer from "@/src/components/layout/Footer";
 import PatientCard from "@/src/features/practice/components/Practice_Card";
@@ -20,7 +20,7 @@ export default function PracticePageFeature() {
             <HeroSection
                 image="/images/bgLearner2.jpg"
                 title="Lavender Teeducation"
-                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
+                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
             />
 
             <section className="relative w-full flex flex-col items-center bg-cover bg-center bg-no-repeat"
@@ -29,7 +29,7 @@ export default function PracticePageFeature() {
                 <div className="w-[90%] xl:w-[86%] flex flex-col items-center gap-8 xl:gap-12 pb-20">
 
                     {/* SEARCH + FILTER */}
-                    <div className="w-full grid grid-cols-1 xl:grid-cols-12 gap-4 items-center mt-10 xl:mt-[65px]">
+                    <div className="w-full grid grid-cols-1 xl:grid-cols-12 gap-4 items-center mt-10 xl:mt-16.25">
                         <div className="xl:col-span-5 w-full">
                             <div className="flex items-center h-12 border border-[#235697] rounded-lg bg-white px-4 xl:px-6 w-full shadow-sm hover:shadow-md transition">
                                 <div className="flex-1">
@@ -60,8 +60,8 @@ export default function PracticePageFeature() {
                     </div>
 
                     {/* GRID LIST */}
-                    <div className="w-full min-h-[500px]">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-[30px]">
+                    <div className="w-full min-h-125">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-7.5">
                             {data.map((item) => (
                                 <PatientCard key={item.id} item={item} />
                             ))}

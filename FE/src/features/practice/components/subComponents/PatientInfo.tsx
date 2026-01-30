@@ -1,9 +1,17 @@
+"use client";
 
-// src/features/practice/components/sub-components/PatientInfo.tsx
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { PatientData } from '@/src/types/practice';
 
 export const PatientInfo = ({ data }: { data: PatientData }) => {
+    const router = useRouter();
+
+    const handleStartPractice = () => {
+        router.push(`/practice/${data.id}/take`);
+    };
+
     return (
         <>
             {/* Header: PatientID & Case */}
@@ -30,9 +38,12 @@ export const PatientInfo = ({ data }: { data: PatientData }) => {
                     <span className="text-[#2AA8D8] text-sm font-bold">Times practiced: {data.timesPracticed}</span>
                 </div>
 
-                {/* Nút Start */}
+                {/* Nút Start - Đã thêm onClick handler */}
                 <div>
-                    <button className="flex items-center gap-2 bg-[#E0F2FE] text-[#235697] px-8 py-4 rounded-xl font-bold hover:bg-[#235697] hover:text-white transition shadow-sm hover:shadow-md">
+                    <button 
+                        onClick={handleStartPractice}
+                        className="flex items-center gap-2 bg-[#E0F2FE] text-[#235697] px-8 py-4 rounded-xl font-bold hover:bg-[#235697] hover:text-white transition shadow-sm hover:shadow-md"
+                    >
                         Start Practice <ArrowRight className="w-5 h-5" />
                     </button>
                 </div>

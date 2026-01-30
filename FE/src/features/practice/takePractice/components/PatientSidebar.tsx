@@ -7,7 +7,7 @@ export const PatientSidebar = () => {
         <div className="p-6 overflow-y-auto flex-1">
             <div className="mb-4">
             <div className="w-full aspect-square rounded-xl overflow-hidden border-2 border-gray-100 shadow-sm relative">
-                <Image src="/LVP1.jpeg" fill alt="Abigail Park" className="object-cover" />
+                <Image src="/images/LVP1.jpeg" fill alt="Abigail Park" className="object-cover" />
             </div>
             </div>
 

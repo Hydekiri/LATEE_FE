@@ -11,8 +11,8 @@ export const TakePracticePage = () => {
     const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(true);
 
     const chatHistory: ChatMessage[] = [
-        { id: 1, role: 'patient', message: 'Good morning, doctor. My name is Abigail Park', avatar: '/LVP1.jpeg' },
-        { id: 2, role: 'doctor', message: 'Good morning, Ms. Park. Why are you going here today?', avatar: '/VirtualPatient/VP3.jpeg' },
+        { id: 1, role: 'patient', message: 'Good morning, doctor. My name is Abigail Park', avatar: '/FE/public/images/LVP1.jpeg' },
+        { id: 2, role: 'doctor', message: 'Good morning, Ms. Park. Why are you going here today?', avatar: '/FE/public/images/doctor1.png' },
         // ... rest of your mock data
     ];
 

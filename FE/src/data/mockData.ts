@@ -1,13 +1,20 @@
 import { PatientData } from "@/src/types/practice";
 
 const MOCK_EXPERTS = [
-    { name: "Dr. Andrew Nguyen", role: "Specialist in Diagnostic Reasoning", img: "/images/experts/expert1.jpg" },
-    { name: "Dr. Tachibana Keji", role: "Clinical Instructor", img: "/images/experts/expert2.jpg" },
+    { 
+        name: "Dr. Andrew Nguyen", 
+        role: "Specialist in Diagnostic Reasoning", 
+        img: "/images/d22.jpg" 
+    },
+    { 
+        name: "Dr. Tachibana Hana", 
+        role: "Clinical Instructor", 
+        img: "/images/doctorFEMALE.jpeg"
+    },
 ];
-
 export const MOCK_PATIENTS: PatientData[] = Array.from({ length: 9 }).map((_, i) => ({
     id: `02511${i + 2}`,
-    caseId: `#TH18${72 + i}`,
+    caseId: `TH18${72 + i}`,
     img: `/images/VirtualPatient/VP${i + 1}.jpeg`, 
     name: "Abigail Park",
     age: 52,

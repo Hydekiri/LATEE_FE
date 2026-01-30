@@ -18,7 +18,7 @@ export const ChatArea = ({ history }: ChatAreaProps) => {
                 {/* Patient Avatar */}
                 {chat.role === 'patient' && (
                     <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
-                        <Image src={chat.avatar} width={40} height={40} alt="Patient" className="object-cover h-full w-full" />
+                        <Image src="/images/LVP1.jpeg" width={40} height={40} alt="Patient" className="object-cover h-full w-full" />
                     </div>
                 )}
 
@@ -35,7 +35,7 @@ export const ChatArea = ({ history }: ChatAreaProps) => {
                 {/* Doctor Avatar */}
                 {chat.role === 'doctor' && (
                     <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
-                        <Image src={chat.avatar} width={40} height={40} alt="Doctor" className="object-cover h-full w-full" />
+                        <Image src="/images/VirtualPatient/VP3.jpeg" width={40} height={40} alt="Doctor" className="object-cover h-full w-full" />
                     </div>
                 )}
             </div>
@@ -50,7 +50,7 @@ export const ChatArea = ({ history }: ChatAreaProps) => {
                     Oh, Go out now
                 </div>
                 <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
-                    <Image src="/VirtualPatient/VP3.jpeg" width={40} height={40} alt="Doc" className="object-cover h-full w-full" />
+                    <Image src="/images/VirtualPatient/VP3.jpeg" width={40} height={40} alt="Doc" className="object-cover h-full w-full" />
                 </div>
             </div>
         </div>

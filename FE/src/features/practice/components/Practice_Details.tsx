@@ -2,10 +2,14 @@
 'use client';
 
 import { useState } from 'react';
-import { CaseOverview } from './subComponents/CaseOverview';
-import { PatientInfo } from './subComponents/PatientInfo';
-import { AboutPatient } from './subComponents/tabs/AboutPatient';
+import { CaseOverview } from "@/src/features/practice/components/subComponents/CaseOverview";
+import { PatientInfo } from "@/src/features/practice/components/subComponents/PatientInfo";
+import { AboutPatient } from "@/src/features/practice/components/subComponents/tabs/AboutPatient";
 import { PatientData } from '@/src/types/practice';
+import  Results  from "@/src/features/practice/components/subComponents/tabs/Results";
+import Evaluation from "@/src/features/practice/components/subComponents/tabs/Evaluation";
+import Experts from "@/src/features/practice/components/subComponents/tabs/Expert";
+import FQA from "@/src/features/practice/components/subComponents/tabs/FQA";
 interface PracticeDetailProps {
     data: PatientData; 
 }
@@ -21,10 +25,14 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
         switch (activeTab) {
             case 'About Patient':
                 return <AboutPatient data={data} />;
+            case 'Experts':
+                return <Experts/>;
             case 'Evaluation':
-                return <div className="p-8 text-center text-gray-500">Evaluation Content Coming Soon...</div>;
+                return <Evaluation/>;
             case 'Result':
-                return <div className="p-8 text-center text-gray-500">Result Analysis Content...</div>;
+                return <Results/>;
+            case 'FQA':
+                return <FQA data={data}/>;
             default:
                 return <AboutPatient data={data} />;
         }
@@ -59,21 +67,17 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
             <div className="px-13 py-6">
                 {/* --- 2. MAIN GRID LAYOUT --- */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-13.5">
-                    
-                    {/* === CỘT TRÁI (Chiếm 2/3) === */}
                     <div className="lg:col-span-8">
                         
-                        {/* A. Phần TĨNH: Header & Profile Summary */}
+                        {/* A. Header & Profile Summary */}
                         <PatientInfo data={data} />
 
-                        {/* B. Phần ĐỘNG: Thay đổi theo Tab */}
+                        {/* B. Changed Tab Content */}
                         <div className="mt-8 animate-fadeIn">
                             {renderTabContent()}
                         </div>
-
                     </div>
 
-                    {/* === CỘT PHẢI (Chiếm 1/3) - TĨNH === */}
                     <div className="lg:col-span-4">
                         <CaseOverview data={data} />
                     </div>

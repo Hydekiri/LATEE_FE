@@ -10,7 +10,7 @@ interface HeroBannerProps {
 
 export default function HeroSection({ image, title, content }: HeroBannerProps) {
     return (
-        <section className="relative w-full min-h-[300px] max-h-[425px] flex justify-center overflow-hidden">
+        <section className="relative w-full min-h-75 max-h-45 flex justify-center overflow-hidden">
 
             {/* Background Image */}
             <Image
@@ -23,15 +23,15 @@ export default function HeroSection({ image, title, content }: HeroBannerProps) 
             />
 
             {/* Text Content */}
-            <div className="absolute w-[86%] flex flex-col items-start space-y-[14px] py-[58px] z-20">
+            <div className="absolute w-[86%] flex flex-col items-start space-y-3.5 py-14.5 z-20">
 
                 {/* Title */}
-                <h1 className="text-white text-[48px] xl:text-[72px] font-lato-black">
+                <h1 className="text-white text-12 xl:text-18 font-lato-black">
                     {title}
                 </h1>
 
                 {/* Content */}
-                <p className="text-white font-lato-bold text-[24px] xl:text-[32px]">
+                <p className="text-white font-lato-medium text-[24px] xl:text-[32px]">
                     {content}
                 </p>
             </div>

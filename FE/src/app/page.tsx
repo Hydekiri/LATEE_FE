@@ -2,259 +2,212 @@ import Image from "next/image";
 import Footer from "@/src/components/layout/Footer";
 import Navbar from "@/src/components/layout/NavLanding";
 import Testimonial from "@/src/components/layout/testimonial";
-import { CalendarDaysIcon } from '@heroicons/react/24/solid'
 
 export default function Home() {
   return (
-    <main className="w-full flex flex-col items-center overflow-hidden">
+    <main className="w-full flex flex-col items-center overflow-x-hidden bg-white">
       {/* NAVBAR */}
-      <Navbar currentPage="home" />
+      <Navbar page="Home" />
 
-      {/* Hero Section */}
-      <section className="w-full mx-auto bg-gradient-to-r from-[#1ba7d9] to-[#235697] text-white  relative rounded-b-[60px] flex justify-center">
-        <div className="w-[86%] grid grid-cols-1 sm:grid-cols-2 gap-12 xl:gap-[52px] xl:pb-0">
+      {/* --- HERO SECTION --- */}
+      <section className="w-full bg-linear-to-r from-[#1ba7d9] to-[#235697] text-white relative rounded-b-[60px] pt-[55px] pb-20 xl:pt-20 xl:pb-32 overflow-visible">
+        <div className="w-[86%] max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 relative z-10">
 
-          {/* LEFT SECTION */}
-          <div className="w-full h-auto mt-[55px] xl:mt-[83px]">
-            <button className="bg-white mb-[32px] xl:mb-[52px] text-[12px] xl:text-[18px] text-[#235697] w-[150px] xl:w-[221px] max-h-[45px] h-[25px] xl:h-[45px] rounded-xl font-inter font-inter-semibold shadow">
+          {/* LEFT CONTENT */}
+          <div className="flex flex-col justify-center z-20 xl:pr-10">
+            <button className="bg-white mb-6 xl:mb-10 text-[12px] xl:text-[18px] text-[#235697] w-fit px-6 py-2 rounded-xl font-inter font-semibold drop-shadow-lg">
               Never stop learning
             </button>
 
-            <h1 className="text-[44px] mb-[32px] xl:mb-[66px] font-lato-black-i xl:text-[64px] font-bold leading-tight">
+            <h1 className="text-[40px] leading-tight xl:text-[64px] font-bold font-lato-black-i mb-8 xl:mb-12 drop-shadow-sm">
               Develop your clinical reasoning skills with Latee!
             </h1>
 
-            <div className="flex items-center gap-4">
-              <button className="bg-[#01c4fe] w-[150px] xl:w-[201px] h-[45px] xl:h-[68px] text-[16px] xl:text-[20px] font-lato-bold text-white p-1 xl:p-2 xl:p-4 rounded-xl font-semibold shadow-md hover:bg-white hover:text-[#01c4fe] transition cursor-pointer">
+            <div className="flex flex-wrap items-center gap-6">
+              <button className="bg-[#01c4fe] px-8 py-3 xl:px-10 xl:py-4 text-[16px] xl:text-[20px] font-bold text-white rounded-xl shadow-md hover:bg-white hover:text-[#01c4fe] transition cursor-pointer">
                 Explore Now!
               </button>
 
-              <div className="xl:w-[233px] xl:h-[52px] flex items-center gap-3 mt-0 xl:mt-1">
-                <Image
-                  src="/images/reviewerlandingpage.png"
-                  alt="doctor"
-                  width={40}
-                  height={40}
-                  className="rounded-full w-10 h-5 xl:w-[127px] xl:h-[52px]"
-                />
-                <div><p className="font-lato-r text-[8px] xl:text-[20px]">★★★★★</p> <p className="font-lato-r text-[8px] xl:text-[12px]">(150+ Reviews)</p></div>
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-3">
+                    <Image src="/images/reviewerlandingpage.png" alt="review" width={120} height={50} className="object-contain h-10 w-auto" />
+                </div>
+                <div className="flex flex-col">
+                    <p className="text-yellow-400 text-sm xl:text-lg">★★★★★</p>
+                    <p className="text-xs xl:text-sm font-light opacity-90">(150+ Reviews)</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* RIGHT SECTION — Hero image */}
-          <div className="flex justify-center lg:mt-[40px] xl:mt-[59px] lg:pb-[25px] xl:pb-[39px] relative">
-            <Image
-              src="/images/doctor1withRectangle.png"
-              alt="doctor"
-              width={478}
-              height={532}
-              className="rounded-xl xl:w-full h-[400px] xl:h-[532px] pointer-events-none"
-            />
-
-            {/* BADGE — 250k Assisted Student */}
-            <div
-              className="absolute left-1/15 -translate-x-7/10 xl:-translate-x-3/4 -translate-y-45 xl:-translate-y-40
-                        mt-[500px] xl:mt-[570px] bg-white text-[#595959]
-                        px-4 py-2 xl:px-6 xl:py-3 text-[12px] xl:text-[22px]
-                        max-w-[300px] xl:w-[300px] xl:h-[100px]
-                        rounded-xl shadow-xl font-bold flex items-center gap-7"
-            >
-                <div className="relative w-6 h-6 xl:w-[50px] xl:h-[50px] bg-[#23bdee] p-3 rounded-xl flex items-center justify-center">
-                  <CalendarDaysIcon className="w-8 h-8 xl:w-10 xl:h-10 text-white" />
-                </div>
-
-                <div>
-                    <p className="font-inter-b text-[14px] xl:text-[24px]">250k</p>
-                    <p className="font-lato-r text-[14px] xl:text-[20px]">
-                      Assisted Student
-                    </p>
-                </div>
-            </div>
-
+          {/* RIGHT IMAGE - DOCTOR */}
+          <div className="relative mt-10 lg:mt-0 h-[600px] lg:h-auto flex justify-center lg:block">
+              <div className="lg:absolute lg:bottom-[-80px] lg:right-[-20px] xl:right-0 xl:bottom-[-164px] z-10 pointer-events-none">
+                  <Image
+                      src="/images/landingDoc.png"
+                      alt="doctor"
+                      width={900}
+                      height={900}
+                      priority
+                      className="w-auto h-[450px] lg:h-[650px] xl:h-[750px] object-contain drop-shadow-2xl"
+                  />
+              </div>
           </div>
-
         </div>
-
       </section>
 
+      {/* --- CONTENT WRAPPER --- */}
+      <div className="w-[86%] mx-auto mt-24 xl:mt-40 flex flex-col gap-32 xl:gap-48 mb-32">
 
-      {/* What We Offer */}
-      <section id="offer" className="w-full mx-auto mt-[120px] xl:mt-[224px] flex justify-center">
-        <div className="w-[86%] gap-[70px] grid grid-cols-2 xl:gap-[70px] items-start">
-          <div className="">
-            <h2 className="text-[14px] xl:text-[24px] text-[#1ba7d9] mb-2 font-lato-medium">
+        {/* 1. WHAT WE OFFER */}
+        {/* CẬP NHẬT: Grid 7/5 - Text chiếm 7 phần, Ảnh 5 phần. Đủ để đẩy ảnh sang phải nhưng vẫn to */}
+        <section id="offer" className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-10 items-center">
+          
+          {/* Content: 7/12 (Tăng độ rộng cho chữ để đẩy ảnh ra xa trung tâm hơn) */}
+          <div className="lg:col-span-7 flex flex-col justify-center">
+            <h2 className="text-[#1ba7d9] font-medium text-lg xl:text-3xl mb-2">
               Do you want to develop your clinical reasoning skills?
             </h2>
-
-            <h3 className="text-[44px] xl:text-[64px] font-inter font-inter-semibold mb-6">
-              What We Offer?
+            <h3 className="text-4xl xl:text-6xl font-semibold text-gray-900 mb-6">
+              What We Offer ?
             </h3>
-
-            <p className="text-[18px] xl:text-[28px] text-gray-600 mb-6 font-lato-r">
+            <p className="text-lg xl:text-3xl text-gray-600 mb-4 leading-relaxed max-w-4xl">
               Latee helps you develop diagnostic thinking and clinical skills through realistic patient case simulations and intelligent AI feedback.
             </p>
-
-            <p className="text-[18px] xl:text-[28px] text-gray-600 font-lato-r">
+            <p className="text-lg xl:text-3xl text-gray-600 leading-relaxed max-w-4xl">
               Discover a modern, interactive, and personalized approach to medical learning.
             </p>
           </div>
 
-          <div className="flex justify-center xl:justify-start">
-            <Image src="/images/Robot1.png" alt="robot" width={650} height={650} className="max-w-[100%] xl:max-w-[80%] w-250 h-55 xl:w-full xl:h-[445px]" />
-          </div>
-        </div>
-      </section>
-
-
-      {/* What You Get */}
-      <section id="get" className="w-full mx-auto  mt-[120px] xl:mt-[224px] flex justify-center">
-        <div className="w-[86%] grid grid-cols-2 gap-0">
-          <div className="relative flex">
+          {/* Image: 5/12 (Nhỏ hơn 6/12 một chút để nằm gọn về phía bên phải) */}
+          <div className="lg:col-span-5 flex justify-center lg:justify-end w-full">
             <Image
-              src="/images/doctorwbg.png"
-              alt="doctor"
-              width={650}
-              height={650}
-              className="rounded-xl ml-10 xl:ml-0 z-10 w-full h-auto"
+              src="/images/Robot1.png"
+              alt="robot"
+              width={800}
+              height={800}
+              // Chú ý: w-full để ảnh to hết cỡ cột 5/12, object-contain để giữ tỷ lệ
+              className="w-full h-auto max-w-[500px] xl:max-w-full object-contain drop-shadow-xl translate-x-30"
             />
           </div>
+        </section>
 
-          <div className="flex flex-col gap-4">
-            <h3 className="text-[24px] xl:text-[36px] font-inter-semibold">
-              What Will You <span className="text-[#1ba7d9]">Get</span>?
+        {/* 2. WHAT WILL YOU GET (1/2 - 1/2) */}
+        <section id="get" className="grid grid-cols-1 lg:grid-cols-2 gap-10 xl:gap-20 items-center">
+          <div className="relative flex justify-center lg:justify-start w-full">
+            <div className="relative w-full">
+                <div className="absolute inset-0 bg-blue-100 rounded-full blur-3xl opacity-50 -z-10 transform scale-90"></div>
+                <Image
+                src="/images/doctorwbg.png"
+                alt="doctor standing"
+                width={1200}
+                height={1200}
+                className="rounded-2xl w-full h-auto object-cover "
+                />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-6">
+            <h3 className="text-3xl xl:text-5xl font-bold text-gray-900">
+              What Will You <span className="text-[#1ba7d9]">Get</span> ?
             </h3>
 
-            <div className="bg-[radial-gradient(circle,#c9f3ff_10%,#ffffff_80%)] xl:rounded-6xl">
-              <h3 className="text-[14px] xl:text-[20px] xl:mb-5 text-gray-600 font-lato-medium">
+            <div className="bg-linear-to-br from-[#e0f7fa] to-white p-6 xl:p-10 rounded-[40px] shadow-sm border border-blue-50">
+                <p className="text-lg xl:text-xl text-gray-700 font-medium mb-8">
                 Enhance your diagnostic thinking through clinical simulations and a personalized learning journey.
-              </h3>
-
-              <ul className="space-y-6 xl:max-w-[95%]">
+                </p>
+                <ul className="space-y-6">
                 {[
-                  {
-                    title: "Interactive case simulations",
-                    desc: "Experience realistic clinical scenarios and receive detailed step-by-step diagnostic feedback"
-                  },
-                  {
-                    title: "AI-powered feedback",
-                    desc: "Get intelligent suggestions and insights from AI to enhance your clinical reasoning skills."
-                  },
-                  {
-                    title: "Personalized Learning Path",
-                    desc: "Follow a customized learning journey tailored to your progress and clinical performance."
-                  }
+                    { title: "Interactive case simulations", desc: "Experience realistic clinical scenarios and receive detailed step-by-step diagnostic feedback" },
+                    { title: "AI-powered feedback", desc: "Get intelligent suggestions and insights from AI to enhance your clinical reasoning skills." },
+                    { title: "Personalized Learning Path", desc: "Follow a customized learning journey tailored to your progress and clinical performance." }
                 ].map((item, idx) => (
-                  <li key={idx} className="bg-white p-1 xl:p-3 rounded-xl grid grid-cols-[auto_1fr] gap-3 max-w-[90%]">
-                    <span className="bg-[#1ba7d9] text-white font-bold px-2 py-[3px] rounded-[8px] self-center">✔</span>
+                    <li key={idx} className="bg-white p-4 rounded-2xl flex gap-4 shadow-sm items-start">
+                    <span className="bg-[#1ba7d9] text-white text-xs font-bold px-2 py-1 rounded-md mt-1">✔</span>
                     <div>
-                      <p className="text-[10px] xl:text-[16px] font-lato-medium">{item.title}</p>
-                      <p className="text-gray-500 font-lato-medium text-[8px] xl:text-[14px]">
-                        <strong>· </strong>{item.desc}
-                      </p>
+                        <p className="text-base xl:text-lg font-bold text-gray-900">{item.title}</p>
+                        <p className="text-sm xl:text-base text-gray-500 mt-1">{item.desc}</p>
                     </div>
-                  </li>
+                    </li>
                 ))}
-              </ul>
+                </ul>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-
-      {/* connect expert */}
-      <section id="work" className="w-full mx-auto mt-[120px] xl:mt-[224px] flex justify-center">
-        <div className="w-[86%] grid grid-cols-12 ">
-          <div className="col-span-7 flex flex-col justify-start">
-            <h3 className="text-[36px] xl:text-[48px] font-inter font-semibold mb-6">
-              Experience interactive learning and connect with experts!
-            </h3>
-
-            <ul className="space-y-0">
-              <li className="text-[16px] xl:text-[24px] text-[#6c6c6c] font-lato-r">
-                Learn effectively with modules designed by medical experts.
-              </li>
-              <li className="text-[16px] xl:text-[24px] text-[#6c6c6c] font-lato-r">
-                Latee offers realistic learning through simulated patient cases, AI-powered feedback, and expert guidance.
-              </li>
-            </ul>
-
-            <div className="flex gap-[43px] mt-2 xl:mt-5 text-center items-center">
-              <a className="bg-[#1ba7d9] w-[199px] h-[62px] text-[12px] xl:text-[16px] px-3 xl:px-[16px] py-2 xl:py-[10px] flex justify-center items-center rounded text-white hover:bg-white hover:text-[#1ba7d9] border border-[#1ba7d9]">
-                Start now
-              </a>
-              <a className="border border-[#1ba7d9] w-[199px] h-[62px] text-[12px] xl:text-[16px] px-3 xl:px-[16px] py-2 xl:py-[10px] flex justify-center items-center rounded text-[#1ba7d9] hover:bg-[#1ba7d9] hover:text-white">
-                More info
-              </a>
+        {/* 3. EXPERIENCE / EXPERT (7/12 - 5/12) */}
+        <section id="work" className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-7 flex flex-col justify-start pr-0 lg:pr-10">
+                <h3 className="text-3xl xl:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                    Experience interactive learning and connect with experts !
+                </h3>
+                <ul className="space-y-4 mb-8">
+                    <li className="text-lg xl:text-3xl text-gray-600 font-light">
+                    • Learn effectively with modules designed by medical experts.
+                    </li>
+                    <li className="text-lg xl:text-3xl text-gray-600 font-light">
+                    • Latee offers a realistic learning experience through simulated patient cases, AI-powered feedback, and expert guidance.
+                    </li>
+                </ul>
+                <div className="flex gap-4 sm:gap-6">
+                    <a className="bg-[#1ba7d9] cursor-pointer text-white px-8 py-3 xl:px-10 xl:py-4 rounded-lg font-bold text-sm xl:text-lg shadow-md hover:bg-white hover:text-[#1ba7d9] border border-[#1ba7d9] transition">Start now</a>
+                    <a className="border border-[#1ba7d9] cursor-pointer text-[#1ba7d9] px-8 py-3 xl:px-10 xl:py-4 rounded-lg font-bold text-sm xl:text-lg hover:bg-[#1ba7d9] hover:text-white transition">More info</a>
+                </div>
             </div>
-          </div>
-          <div className="col-span-5">
-            <Image src="/images/expertlandingpage.png" alt="expert" width={600} height={600} className="rounded-xl w-full h-autojustify-end" />
-          </div>
-        </div>
-      </section>
 
+            <div className="lg:col-span-5 flex justify-center lg:justify-end w-full">
+                <Image
+                    src="/images/expertlandingpage.png"
+                    alt="expert"
+                    width={800}
+                    height={800}
+                    className="rounded-xl w-full h-auto object-cover"
+                />
+            </div>
+        </section>
 
-      {/* How It Works */}
-      <section id="work" className="w-full mx-auto mt-[120px] xl:mt-[224px] flex justify-center relative">
-        <div className="w-[86%] grid grid-cols-2 gap-0 ">
-          <div className="bg-[radial-gradient(circle,#c9f3ff_10%,#ffffff_90%)]">
-            <h3 className="xl:text-[36px] font-inter-semibold mb-6">
-              Here&apos;s how it <span className="text-[#1ba7d9]">works</span>
-            </h3>
+        {/* 4. HOW IT WORKS (7/12 - 5/12) */}
+        <section id="how-it-works" className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center bg-white">
+            <div className="lg:col-span-7 relative">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-radial-linear from-blue-50 to-transparent opacity-70 -z-10 rounded-full"></div>
+                <h3 className="text-4xl xl:text-5xl font-bold mb-8">
+                    Here&apos;s how it <span className="text-[#1ba7d9]">works</span>
+                </h3>
+                <ul className="space-y-6">
+                    {[
+                        { icon: "/images/Profile.png", title: "Select a learning topic", desc: "Choose your learning topic — from internal medicine and surgery to complex clinical cases." },
+                        { icon: "/images/calendericon.png", title: "Start simulation", desc: "Engage in interactive case simulations and make diagnostic decisions step by step." },
+                        { icon: "/images/bi_laptop-fill.png", title: "Get feedback & improve", desc: "Receive insights from AI and mentors to refine and strengthen your diagnostic skills." }
+                    ].map((item, idx) => (
+                        <li key={idx} className="bg-white p-4 rounded-xl flex gap-4 shadow-md border border-gray-100 items-center max-w-2xl">
+                            <div className="bg-[#1ba7d9] w-12 h-12 min-w-[48px] rounded-full flex items-center justify-center shadow-lg">
+                                <Image src={item.icon} alt="icon" width={24} height={24} />
+                            </div>
+                            <div>
+                                <p className="font-bold text-[#1ba7d9] text-xl">{item.title}</p>
+                                <p className="text-gray-500 text-md">{item.desc}</p>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
 
-            <ul className="space-y-4">
-              <li className="max-w-[90%] bg-white rounded-xl grid grid-cols-[auto_1fr] gap-3">
-                <span className="text-white bg-[#1ba7d9] w-[45px] h-[45px] rounded-xl font-bold px-2 py-4 flex items-center justify-center self-center">
-                  <Image src="/images/Profile.png" alt="icon" width={20} height={20} className="w-[18px] h-[23px]" />
-                </span>
+            <div className="lg:col-span-5 flex justify-center lg:justify-end w-full">
+                <Image
+                    src="/images/doctorhowitworks.png"
+                    alt="how it works"
+                    width={700}
+                    height={600}
+                    className="rounded-2xl w-full h-auto object-cover"
+                />
+            </div>
+        </section>
 
-                <div>
-                  <span className="font-medium block font-lato-medium xl:text-[16px] text-[#1ba7d9]">Select a learning topic</span>
-                  <span className="font-medium text-gray-500 block font-lato-medium xl:text-[14px]">
-                    Choose your learning topic — from internal medicine and surgery to complex clinical cases.
-                  </span>
-                </div>
-              </li>
-              <li className="max-w-[90%] bg-white rounded-xl grid grid-cols-[auto_1fr] gap-3">
-                <span className="text-white bg-[#1ba7d9] w-[45px] h-[45px] rounded-xl font-bold px-2 py-4 flex items-center justify-center self-center">
-                  <Image src="/images/calendericon.png" alt="icon" width={20} height={20} className="w-[18px] h-[23px]" />
-                </span>
+      </div>
+      {/* --- END CONTENT WRAPPER --- */}
 
-                <div>
-                  <span className="font-medium block font-lato-medium xl:text-[16px] text-[#1ba7d9]">Start simulation</span>
-                  <span className="font-medium text-gray-500 block font-lato-medium xl:text-[14px]">
-                    Engage in interactive case simulations and make diagnostic decisions step by step.
-                  </span>
-                </div>
-              </li>
-              <li className="max-w-[90%] bg-white rounded-xl grid grid-cols-[auto_1fr] gap-3">
-                <span className="text-white bg-[#1ba7d9] w-[45px] h-[45px] rounded-xl font-bold px-2 py-4 flex items-center justify-center self-center">
-                  <Image src="/images/bi_laptop-fill.png" alt="icon" width={20} height={20} className="w-[18px] h-[23px]" />
-                </span>
-
-                <div>
-                  <span className="font-medium block font-lato-medium xl:text-[16px] text-[#1ba7d9]">Get feedback & improve</span>
-                  <span className="font-medium text-gray-500 block font-lato-medium xl:text-[14px]">
-                    Receive insights from AI and mentors to refine and strengthen your diagnostic skills.
-                  </span>
-                </div>
-              </li>
-            </ul>
-          </div>
-          <div className="flex justify-end items-center">
-            <Image src="/images/doctorhowitworks.png" alt="video" width={480} height={480} className="rounded-xl w-[504px] h-[414px]" />
-
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonial */}
       <Testimonial />
-
-      {/* FOOTER */}
       <Footer />
-
-    </main >
+    </main>
   );
 }

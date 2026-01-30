@@ -1,7 +1,7 @@
 import { getPatientById } from "@/src/services/patient-servvice";
 import PracticeDetail from "@/src/features/practice/components/Practice_Details"; 
 import Home_Header from "@/src/components/layout/Home_Header";
-import HeroSection from "@/src/components/common/HeroSection";
+import HeroSection from "@/src/components/layout/herosection"; 
 import Footer from "@/src/components/layout/Footer";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -29,10 +29,10 @@ export default async function PatientDetailPage(props: PageProps) {
         <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
             <Home_Header page="Practice" />
             
-            <HeroSection 
+            <HeroSection
+                image="/images/bgLearner2.jpg"
                 title="Lavender Teeducation"
-                description="Develop critical thinking and enhance your diagnostic skills!"
-                backgroundImage="/images/bgLearner2.jpg"
+                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
             />
 
             <div className="relative w-full py-16">
