@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Sparkles, Send, AlertTriangle } from 'lucide-react';
 import { AiMessageBlock, fetchAiAssistantResponse } from '@/src/services/aiAssistant-service';
 
-export const AiAssistantSidebar = () => {
+export const AiAssistantSidebar = (question: string) => {
     const [aiInput, setAiInput] = useState('');
     const [messages, setMessages] = useState<
         Array<{ isValid: boolean; noteId?: string; content: string }>
@@ -104,14 +104,19 @@ export const AiAssistantSidebar = () => {
 
             <div className="p-4 border-t border-blue-100 bg-[#D1EFF9]/50">
                 <div className="flex gap-2">
-                    <input 
-                        type="text" 
+                    <input
+                        type="text"
                         value={aiInput}
                         onChange={(e) => setAiInput(e.target.value)}
                         placeholder="Ask Dr. MoX..."
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                fetchAiResponse(aiInput);
+                            }
+                        }}
                         className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#235697]"
                     />
-                    <button className="bg-[#235697] text-white p-2 rounded-lg hover:bg-[#1d4880] transition">
+                    <button className="bg-[#235697] text-white p-2 rounded-lg hover:bg-[#1d4880] transition" onClick={() => fetchAiResponse(aiInput)} >
                         <Send className="w-4 h-4" />
                     </button>
                 </div>
