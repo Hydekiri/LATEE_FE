@@ -2,9 +2,9 @@
 'use client';
 
 import { useState } from 'react';
+import { AboutPatient } from "@/src/features/practice/components/subComponents/tabs/AboutPatient";
 import { CaseOverview } from "@/src/features/practice/components/subComponents/CaseOverview";
 import { PatientInfo } from "@/src/features/practice/components/subComponents/PatientInfo";
-import { AboutPatient } from "@/src/features/practice/components/subComponents/tabs/AboutPatient";
 import { PatientData } from '@/src/types/practice';
 import  Results  from "@/src/features/practice/components/subComponents/tabs/Results";
 import Evaluation from "@/src/features/practice/components/subComponents/tabs/Evaluation";
@@ -70,8 +70,10 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
                     <div className="lg:col-span-8">
                         
                         {/* A. Header & Profile Summary */}
+                        {/* A. Header & Profile Summary */}
                         <PatientInfo data={data} />
 
+                        {/* B. Changed Tab Content */}
                         {/* B. Changed Tab Content */}
                         <div className="mt-8 animate-fadeIn">
                             {renderTabContent()}
