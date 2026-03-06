@@ -1,21 +1,60 @@
-import { useState } from 'react';
-import { Sparkles, Send, AlertTriangle } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Sparkles, Send, AlertTriangle, User } from 'lucide-react';
 import { AiMessageBlock, fetchAiAssistantResponse } from '@/src/services/aiAssistant-service';
 
-export const AiAssistantSidebar = (question: string) => {
+// Type cho message
+interface Message {
+    role: 'user' | 'assistant';
+    isValid: boolean;
+    noteId?: string;
+    content: string;
+}
+
+export const AiAssistantSidebar = () => {
     const [aiInput, setAiInput] = useState('');
-    const [messages, setMessages] = useState<
-        Array<{ isValid: boolean; noteId?: string; content: string }>
-    >([]);
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll to bottom when new messages arrive
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
 
     const fetchAiResponse = async (question: string) => {
+        // Kiểm tra input rỗng
+        if (!question.trim()) return;
+
+        setIsLoading(true);
+
+        // 1. Thêm câu hỏi của user vào messages
+        setMessages((prev) => [
+            ...prev,
+            {
+                role: 'user',
+                isValid: true,
+                content: question,
+            },
+        ]);
+
+        // Clear input ngay sau khi thêm câu hỏi
+        setAiInput("");
+
         // tạo block rỗng nơi sẽ stream token vào
         let streamedText = "";
 
-        // tạo 1 block AI rỗng để fill từ SSE stream
+        // 2. Tạo 1 block AI rỗng để fill từ SSE stream
         setMessages((prev) => [
             ...prev,
-            { isValid: true, content: "" },
+            {
+                role: 'assistant',
+                isValid: true,
+                content: ""
+            },
         ]);
 
         await fetchAiAssistantResponse(
@@ -29,6 +68,7 @@ export const AiAssistantSidebar = (question: string) => {
                     const updated = [...prev];
 
                     updated[updated.length - 1] = {
+                        role: 'assistant',
                         isValid: true,
                         content: streamedText,
                     };
@@ -42,11 +82,13 @@ export const AiAssistantSidebar = (question: string) => {
                 setMessages((prev) => {
                     const updated = [...prev];
                     updated[updated.length - 1] = {
+                        role: 'assistant',
                         isValid: true,
                         content: streamedText,
                     };
                     return updated;
                 });
+                setIsLoading(false);
             },
 
             // ERROR EVENT
@@ -54,15 +96,15 @@ export const AiAssistantSidebar = (question: string) => {
                 setMessages((prev) => [
                     ...prev,
                     {
+                        role: 'assistant',
                         isValid: false,
                         noteId: "Error",
                         content: "❌ " + errorMessage,
                     },
                 ]);
+                setIsLoading(false);
             }
         );
-
-        setAiInput("");
     };
 
     return (
@@ -93,13 +135,30 @@ export const AiAssistantSidebar = (question: string) => {
                     </div>
                 </div>
 
-                {/* Render ALL AiMessageBlock */}
+                {/* Render ALL Messages */}
                 {messages.map((m, i) => (
-                    <AiMessageBlock key={i} isValid={m.isValid} noteId={m.noteId} message={m.content}>
-                        {/* Bạn muốn thêm children khác thì thêm vào */}
-                        <p></p>
-                    </AiMessageBlock>
+                    m.role === 'user' ? (
+                        // User Message
+                        <div key={i} className="flex gap-3 justify-end">
+                            <div className="bg-[#235697] rounded-xl p-4 shadow-sm max-w-[85%]">
+                                <p className="text-xs text-white leading-relaxed">
+                                    {m.content}
+                                </p>
+                            </div>
+                            <div className="shrink-0 w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center text-white shadow-md mt-1">
+                                <User className="w-4 h-4" />
+                            </div>
+                        </div>
+                    ) : (
+                        // AI Message
+                        <AiMessageBlock key={i} isValid={m.isValid} noteId={m.noteId} message={m.content}>
+                            <p></p>
+                        </AiMessageBlock>
+                    )
                 ))}
+
+                {/* Auto-scroll anchor */}
+                <div ref={messagesEndRef} />
             </div>
 
             <div className="p-4 border-t border-blue-100 bg-[#D1EFF9]/50">
@@ -109,14 +168,20 @@ export const AiAssistantSidebar = (question: string) => {
                         value={aiInput}
                         onChange={(e) => setAiInput(e.target.value)}
                         placeholder="Ask Dr. MoX..."
+                        disabled={isLoading}
                         onKeyDown={(e) => {
-                            if (e.key === "Enter") {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
                                 fetchAiResponse(aiInput);
                             }
                         }}
-                        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#235697]"
+                        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#235697] disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
-                    <button className="bg-[#235697] text-white p-2 rounded-lg hover:bg-[#1d4880] transition" onClick={() => fetchAiResponse(aiInput)} >
+                    <button
+                        className="bg-[#235697] text-white p-2 rounded-lg hover:bg-[#1d4880] transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        onClick={() => fetchAiResponse(aiInput)}
+                        disabled={isLoading || !aiInput.trim()}
+                    >
                         <Send className="w-4 h-4" />
                     </button>
                 </div>
