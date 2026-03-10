@@ -104,7 +104,6 @@ export default function AssessmentList() {
                     <div 
                         key={item.id} 
                         className="group flex flex-col lg:flex-row items-stretch bg-[#F0F8FF] rounded-[18px] border border-[#235697]/10 p-5 gap-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out cursor-pointer"
-                        onClick={() => router.push(`/assessment/${item.id}`)}
                     >
                         {/* PHẦN 1: ẢNH */}
                         <div className="relative w-full lg:w-75 h-45 rounded-xl overflow-hidden shrink-0 shadow-inner">

@@ -8,17 +8,17 @@ export const AssessmentAbout = ({ data }: { data: AssessmentData }) => {
 
     return (
         <div className="flex flex-col gap-12">
-            <div className="bg-[#D1F1FF]/40 border border-[#BDE6F5] rounded-[32px] p-10 relative">
+            <div className="bg-[#00B7FF]/20 border-b-4 border-b-[#1BA7D9] rounded-lg p-10 relative">
                 <div className="flex justify-between items-start mb-8">
                     <div className="flex items-center gap-4">
-                        <div className="bg-white p-3 rounded-xl shadow-sm">
+                        <div className="bg-white p-3 rounded-lg ">
                             <DocumentTextIcon className="w-8 h-8 text-[#1BA7D9]" />
                         </div>
                         <h3 className="text-3xl font-bold text-[#235697]">General Info</h3>
                     </div>
                     <button 
                         onClick={() => router.push(`/assessment/${data.id}/take`)}
-                        className="flex items-center gap-2 bg-white text-[#235697] px-6 py-3 rounded-xl font-bold border border-white hover:border-[#235697] transition-all shadow-md active:scale-95"
+                        className="flex items-center gap-2 bg-white text-[#1BA7D9] px-6 py-3 rounded-lg font-bold hover:bg-[#1BA7D9] hover:text-white transition-all duration-300 ease-in-out shadow-md active:scale-95"
                     >
                         Join Assessment <ArrowRightIcon className="w-5 h-5" />
                     </button>
@@ -41,7 +41,7 @@ export const AssessmentAbout = ({ data }: { data: AssessmentData }) => {
                 </div>
             </div>
 
-            <div className="bg-gray-50 rounded-[32px] p-10">
+            <div className="bg-[#F6F6F6] rounded-xl p-10 mb-4">
                 <h3 className="text-3xl font-bold text-[#235697] mb-6 tracking-tight">What you will learn</h3>
                 <ol className="list-decimal pl-5 space-y-4 text-lg text-gray-700">
                     {data.learningObjectives.map((obj, i) => <li key={i}>{obj}</li>)}

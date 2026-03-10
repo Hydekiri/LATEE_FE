@@ -49,7 +49,7 @@ export default async function PatientDetailPage(props: PageProps) {
                 
                 <div className="relative z-10 max-w-[90%] xl:max-w-[86%] mx-auto">
                     {/* Breadcrumbs */}
-                    <div className="flex items-center gap-2 text-sm text-[#235697] mb-6 font-medium pl-2 bg-white/60 w-fit px-4 py-1 rounded-full backdrop-blur-sm shadow-sm">
+                    <div className="flex items-center gap-2 text-sm text-[#235697] mb-6 font-medium pl-2 px-4 py-1">
                         <Link href="/practice" className="hover:underline">Practice Mode</Link>
                         <ChevronRight className="w-4 h-4" />
                         <span>Case #{patientData.id}</span>

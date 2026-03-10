@@ -9,7 +9,7 @@ import { PatientData } from '@/src/types/practice';
 import  Results  from "@/src/features/practice/components/subComponents/tabs/Results";
 import Evaluation from "@/src/features/practice/components/subComponents/tabs/Evaluation";
 import Experts from "@/src/features/practice/components/subComponents/tabs/Expert";
-import FQA from "@/src/features/practice/components/subComponents/tabs/FQA";
+import FAQ from "@/src/features/practice/components/subComponents/tabs/FAQ";
 interface PracticeDetailProps {
     data: PatientData; 
 }
@@ -19,7 +19,7 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
     
     console.log("Đang tải dữ liệu cho bài:", data);
     const [activeTab, setActiveTab] = useState('About Patient');
-    const tabs = ['About Patient', 'Experts', 'Evaluation', 'Result', 'FQA'];
+    const tabs = ['About Patient', 'Experts', 'Insights', 'Results', 'FAQ'];
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -27,12 +27,12 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
                 return <AboutPatient data={data} />;
             case 'Experts':
                 return <Experts/>;
-            case 'Evaluation':
+            case 'Insights':
                 return <Evaluation/>;
-            case 'Result':
+            case 'Results':
                 return <Results/>;
-            case 'FQA':
-                return <FQA data={data}/>;
+            case 'FAQ':
+                return <FAQ data={data}/>;
             default:
                 return <AboutPatient data={data} />;
         }

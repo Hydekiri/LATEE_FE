@@ -49,12 +49,12 @@ export default async function AssessmentDetailPage(props: PageProps) {
                 
                 <div className="relative z-10 max-w-[90%] xl:max-w-[86%] mx-auto">
                     {/* Breadcrumbs */}
-                    <div className="flex items-center gap-2 text-sm text-[#235697] mb-6 font-medium pl-2 bg-white/60 w-fit px-4 py-1 rounded-full backdrop-blur-sm shadow-sm">
+                    <div className="flex items-center gap-2 text-sm text-[#235697] mb-6 font-medium pl-2 px-4 py-1">
                         <Link href="/assessment" className="hover:underline">Assessment</Link>
                         <ChevronRight className="w-4 h-4" />
                         <span>Case #{assessmentData.id}</span>
                         <ChevronRight className="w-4 h-4" />
-                        <span className="text-[#235697] underline decoration-[#235697] underline-offset-4">About Patient</span>
+                        <span className="text-[#235697] underline decoration-[#235697] underline-offset-4">About Assessment</span>
                     </div>
 
                     {/* Main Detail Component */}

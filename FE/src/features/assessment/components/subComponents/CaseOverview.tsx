@@ -39,7 +39,7 @@ export const CaseOverview = ({ data }: { data: AssessmentData }) => {
             </div>
             <button 
                 onClick={() => router.back()} 
-                className="mt-20 w-full bg-[#235697] hover:bg-[#1BA7D9] text-white py-4 rounded-xl font-bold text-xl transition-all shadow-lg active:scale-95 shadow-[#235697]/20"
+                className="mt-20 w-full bg-linear-to-r from-[#1AB2D9] to-[#235697] hover:from-[#235697] hover:to-[#235697] text-white py-4 rounded-xl font-bold text-xl transition-all shadow-lg active:scale-95 shadow-[#235697]/20"
             >
                 Return
             </button>

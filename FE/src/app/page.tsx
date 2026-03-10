@@ -10,8 +10,8 @@ export default function Home() {
       <Navbar page="Home" />
 
       {/* --- HERO SECTION --- */}
-      <section className="w-full bg-linear-to-r from-[#1ba7d9] to-[#235697] text-white relative rounded-b-[60px] pt-[55px] pb-20 xl:pt-20 xl:pb-32 overflow-visible">
-        <div className="w-[86%] max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 relative z-10">
+      <section className="w-full bg-linear-to-r from-[#1ba7d9] to-[#235697] text-white relative rounded-b-[60px] pt-13.75 pb-20 xl:pt-20 xl:pb-32 overflow-visible">
+        <div className="w-[86%] max-w-360 mx-auto grid grid-cols-1 lg:grid-cols-2 relative z-10">
 
           {/* LEFT CONTENT */}
           <div className="flex flex-col justify-center z-20 xl:pr-10">
@@ -41,15 +41,15 @@ export default function Home() {
           </div>
 
           {/* RIGHT IMAGE - DOCTOR */}
-          <div className="relative mt-10 lg:mt-0 h-[600px] lg:h-auto flex justify-center lg:block">
-              <div className="lg:absolute lg:bottom-[-80px] lg:right-[-20px] xl:right-0 xl:bottom-[-164px] z-10 pointer-events-none">
+          <div className="relative mt-10 lg:mt-0 h-150 lg:h-auto flex justify-center lg:block">
+              <div className="lg:absolute lg:bottom-20 lg:right-[-20px] xl:right-0 xl:bottom-[-164px] z-10 pointer-events-none">
                   <Image
                       src="/images/landingDoc.png"
                       alt="doctor"
                       width={900}
                       height={900}
                       priority
-                      className="w-auto h-[450px] lg:h-[650px] xl:h-[750px] object-contain drop-shadow-2xl"
+                      className="w-auto h-112.5 lg:h-162.5 xl:h-187.5 object-contain drop-shadow-2xl"
                   />
               </div>
           </div>
@@ -87,7 +87,7 @@ export default function Home() {
               width={800}
               height={800}
               // Chú ý: w-full để ảnh to hết cỡ cột 5/12, object-contain để giữ tỷ lệ
-              className="w-full h-auto max-w-[500px] xl:max-w-full object-contain drop-shadow-xl translate-x-30"
+              className="w-full h-auto max-w-125 xl:max-w-full object-contain drop-shadow-xl translate-x-30"
             />
           </div>
         </section>
@@ -180,7 +180,7 @@ export default function Home() {
                         { icon: "/images/bi_laptop-fill.png", title: "Get feedback & improve", desc: "Receive insights from AI and mentors to refine and strengthen your diagnostic skills." }
                     ].map((item, idx) => (
                         <li key={idx} className="bg-white p-4 rounded-xl flex gap-4 shadow-md border border-gray-100 items-center max-w-2xl">
-                            <div className="bg-[#1ba7d9] w-12 h-12 min-w-[48px] rounded-full flex items-center justify-center shadow-lg">
+                            <div className="bg-[#1ba7d9] w-12 h-12 min-w-12 rounded-full flex items-center justify-center shadow-lg">
                                 <Image src={item.icon} alt="icon" width={24} height={24} />
                             </div>
                             <div>

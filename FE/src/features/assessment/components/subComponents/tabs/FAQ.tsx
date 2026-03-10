@@ -8,7 +8,7 @@ import {
     XMarkIcon,
     PaperAirplaneIcon
 } from '@heroicons/react/24/solid';
-import { PatientData } from '@/src/types/practice';
+import { AssessmentData } from '@/src/types/assessment';
 
 interface FAQItem {
     id: number;
@@ -39,8 +39,8 @@ const FAQ_DATA: FAQItem[] = [
     }
 ];
 
-export default function FQA({ data }: { data: PatientData }) {
-    const [openId, setOpenId] = useState<number | null>(1); // Mở câu đầu tiên mặc định
+export default function FAQ({ data }: { data: AssessmentData }) {
+    const [openId, setOpenId] = useState<number | null>(1); 
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [caseId, setCaseId] = useState(data?.id ?? 'N/A');
 

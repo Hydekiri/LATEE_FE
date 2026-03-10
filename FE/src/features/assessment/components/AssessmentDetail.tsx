@@ -9,20 +9,19 @@ import { CaseInfo } from "./subComponents/CaseInfo";
 import Evaluation from "@/src/features/assessment/components/subComponents/tabs/Evaluation";
 import Experts from "@/src/features/assessment/components/subComponents/tabs/Expert";
 import Results from "@/src/features/assessment/components/subComponents/tabs/Results";
-import FQA from "@/src/features/assessment/components/subComponents/tabs/FQA";
+import FAQ from "@/src/features/assessment/components/subComponents/tabs/FAQ";
 
 export default function AssessmentDetail({ data }: { data: AssessmentData }) {
     const [activeTab, setActiveTab] = useState('About Assessment');
-    const tabs = ['About Assessment', 'Experts', 'Evaluation', 'Result', 'FQA'];
+    const tabs = ['About Assessment', 'Experts', 'Insights', 'Results', 'FAQ'];
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'About Assessment': return <AssessmentAbout data={data} />;
             case 'Experts': return <Experts />;
-            case 'Evaluation': return <Evaluation />;
-            case 'Result': return <Results />;
-            // Pass AssessmentData to FQA component
-            case 'FQA': return <FQA data={data} />; 
+            case 'Insights': return <Evaluation />;
+            case 'Results': return <Results />;
+            case 'FAQ': return <FAQ data={data} />; 
             default: return <AssessmentAbout data={data} />;
         }
     };
