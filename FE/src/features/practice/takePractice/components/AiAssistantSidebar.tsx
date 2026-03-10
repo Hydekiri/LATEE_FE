@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Sparkles, Send, AlertTriangle } from 'lucide-react';
 import { AiMessageBlock, fetchAiAssistantResponse } from '@/src/services/aiAssistant-service';
 
-export const AiAssistantSidebar = (question: string) => {
+export const AiAssistantSidebar = () => {
     const [aiInput, setAiInput] = useState('');
     const [messages, setMessages] = useState<
         Array<{ isValid: boolean; noteId?: string; content: string }>

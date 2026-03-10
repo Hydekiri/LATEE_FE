@@ -153,6 +153,10 @@ export default function AssessmentList() {
                         {/* PHẦN 3: NÚT BẤM & NGÀY THÁNG */}
                         <div className="shrink-0 flex flex-col justify-between items-end pl-4 py-1">
                             <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); 
+                                    router.push(`/assessment/${item.id}`);
+                                }}
                                 className="flex items-center gap-2 bg-[#1BA7D9] text-white px-7 py-3 rounded-xl font-lato-bold text-sm hover:bg-[#235697] transition-all shadow-md group/btn whitespace-nowrap"
                             >
                                 Start Now 
