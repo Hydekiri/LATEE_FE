@@ -7,28 +7,32 @@ import { ChatArea } from './ChatArea';
 import { AiAssistantSidebar } from './AiAssistantSidebar';
 import { ChatMessage } from '../types';
 
-export const TakePracticePage = () => {
+export const TakePracticePage = ({ params }: { params: { id: string } }) => {
+    
     const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(true);
-
-    const chatHistory: ChatMessage[] = [
-        { id: 1, role: 'patient', message: 'Good morning, doctor. My name is Abigail Park', avatar: '/FE/public/images/LVP1.jpeg' },
-        { id: 2, role: 'doctor', message: 'Good morning, Ms. Park. Why are you going here today?', avatar: '/FE/public/images/doctor1.png' },
-        // ... rest of your mock data
-    ];
-
+    const [history, setHistory] = useState<ChatMessage[]>(() => [
+        { 
+            id: Date.now(), 
+            role: 'patient', 
+            message: 'Hello, doctor.', 
+            avatar: '/images/LVP1.jpeg' 
+        }
+    ]);
     return (
         <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans overflow-hidden">
-        <Header 
-            isAiSidebarOpen={isAiSidebarOpen} 
-            onToggleAi={() => setIsAiSidebarOpen(!isAiSidebarOpen)} 
-        />
-
-        <div className="flex flex-1 overflow-hidden">
-            <PatientSidebar />
-            <ChatArea history={chatHistory} />
-            {isAiSidebarOpen && <AiAssistantSidebar />}
-        </div>
+            <Header 
+                isAiSidebarOpen={isAiSidebarOpen} 
+                onToggleAi={() => setIsAiSidebarOpen(!isAiSidebarOpen)} 
+            />
+            <div className="flex flex-1 overflow-hidden">
+                <PatientSidebar />
+                <ChatArea 
+                    history={history} 
+                    setHistory={setHistory} 
+                    patientId={params.id} 
+                />
+                {isAiSidebarOpen && <AiAssistantSidebar />}
+            </div>
         </div>
     );
 };
-

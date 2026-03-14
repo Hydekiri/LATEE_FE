@@ -9,7 +9,7 @@ export const PatientInfo = ({ data }: { data: PatientData }) => {
     const router = useRouter();
 
     const handleStartPractice = () => {
-        router.push(`/assessment/${data.id}/take`);
+        router.push(`/practice/${data.id}/take`);
     };
 
     return (
