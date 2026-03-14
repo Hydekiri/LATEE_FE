@@ -1,5 +1,5 @@
-import { getPatientById } from "@/src/services/patient-servvice";
-import PracticeDetail from "@/src/features/practice/components/Practice_Details"; 
+import { getAssessmentById } from "@/src/services/assessment-servvice";
+import AssessmentDetail from "@/src/features/assessment/components/AssessmentDetail"; 
 import Home_Header from "@/src/components/layout/Home_Header";
 import HeroSection from "@/src/components/layout/herosection"; 
 import Footer from "@/src/components/layout/Footer";
@@ -14,20 +14,20 @@ interface PageProps {
     }>;
 }
 
-export default async function PatientDetailPage(props: PageProps) {
+export default async function AssessmentDetailPage(props: PageProps) {
     const params = await props.params;
-    const practiceId = params.id;
+    const assessmentId = params.id;
 
     // Fetch data using the corrected service
-    const patientData = await getPatientById(practiceId);
+    const assessmentData = await getAssessmentById(assessmentId);
 
-    if (!patientData) {
+    if (!assessmentData) {
         return notFound();
     }
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans flex flex-col">
-            <Home_Header page="Practice" />
+            <Home_Header page="Assessment" />
             
             <HeroSection
                 image="/images/bgLearner2.jpg"
@@ -50,15 +50,15 @@ export default async function PatientDetailPage(props: PageProps) {
                 <div className="relative z-10 max-w-[90%] xl:max-w-[86%] mx-auto">
                     {/* Breadcrumbs */}
                     <div className="flex items-center gap-2 text-sm text-[#235697] mb-6 font-medium pl-2 px-4 py-1">
-                        <Link href="/practice" className="hover:underline">Practice Mode</Link>
+                        <Link href="/assessment" className="hover:underline">Assessment</Link>
                         <ChevronRight className="w-4 h-4" />
-                        <span>Case #{patientData.id}</span>
+                        <span>Case #{assessmentData.id}</span>
                         <ChevronRight className="w-4 h-4" />
-                        <span className="text-[#235697] underline decoration-[#235697] underline-offset-4">About Patient</span>
+                        <span className="text-[#235697] underline decoration-[#235697] underline-offset-4">About Assessment</span>
                     </div>
 
                     {/* Main Detail Component */}
-                    <PracticeDetail data={patientData} />
+                    <AssessmentDetail data={assessmentData} />
                 </div>
             </div>
 

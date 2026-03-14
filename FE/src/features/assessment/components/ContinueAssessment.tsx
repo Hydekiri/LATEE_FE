@@ -67,7 +67,7 @@ export default function ContinueAssessment() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {CONTINUE_DATA.map((item, index) => (
                     /* --- LỚP 1: BASE CONTAINER (Kế thừa từ Practice_Card) --- */
-                    <div key={index} className="group relative w-full h-[450px] xl:h-[480px] bg-white rounded-[15px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#235697]/30 hover:-translate-y-1">
+                    <div key={index} className="group relative w-full h-112.5 xl:h-120 bg-white rounded-[15px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#235697]/30 hover:-translate-y-1">
                         
                         {/* --- LỚP 2: IMAGE LAYER --- */}
                         <div className="absolute top-0 left-0 w-full h-[45%] bg-gray-50 overflow-hidden">
@@ -78,7 +78,7 @@ export default function ContinueAssessment() {
                                 className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                             />
                             {/* Overlay nhẹ */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent"></div>
+                            <div className="absolute inset-0 bg-linear-to-t from-black/5 to-transparent"></div>
                         </div>
 
                         {/* --- LỚP 3: CONTENT LAYER (Bo góc phía trên giống ảnh) --- */}
@@ -127,7 +127,7 @@ export default function ContinueAssessment() {
                                     <span>Progress</span>
                                     <span>{item.progress}%</span>
                                 </div>
-                                <div className="w-full h-[6px] bg-[#E8F2FF] rounded-full overflow-hidden">
+                                <div className="w-full h-1.5 bg-[#E8F2FF] rounded-full overflow-hidden">
                                     <div 
                                         className="h-full bg-[#235697] transition-all duration-1000 ease-out"
                                         style={{ width: `${item.progress}%` }}

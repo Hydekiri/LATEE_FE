@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -103,10 +104,9 @@ export default function AssessmentList() {
                     <div 
                         key={item.id} 
                         className="group flex flex-col lg:flex-row items-stretch bg-[#F0F8FF] rounded-[18px] border border-[#235697]/10 p-5 gap-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out cursor-pointer"
-                        onClick={() => router.push(`/assessment/${item.id}`)}
                     >
                         {/* PHẦN 1: ẢNH */}
-                        <div className="relative w-full lg:w-[300px] h-[180px] rounded-xl overflow-hidden shrink-0 shadow-inner">
+                        <div className="relative w-full lg:w-75 h-45 rounded-xl overflow-hidden shrink-0 shadow-inner">
                             <Image
                                 src={item.img}
                                 alt={item.title}
@@ -152,6 +152,10 @@ export default function AssessmentList() {
                         {/* PHẦN 3: NÚT BẤM & NGÀY THÁNG */}
                         <div className="shrink-0 flex flex-col justify-between items-end pl-4 py-1">
                             <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); 
+                                    router.push(`/assessment/${item.id}`);
+                                }}
                                 className="flex items-center gap-2 bg-[#1BA7D9] text-white px-7 py-3 rounded-xl font-lato-bold text-sm hover:bg-[#235697] transition-all shadow-md group/btn whitespace-nowrap"
                             >
                                 Start Now 

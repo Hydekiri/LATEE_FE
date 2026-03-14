@@ -28,20 +28,20 @@ export default function Home() {
             </section>
 
             {/* Welcome / Greeting Section */}
-            <section className="w-full flex flex-col items-center space-y-[10px] mb-[74px]">
+            <section className="w-full flex flex-col items-center space-y-2.5 mb-18.5">
                 <div className="max-w-[85%] text-white text-[44px] xl:text-[72px] font-lato-black mt-[5%] xl:mt-[10%] mb-1 xl:mb-1 flex justify-center z-10">
                     <p id="greeting" className="">Good morning, Nguyen &apos;s Tu</p>
                 </div>
-                <div className="w-[auto] xl:w-[375px] max-w-[1219px] px-20 py-0.5 bg-white mb-1 xl:mb-4 flex justify-center items-center z-10">
+                <div className="w-auto xl:w-93.75 max-w-304.75 px-20 py-0.5 bg-white mb-1 xl:mb-4 flex justify-center items-center z-10">
                     {/* Decorative line/box */}
                 </div>
-                <div className="w-[auto] xl:w-full max-w-[1219px] text-white font-lato-heavy-i text-[32px] xl:text-[48px] mb-1 xl:mb-2 flex justify-center">
+                <div className="w-auto xl:w-full max-w-304.75 text-white font-lato-heavy-i text-[32px] xl:text-[48px] mb-1 xl:mb-2 flex justify-center">
                     <p className="">Welcome to Latee</p>
                 </div>
-                <div className="w-[auto] xl:w-full max-w-[1219px] italic text-white text-[14px] xl:text-[40px] mb-1 xl:mb-3 flex justify-center">
+                <div className="w-auto xl:w-full max-w-304.75 italic text-white text-[14px] xl:text-[40px] mb-1 xl:mb-3 flex justify-center">
                     <p className="">A smarter way to practice clinical decision-making.</p>
                 </div>
-                <div className="w-[auto] xl:w-full max-w-[1219px] text-white font-lato-bold text-[24px] xl:text-[32px] mb-2 xl:mb-10 flex justify-center">
+                <div className="w-auto xl:w-full max-w-304.75 text-white font-lato-bold text-[24px] xl:text-[32px] mb-2 xl:mb-10 flex justify-center">
                     <p className="">Choose your module to start now !</p>
                 </div>
             </section>
@@ -50,7 +50,7 @@ export default function Home() {
             <SearchBar />
 
             {/* Learning Modules Section */}
-            <section className="w-full flex flex-col items-center mt-10 xl:mt-[65px]">
+            <section className="w-full flex flex-col items-center mt-10 xl:mt-16.25">
                 <div className="w-[86%] bg-white py-5 xl:py-[47px] rounded-[5px] xl:rounded-[8px]">
                     <div className="w-[92.7%] mb-[31px] mx-auto flex items-center justify-between">
                         <h2 className="relative text-[48px] font-semibold font-inter text-[#000000] w-full inline-block after:content-[''] after:absolute after:left-0 after:bottom-[-10px] after:w-full after:h-[5px] after:bg-gradient-to-r after:from-[#235697] after:to-[#1ba7d9] after:rounded-full">

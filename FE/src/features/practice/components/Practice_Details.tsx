@@ -2,12 +2,14 @@
 'use client';
 
 import { useState } from 'react';
+import { AboutPatient } from "@/src/features/practice/components/subComponents/tabs/AboutPatient";
 import { CaseOverview } from "@/src/features/practice/components/subComponents/CaseOverview";
 import { PatientInfo } from "@/src/features/practice/components/subComponents/PatientInfo";
-import { AboutPatient } from "@/src/features/practice/components/subComponents/tabs/AboutPatient";
 import { PatientData } from '@/src/types/practice';
 import  Results  from "@/src/features/practice/components/subComponents/tabs/Results";
-import Evaluation from './subComponents/tabs/Evaluation';
+import Evaluation from "@/src/features/practice/components/subComponents/tabs/Evaluation";
+import Experts from "@/src/features/practice/components/subComponents/tabs/Expert";
+import FAQ from "@/src/features/practice/components/subComponents/tabs/FAQ";
 interface PracticeDetailProps {
     data: PatientData; 
 }
@@ -17,20 +19,20 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
     
     console.log("Đang tải dữ liệu cho bài:", data);
     const [activeTab, setActiveTab] = useState('About Patient');
-    const tabs = ['About Patient', 'Experts', 'Evaluation', 'Result', 'FQA'];
+    const tabs = ['About Patient', 'Experts', 'Insights', 'Results', 'FAQ'];
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'About Patient':
                 return <AboutPatient data={data} />;
             case 'Experts':
-                return <div className="p-8 text-center text-gray-500">Experts Content Coming Soon...</div>;
-            case 'Evaluation':
+                return <Experts/>;
+            case 'Insights':
                 return <Evaluation/>;
-            case 'Result':
+            case 'Results':
                 return <Results/>;
-            case 'FQA':
-                return <div className="p-8 text-center text-gray-500">FQA Content Coming Soon...</div>;
+            case 'FAQ':
+                return <FAQ data={data}/>;
             default:
                 return <AboutPatient data={data} />;
         }
@@ -68,8 +70,10 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
                     <div className="lg:col-span-8">
                         
                         {/* A. Header & Profile Summary */}
+                        {/* A. Header & Profile Summary */}
                         <PatientInfo data={data} />
 
+                        {/* B. Changed Tab Content */}
                         {/* B. Changed Tab Content */}
                         <div className="mt-8 animate-fadeIn">
                             {renderTabContent()}
