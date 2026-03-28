@@ -121,7 +121,7 @@ export const AiAssistantSidebar = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-3">
+                {/* <div className="flex gap-3">
                     <div className="shrink-0 w-8 h-8 bg-[#235697] rounded-full flex items-center justify-center text-white shadow-md mt-1">
                         <Sparkles className="w-4 h-4" />
                     </div>
@@ -133,7 +133,7 @@ export const AiAssistantSidebar = () => {
                             Incorrect response. Instead of ending the conversation, you should continue gathering more information...
                         </p>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Render ALL Messages */}
                 {messages.map((m, i) => (

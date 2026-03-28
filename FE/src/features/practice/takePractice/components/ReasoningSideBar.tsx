@@ -1,23 +1,23 @@
 import Image from 'next/image';
 import { Clock, Folder, Sparkles } from 'lucide-react';
 
-interface PatientSidebarProps {
+interface ReasoningSidebarProps {
     onEndConversationClick: () => void;
 }
 
-export const PatientSidebar = ({ onEndConversationClick }: PatientSidebarProps) => {
+export const ReasoningSidebar = ({ onEndConversationClick }: ReasoningSidebarProps) => {
 
     return (
         <aside className="w-72 bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
             <div className="p-6 overflow-y-auto flex-1">
                 <div className="mb-4">
                     <div className="w-full aspect-square rounded-xl overflow-hidden border-2 border-gray-100 shadow-sm relative">
-                        <Image src="/images/LVP1.jpeg" fill alt="Abigail Park" className="object-cover" />
+                        <Image src="/images/AI Result.png" fill alt="Abigail Park" className="object-cover" />
                     </div>
                 </div>
 
                 <div className="mb-6">
-                    <h2 className="text-xl font-bold text-gray-800 text-center">Conversation</h2>
+                    <h2 className="text-xl font-bold text-gray-800 text-center">Diagnostic Argument</h2>
                     <div className="flex items-center justify-center gap-1 text-[#235697] text-sm font-medium mt-1 cursor-pointer hover:underline">
                         <Sparkles className="w-4 h-4" /> Message Type
                     </div>
@@ -34,19 +34,6 @@ export const PatientSidebar = ({ onEndConversationClick }: PatientSidebarProps) 
                     </div>
                     <div className="text-right text-[10px] text-gray-400 mt-1">90%</div>
                 </div>
-
-                <div>
-                    <h3 className="text-[#235697] font-bold text-base mb-3">More Information</h3>
-                    {/* ... Order Interventions section ... */}
-                    <div className="space-y-4">
-                        <div>
-                            <div className="flex items-center gap-2 text-[#235697] font-semibold text-sm cursor-pointer mb-2">
-                                <Folder className="w-4 h-4" /> Order Interventions
-                            </div>
-                            {/* ... intervention items ... */}
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div className="p-4 border-t border-gray-100">
@@ -54,7 +41,7 @@ export const PatientSidebar = ({ onEndConversationClick }: PatientSidebarProps) 
                     onClick={onEndConversationClick}
                     className="w-full bg-[#235697] text-white font-semibold py-3 rounded-lg hover:bg-[#1d4880] transition"
                 >
-                    End Conversation
+                    Submit
                 </button>
             </div>
         </aside>
