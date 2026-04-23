@@ -16,7 +16,6 @@ export const WarningPanel = ({ isPanelExpanded, setIsPanelExpanded }: { isPanelE
         setNotesState(prev => ({ ...prev, [id]: { ...prev[id], isOpen: !prev[id].isOpen } }));
     };
 
-    // Logic: Đóng tất cả các chat khác trước khi mở chat mới
     const toggleChat = (e: React.MouseEvent, id: number) => {
         e.stopPropagation();
         
@@ -24,7 +23,6 @@ export const WarningPanel = ({ isPanelExpanded, setIsPanelExpanded }: { isPanelE
             const newState = { ...prev };
             const isCurrentlyShowing = prev[id].showChat;
 
-            // Đóng toàn bộ các chat đang mở của các Note khác
             Object.keys(newState).forEach((key) => {
                 newState[Number(key)] = { 
                     ...newState[Number(key)], 
@@ -32,7 +30,6 @@ export const WarningPanel = ({ isPanelExpanded, setIsPanelExpanded }: { isPanelE
                 };
             });
 
-            // Toggle trạng thái của Note hiện tại
             newState[id] = { 
                 ...newState[id], 
                 showChat: !isCurrentlyShowing, 
@@ -52,7 +49,6 @@ export const WarningPanel = ({ isPanelExpanded, setIsPanelExpanded }: { isPanelE
             [id]: { ...prev[id], messages: [...prev[id].messages, { role: 'user', content: text }] }
         }));
         
-        // Xóa nội dung input sau khi gửi
         setInputValues(prev => ({ ...prev, [id]: '' }));
 
         setTimeout(() => {

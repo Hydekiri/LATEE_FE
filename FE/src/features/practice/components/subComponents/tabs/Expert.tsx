@@ -80,7 +80,7 @@ const EXPERTS_LIST: ExpertData[] = [
 
 export default function Experts() {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [direction, setDirection] = useState(0); // Để xác định trượt trái hay phải
+    const [direction, setDirection] = useState(0); 
 
     const handleNext = () => {
         setDirection(1);

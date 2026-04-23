@@ -69,12 +69,7 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-13.5">
                     <div className="lg:col-span-8">
                         
-                        {/* A. Header & Profile Summary */}
-                        {/* A. Header & Profile Summary */}
                         <PatientInfo data={data} />
-
-                        {/* B. Changed Tab Content */}
-                        {/* B. Changed Tab Content */}
                         <div className="mt-8 animate-fadeIn">
                             {renderTabContent()}
                         </div>
