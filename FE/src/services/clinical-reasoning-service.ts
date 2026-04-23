@@ -29,12 +29,18 @@ export interface ClinicalReasoningResponse {
     stop: boolean;
 }
 
-const REASONING_ENDPOINTS = [
-    '/clinicalreasoning',
-    '/ai-assistant/clinicalreasoning',
-] as const;
+export interface ClinicalReasoningStreamEvent {
+    type: 'token' | 'done' | 'error';
+    content?: string;
+    message?: string;
+    dimension?: string;
+    question?: string;
+    stop?: boolean;
+}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const CLINICAL_REASONING_STREAM_URL = `${API_BASE_URL}/ai-assistant/clinicalreasoning/hf`;
 
 const parseErrorDetail = async (response: Response) => {
     const text = await response.text();
@@ -56,14 +62,16 @@ const parseErrorDetail = async (response: Response) => {
 };
 
 const requestClinicalReasoning = async (
-    endpoint: string,
     payload: ClinicalReasoningRequest,
+    onToken?: (token: string) => void,
+    onDone?: (response: ClinicalReasoningResponse) => void,
+    onError?: (message: string) => void,
 ): Promise<ClinicalReasoningResponse> => {
-    const response = await fetch(`http://localhost:5000/ai-assistant/clinicalreasoning`, {
+    const response = await fetch(CLINICAL_REASONING_STREAM_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json',
+            Accept: 'text/event-stream',
         },
         body: JSON.stringify(payload),
     });
@@ -73,44 +81,105 @@ const requestClinicalReasoning = async (
         throw new Error(detail || `Clinical reasoning request failed with status ${response.status}`);
     }
 
-    const data = (await response.json()) as ClinicalReasoningResponse;
+    if (!response.body) {
+        throw new Error('Response body is empty - cannot read SSE stream');
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+
+    let accumulatedQuestion = '';
+    let finalResponse: ClinicalReasoningResponse | null = null;
+
+    while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split('\n\n');
+        buffer = events.pop() ?? '';
+
+        for (const event of events) {
+            if (!event.startsWith('data:')) continue;
+
+            const jsonStr = event.replace('data:', '').trim();
+            if (!jsonStr) continue;
+
+            let parsed: ClinicalReasoningStreamEvent;
+
+            try {
+                parsed = JSON.parse(jsonStr) as ClinicalReasoningStreamEvent;
+            } catch {
+                continue;
+            }
+
+            if (parsed.type === 'token' && parsed.content) {
+                accumulatedQuestion += parsed.content;
+
+                // chỉ stream nếu chưa có dấu hiệu JSON
+                if (
+                    !accumulatedQuestion.trim().startsWith('{') &&
+                    !accumulatedQuestion.includes('"dimension"')
+                ) {
+                    onToken?.(parsed.content);
+                }
+
+                continue;
+            }
+
+            if (parsed.type === 'done') {
+                finalResponse = {
+                    dimension: parsed.dimension ?? '',
+                    question:
+                        parsed.question?.trim() ||
+                        accumulatedQuestion.trim(),
+                    stop: Boolean(parsed.stop),
+                };
+
+                onDone?.(finalResponse);
+                continue;
+            }
+
+            if (parsed.type === 'error') {
+                const errorMessage = parsed.message ?? 'Clinical reasoning stream failed.';
+                onError?.(errorMessage);
+                throw new Error(errorMessage);
+            }
+        }
+    }
+
+    if (finalResponse) {
+        return finalResponse;
+    }
 
     return {
-        dimension: data.dimension ?? '',
-        question: data.question ?? '',
-        stop: Boolean(data.stop),
+        dimension: '',
+        question: accumulatedQuestion,
+        stop: false,
     };
 };
 
 export async function fetchClinicalReasoningQuestion(
     payload: ClinicalReasoningRequest,
+    onToken?: (token: string) => void,
+    onDone?: (response: ClinicalReasoningResponse) => void,
+    onError?: (message: string) => void,
 ): Promise<ClinicalReasoningResponse> {
-    let lastError: unknown = null;
-
-    for (const endpoint of REASONING_ENDPOINTS) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
-            return await requestClinicalReasoning(endpoint, payload);
+            return await requestClinicalReasoning(payload, onToken, onDone, onError);
         } catch (error) {
-            lastError = error;
-
             const message = error instanceof Error ? error.message : '';
             const is503 = message.includes('503') || message.toLowerCase().includes('llm not available');
 
-            if (is503) {
+            if (is503 && attempt === 0) {
                 await sleep(1200);
-
-                try {
-                    return await requestClinicalReasoning(endpoint, payload);
-                } catch (retryError) {
-                    lastError = retryError;
-                    continue;
-                }
+                continue;
             }
-        }
-    }
 
-    if (lastError instanceof Error) {
-        throw lastError;
+            throw error;
+        }
     }
 
     throw new Error('Clinical reasoning request failed.');

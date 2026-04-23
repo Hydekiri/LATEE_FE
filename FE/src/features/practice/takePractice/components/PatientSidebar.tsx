@@ -1,12 +1,16 @@
 import Image from 'next/image';
 import { Clock, Folder, Sparkles } from 'lucide-react';
+import { ConfirmModal } from "@/src/features/practice/takePractice/components/ConfirmModal";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
-interface PatientSidebarProps {
-    onEndConversationClick: () => void;
-}
+export const PatientSidebar = ({ id }: { id: string }) => {
 
-export const PatientSidebar = ({ onEndConversationClick }: PatientSidebarProps) => {
-
+    const router = useRouter();
+    const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
+    const onEndConversationClick = () => {
+        router.push(`/practice/${id}/reasoning`);
+    }
     return (
         <aside className="w-72 bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
             <div className="p-6 overflow-y-auto flex-1">
@@ -51,12 +55,19 @@ export const PatientSidebar = ({ onEndConversationClick }: PatientSidebarProps) 
 
             <div className="p-4 border-t border-gray-100">
                 <button
-                    onClick={onEndConversationClick}
+                    onClick={setIsShowConfirmModal.bind(null, true)}
                     className="w-full bg-[#235697] text-white font-semibold py-3 rounded-lg hover:bg-[#1d4880] transition"
                 >
                     End Conversation
                 </button>
             </div>
+
+            <ConfirmModal
+                isOpen={isShowConfirmModal}
+                onClose={setIsShowConfirmModal.bind(null, false)}
+                onConfirm={onEndConversationClick}
+            />
+
         </aside>
     );
 };

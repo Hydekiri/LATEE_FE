@@ -25,6 +25,39 @@ export const ReasoningPage = ({ id }: { id: string }) => {
 
     const messageIdRef = useRef(1);
 
+    const createPatientMessage = () => {
+        const messageId = messageIdRef.current++;
+
+        setChatHistory((prev) => [
+            ...prev,
+            {
+                id: messageId,
+                role: 'patient',
+                message: '',
+                avatar: '/images/LVP1.jpeg',
+            },
+        ]);
+
+        return messageId;
+    };
+
+    const updateMessageById = (id: number, message: string) => {
+        setChatHistory((prev) =>
+            prev.map((item) =>
+                item.id === id
+                    ? {
+                        ...item,
+                        message,
+                    }
+                    : item,
+            ),
+        );
+    };
+
+    const removeMessageById = (id: number) => {
+        setChatHistory((prev) => prev.filter((item) => item.id !== id));
+    };
+
     const patientCase = useMemo(
         () => `Clinical case from practice session ${id}.`,
         [id],
@@ -69,26 +102,61 @@ export const ReasoningPage = ({ id }: { id: string }) => {
         setIsReasoningLoading(true);
         setReasoningError(null);
 
+        const streamingPatientMessageId = createPatientMessage();
+        let streamedQuestion = '';
+
         try {
             const response = await fetchClinicalReasoningQuestion({
                 patient_case: patientCase,
                 learner_diagnosis: learnerDiagnosis,
                 interaction_history: historyPayload,
-            });
+            },
+                (token) => {
+                    streamedQuestion += token;
+
+                    // tránh render raw json
+                    if (
+                        streamedQuestion.trim().startsWith('{')
+                    ) {
+                        return;
+                    }
+
+                    updateMessageById(
+                        streamingPatientMessageId,
+                        streamedQuestion
+                    );
+                },
+                (finalData) => {
+                    const finalQuestion = (finalData.question || streamedQuestion).trim();
+
+                    if (finalData.stop) {
+                        updateMessageById(
+                            streamingPatientMessageId,
+                            'Phiên phản biện đã kết thúc hãy nộp bài'
+                        );
+
+                        return;
+                    }
+
+                    if (finalQuestion) {
+                        updateMessageById(
+                            streamingPatientMessageId,
+                            finalQuestion
+                        );
+                    }
+                },
+            );
 
             setCurrentQuestion({
                 question: response.question,
                 dimension: response.dimension,
             });
 
-            if (response.question) {
-                appendChatMessage('patient', response.question);
-            }
-
             if (response.stop) {
                 setCurrentQuestion(null);
             }
         } catch (error) {
+            removeMessageById(streamingPatientMessageId);
             setReasoningError(mapReasoningError(error));
         } finally {
             setIsReasoningLoading(false);

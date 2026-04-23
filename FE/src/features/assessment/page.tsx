@@ -4,9 +4,9 @@ import Home_Header from "@/src/components/layout/Home_Header";
 import HeroSection from "@/src/components/layout/herosection";
 import Footer from "@/src/components/layout/Footer";
 import Testimonial from "@/src/components/layout/testimonial";
-import AssessmentOverview from "./components/AssessmentOverview";
-import ContinueAssessment from "./components/ContinueAssessment";
-import AssessmentList from "./components/AssessmentList";
+import AssessmentOverview from "@/src/features/assessment/components/AssessmentOverview";
+import ContinueAssessment from "@/src/features/assessment/components/ContinueAssessment";
+import AssessmentList from "@/src/features/assessment/components/AssessmentList";
 
 export default function AssessmentPageFeature() {
     return (

@@ -1,141 +1,207 @@
+// src/features/practice/takePractice/components/ChatArea.tsx
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Send, AlertTriangle, MessageSquare, ChevronDown, Sparkles } from 'lucide-react';
+import { Send } from 'lucide-react';
 import { ChatMessage } from '../types';
-import { validateQuestionStream } from '@/src/services/question-validation-service';
+import { WarningPanel } from '@/src/features/practice/takePractice/components/WarningPanel';
+import { NoteChatMessage, NoteChatState } from '../types/note';
+import { ValidateQuestion } from '@/src/services/validate-question-service';
 
 interface ChatAreaProps {
     history: ChatMessage[];
-    practiceId: string;
+    setHistory: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
+    patientId: string;
 }
 
-interface WarningNote {
-    id: number;
-    question: string;
-    reason: string;
-    suggestion: string;
-    createdAt: string;
-}
-
-export const ChatArea = ({ history, practiceId }: ChatAreaProps) => {
+export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
     const [inputMessage, setInputMessage] = useState('');
-    const [activeTab, setActiveTab] = useState<'warning' | 'chat'>('warning');
     const [isPanelExpanded, setIsPanelExpanded] = useState(true);
-    const [warningNotes, setWarningNotes] = useState<WarningNote[]>([]);
-    const [selectedNote, setSelectedNote] = useState<WarningNote | null>(null);
-    const [isValidating, setIsValidating] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const warningStorageKey = useMemo(() => `practice-warning-notes-${practiceId}`, [practiceId]);
+    const scrollRef = useRef<HTMLDivElement>(null);
+
+    const [noteID, setNoteID] = useState<number>(0);
+    const [notesState, setNotesState] = useState<Record<number, NoteChatState>>({});
 
     useEffect(() => {
-        const raw = window.localStorage.getItem(warningStorageKey);
-        if (!raw) {
-            setWarningNotes([]);
-            setSelectedNote(null);
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [history]);
+
+    // CHỈ CẦN RESET TRÊN UI, KHÔNG CẦN GỌI BACKEND NỮA
+    useEffect(() => {
+        setHistory([{
+            id: Date.now(),
+            role: 'patient',
+            message: "Good morning, Doctor...",
+            avatar: '/images/LVP1.jpeg'
+        }]);
+    }, [patientId, setHistory]);
+
+    const handleSubmit = async (
+        e: React.FormEvent
+    ) => {
+
+        e.preventDefault();
+
+        if (!inputMessage.trim() || isLoading) {
             return;
         }
 
-        try {
-            const parsed = JSON.parse(raw) as WarningNote[];
-            setWarningNotes(parsed);
-            setSelectedNote(parsed[0] ?? null);
-        } catch {
-            setWarningNotes([]);
-            setSelectedNote(null);
-        }
-    }, [warningStorageKey]);
+        const message = inputMessage.trim();
 
-    useEffect(() => {
-        window.localStorage.setItem(warningStorageKey, JSON.stringify(warningNotes));
-    }, [warningNotes, warningStorageKey]);
-
-    const handleNoteClick = (noteId: number) => {
-        const clickedNote = warningNotes.find((note) => note.id === noteId) ?? null;
-        setSelectedNote(clickedNote);
-        setActiveTab('chat');
-        setIsPanelExpanded(true);
-    };
-
-    const handleSendMessage = async () => {
-        const learnerQuestion = inputMessage.trim();
-        if (!learnerQuestion || isValidating) {
-            return;
-        }
-
-        setIsValidating(true);
         setInputMessage('');
 
-        const context = history.slice(-10).map((message) => ({
-            role: message.role,
-            content: message.message,
+        await Promise.all([
+            handleSendMessage(message),
+            handleValidateQuestion(message),
+        ]);
+    };
+
+    const handleSendMessage = async (userMessage: string) => {
+        // 1. Lưu lại snapshot của history HIỆN TẠI để gửi xuống Backend
+        const chatHistoryForBE = history.map(msg => ({
+            role: msg.role,
+            content: msg.message
         }));
 
-        let isInvalid = false;
-        let reason = '';
-        let suggestionText = '';
+        // 2. Cập nhật UI bằng câu hỏi mới của bác sĩ
+        setHistory(prev => [...prev, {
+            id: Date.now(),
+            role: 'doctor',
+            message: userMessage,
+            avatar: '/images/VirtualPatient/VP3.jpeg'
+        }]);
+
+        setIsLoading(true);
 
         try {
-            await validateQuestionStream(
-                {
-                    "doctor_id": 'doctor-123',
-                    "learner_question": learnerQuestion,
-                    "conversation_context": context
-                },
-                (event) => {
-                    if (event.type === 'done') {
-                        return;
+            const response = await fetch('http://localhost:5000/virtual-patient/ai/stream', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    doctor_id: "25697",
+                    patient_id: patientId,
+                    question: userMessage,
+                    chat_history: chatHistoryForBE // ĐÍNH KÈM LỊCH SỬ CHAT TỪ FE XUỐNG
+                }),
+            });
+
+            if (!response.body) return;
+
+            const patientMsgId = Date.now() + 1;
+            setHistory(prev => [...prev, {
+                id: patientMsgId,
+                role: 'patient',
+                message: '',
+                avatar: '/images/LVP1.jpeg'
+            }]);
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let accumulatedMessage = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const rawData = line.substring(6).trim();
+                            if (!rawData) continue;
+
+                            const data = JSON.parse(rawData);
+                            if (data.type === 'token') {
+                                accumulatedMessage += data.content;
+                                setHistory(prev => prev.map(msg =>
+                                    msg.id === patientMsgId ? { ...msg, message: accumulatedMessage } : msg
+                                ));
+                            }
+                        } catch (e) {
+                            console.error("Parse error:", e, "Line:", line);
+                        }
                     }
-
-                    if (typeof event.isValid === 'boolean') {
-                        isInvalid = !event.isValid;
-                    }
-
-                    if (event.reason) {
-                        reason = event.reason;
-                    }
-
-                    if (event.suggestion) {
-                        suggestionText += event.suggestion;
-                    }
-                },
-            );
-
-            if (isInvalid) {
-                const newNote: WarningNote = {
-                    id: Date.now(),
-                    question: learnerQuestion,
-                    reason: reason || 'Câu hỏi chưa phù hợp với quy trình chẩn đoán.',
-                    suggestion: suggestionText.trim() || 'Hãy điều chỉnh câu hỏi theo đúng tiến trình khai thác bệnh sử.',
-                    createdAt: new Date().toISOString(),
-                };
-
-                setWarningNotes((prev) => [newNote, ...prev]);
-                setSelectedNote(newNote);
-                setActiveTab('warning');
-                setIsPanelExpanded(true);
+                }
             }
         } catch (error) {
-            console.error('Validate question failed:', error);
+            console.error("Lỗi kết nối API Stream:", error);
         } finally {
-            setIsValidating(false);
+            setIsLoading(false);
         }
     };
 
-    const togglePanel = (tab: 'warning' | 'chat') => {
-        if (activeTab === tab) {
-            setIsPanelExpanded(!isPanelExpanded);
-        } else {
-            setActiveTab(tab);
-            setIsPanelExpanded(true);
+    const handleValidateQuestion = async (message: string) => {
+        const validationResponse = await ValidateQuestion({
+            doctor_id: "example_doctor_id",
+            learner_question: message,
+            conversation_context: history.map(msg => ({
+                role: msg.role === 'doctor' ? 'doctor' : 'patient',
+                content: msg.message
+            }))
+        });
+
+        if (validationResponse && validationResponse.isValid === false) {
+            //find 5 nearest messages from history to include in the note's context from the newest to oldest
+            const recentContext = history.slice(-5).map(msg => ({
+                role: msg.role === 'doctor' ? 'doctor' : 'patient',
+                content: msg.message
+            }));
+
+            const userMessage: NoteChatMessage = {
+                role: 'user',
+                content: message
+            };
+            recentContext.push(userMessage);
+
+            setNoteID(prevId => {
+
+                const newId = prevId + 1;
+
+                setNotesState(prev => ({
+                    ...prev,
+
+                    [newId]: {
+                        noteId: newId,
+                        isOpen: false,
+                        showChat: false,
+                        messages: [],
+                        interactionHistory: recentContext.map(item => ({
+                            role: item.role === 'doctor' ? 'doctor' : 'patient',
+                            content: item.content
+                        })),
+                        questionValidationResponse: {
+                            isValid:
+                                validationResponse.isValid,
+                            reason:
+                                validationResponse.reason,
+                            suggestion:
+                                validationResponse.suggestion,
+                            severity:
+                                validationResponse.severity,
+                            category:
+                                validationResponse.category,
+                            confidence:
+                                validationResponse.confidence,
+                        }
+                    }
+                }));
+
+                return newId;
+            });
         }
     };
 
     return (
         <main className="flex-1 flex flex-col bg-white relative transition-all duration-300">
-            {/* --- 1. Chat Area --- */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-6">
+            {/* Vùng Chat History */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 scroll-smooth">
                 {history.map((chat) => (
                     <div key={chat.id} className={`flex gap-4 ${chat.role === 'doctor' ? 'justify-end' : 'justify-start'}`}>
                         {chat.role === 'patient' && (
@@ -145,7 +211,7 @@ export const ChatArea = ({ history, practiceId }: ChatAreaProps) => {
                         )}
                         <div className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${chat.role === 'doctor' ? 'bg-[#D1EFF9] text-gray-800 rounded-tr-none' : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'
                             }`}>
-                            {chat.message}
+                            {chat.message || (chat.role === 'patient' && <span className="animate-pulse">...</span>)}
                         </div>
                         {chat.role === 'doctor' && (
                             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
@@ -156,127 +222,37 @@ export const ChatArea = ({ history, practiceId }: ChatAreaProps) => {
                 ))}
             </div>
 
-            {/* --- 2. Panel Warning & Assistant --- */}
-            <div className="px-6">
-                <div className={`rounded-t-xl overflow-hidden transition-all duration-300 ${isPanelExpanded ? 'shadow-[0_-4px_10px_-5px_rgba(0,0,0,0.1)]' : ''}`}>
+            <WarningPanel
+                isPanelExpanded={isPanelExpanded}
+                setIsPanelExpanded={setIsPanelExpanded}
 
-                    {/* Tabs Header */}
-                    <div className="flex items-center justify-between bg-white border-[#235697]">
-                        <div className="flex items-stretch">
-                            {/* Tab Warning */}
-                            <button
-                                onClick={() => togglePanel('warning')}
-                                className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold transition-all ${activeTab === 'warning' ? 'bg-[#EF4444] text-white' : 'text-gray-500 hover:bg-gray-50'
-                                    }`}
-                            >
-                                <AlertTriangle className="w-4 h-4" />
-                                {isPanelExpanded && (
-                                    <>
-                                        <span>Warning</span>
-                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'warning' ? 'rotate-180' : ''}`} />
-                                    </>
-                                )}
-                            </button>
+                noteID={noteID}
+                setNoteID={setNoteID}
 
-                            {/* Tab Assistant */}
-                            <button
-                                onClick={() => togglePanel('chat')}
-                                className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold transition-all border-l border-gray-100 ${activeTab === 'chat' ? 'bg-[#235697] text-white' : 'text-gray-500 hover:bg-gray-50'
-                                    }`}
-                            >
-                                <MessageSquare className="w-4 h-4" />
-                                {isPanelExpanded && (
-                                    <>
-                                        <span>Assistant</span>
-                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${activeTab === 'chat' ? 'rotate-180' : ''}`} />
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                notesState={notesState}
+                setNotesState={setNotesState}
+            />
 
-                        {/* Nhãn số lượng Note */}
-
-                        <div className="pr-4 text-red-600 font-bold text-[11px] uppercase tracking-tight flex items-center gap-1">
-                            <span className="bg-red-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px]">!</span>
-                            {warningNotes.length} warning notes
-                        </div>
-
-                    </div>
-
-                    {/* Nội dung bên trong Tab */}
-                    <div className={`border border-[#E90000] border-[1.5px] transition-all duration-300 ease-in-out overflow-hidden ${isPanelExpanded ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}>
-                        <div className={`${activeTab === 'warning' ? 'bg-[#FFF1F1]' : 'bg-[#F8FAFC]'} p-0 overflow-y-auto max-h-64`}>
-                            {activeTab === 'warning' ? (
-                                <div className="divide-y divide-red-100/50">
-                                    {warningNotes.length === 0 && (
-                                        <div className="px-5 py-3 text-xs text-gray-500">No warning notes yet.</div>
-                                    )}
-
-                                    {warningNotes.map((note, index) => (
-                                        <div
-                                            key={note.id}
-                                            onClick={() => handleNoteClick(note.id)}
-                                            className="px-5 py-3 flex gap-4 text-xs hover:bg-red-100/50 cursor-pointer transition-colors"
-                                        >
-                                            <span className="font-bold text-red-600 shrink-0">! Note #{warningNotes.length - index}:</span>
-                                            <span className="text-gray-700 line-clamp-2">{note.reason} <p></p> {note.suggestion}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="p-5 space-y-4">
-                                    {selectedNote && (
-                                        <div className="flex gap-3 animate-fadeIn">
-                                            <div className="w-8 h-8 rounded-full bg-[#235697] flex items-center justify-center shrink-0">
-                                                <Sparkles className="w-4 h-4 text-white" />
-                                            </div>
-                                            <div className="flex-1 bg-[#E8F0F7] p-4 rounded-2xl rounded-tl-none text-[13px] leading-relaxed text-[#235697] shadow-sm border border-blue-100">
-                                                <div className="flex items-center gap-2 text-red-600 font-bold mb-2">
-                                                    <AlertTriangle className="w-3.5 h-3.5" /> Warning Note
-                                                </div>
-                                                <p className="text-xs font-semibold text-gray-700 mb-2">Reason: {selectedNote.reason}</p>
-                                                <p>{selectedNote.suggestion}</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {selectedNote && (
-                                        <div className="flex justify-end">
-                                            <div className="max-w-[80%] bg-[#D1EFF9] p-3 rounded-2xl rounded-tr-none text-xs text-gray-700 shadow-sm">
-                                                {selectedNote.question}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* --- 3. Khung nhập liệu (Input) --- */}
+            {/* Input Area */}
             <div className="p-6 pt-0 bg-white">
-                <div className="relative group">
+                <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }} className="relative group">
                     <input
                         type="text"
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                void handleSendMessage();
-                            }
-                        }}
-                        placeholder="Type your message here..."
-                        className={`w-full pl-5 pr-14 py-4 border border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 ${isPanelExpanded ? 'rounded-b-xl border-t-0' : 'rounded-xl'
-                            }`}
+                        disabled={isLoading}
+                        placeholder={isLoading ? "Patient is typing..." : "Type your message here..."}
+                        className={`w-full pl-5 pr-14 py-4 border border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 ${isPanelExpanded ? ' rounded-b-xl' : 'rounded-tr-xl rounded-br-xl rounded-bl-xl'
+                            } ${isLoading ? 'bg-gray-50' : 'bg-white'}`}
                     />
                     <button
-                        onClick={() => void handleSendMessage()}
-                        disabled={isValidating}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#235697] p-2 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        type="submit"
+                        disabled={isLoading || !inputMessage.trim()}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#235697] p-2 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-30"
                     >
-                        <Send className="w-6 h-6 rotate-[-15deg] group-hover:rotate-0 transition-transform" />
+                        <Send className={`w-6 h-6 rotate-[-15deg] group-hover:rotate-0 transition-transform ${isLoading ? 'animate-bounce' : ''}`} />
                     </button>
-                </div>
+                </form>
             </div>
         </main>
     );
