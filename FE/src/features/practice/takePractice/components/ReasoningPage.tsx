@@ -6,56 +6,193 @@ import { ReasoningSidebar } from './ReasoningSideBar';
 import { ReasoningChat } from './ReasoningChat';
 import { AiAssistantSidebar } from './AiAssistantSidebar';
 import { SubmitModal } from './Submit';
-import { ChatMessage } from '../types';
+import { ReasoningChatMessage } from '../types';
+import {
+    ClinicalReasoningChatMessageTable,
+    ClinicalReasoningChatMessageEntity,
+    ClinicalReasoningDimensionTable,
+    ClinicalReasoningDimensionEntity
+} from '@/src/hooks/dexieConfigurations/ClinicalReasoningChatMessages.table';
 import {
     ClinicalReasoningHistoryItem,
     fetchClinicalReasoningQuestion,
 } from '@/src/services/clinical-reasoning-service';
+import { pre } from 'framer-motion/client';
 
 const INITIAL_REASONING_QUESTION = 'Vậy kết luận của bạn là gì ?';
 
 export const ReasoningPage = ({ id }: { id: string }) => {
     const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(true);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+    const [chatHistory, setChatHistory] = useState<ReasoningChatMessage[]>([]);
     const [interactionHistory, setInteractionHistory] = useState<ClinicalReasoningHistoryItem[]>([]);
     const [currentQuestion, setCurrentQuestion] = useState<{ question: string; dimension: string } | null>(null);
     const [isReasoningLoading, setIsReasoningLoading] = useState(false);
     const [reasoningError, setReasoningError] = useState<string | null>(null);
 
     const messageIdRef = useRef(1);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const createPatientMessage = () => {
-        const messageId = messageIdRef.current++;
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+        }
+    }, [chatHistory]);
+
+
+    /*
+    ========================================
+    LOAD CHAT HISTORY FROM DEXIE
+    ========================================
+    */
+
+    useEffect(() => {
+        const loadMessages = async () => {
+            try {
+                const messagesData = await ClinicalReasoningChatMessageTable.getAll();
+
+                if (messagesData.length > 0) {
+                    setChatHistory(
+                        messagesData.map((table) => ({
+                            id: table.id ?? 0,
+                            role: table.role,
+                            content: table.content,
+                            avatar:
+                                table.role === 'system'
+                                    ? '/images/LVP1.jpeg'
+                                    : '/images/doctor1.png',
+                        }))
+                    );
+
+                    messageIdRef.current =
+                        Math.max(
+                            ...messagesData.map((table) => table.id ?? 0)
+                        ) + 1;
+
+                }
+
+                /*
+                INIT FIRST MESSAGE
+                */
+                if (messagesData.length === 0) {
+                    const firstId =
+                        await ClinicalReasoningChatMessageTable.add({
+                            role: 'system',
+                            content:
+                                INITIAL_REASONING_QUESTION,
+                            dimension: 'Mở đầu',
+                        });
+
+                    setChatHistory([
+                        {
+                            id: Number(firstId),
+                            role: 'system',
+                            content:
+                                INITIAL_REASONING_QUESTION,
+                            avatar:
+                                '/images/LVP1.jpeg',
+                        },
+                    ]);
+                }
+
+                setCurrentQuestion({
+                    question:
+                        INITIAL_REASONING_QUESTION,
+                    dimension: 'Mở đầu',
+                });
+
+                /*LOAD DIMENSION */
+                const dimensionsData = await ClinicalReasoningDimensionTable.getAll();
+                setInteractionHistory(dimensionsData.map(d => ({
+                    dimension: d.dimension,
+                    question: d.question,
+                    answer: d.answer,
+                })));
+
+
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        loadMessages();
+    }, []);
+
+    /*
+    ========================================
+    HELPERS
+    ========================================
+    */
+
+    const addMessage = async (
+        data: Omit<
+            ClinicalReasoningChatMessageEntity,
+            'id'
+        >
+    ) => {
+        const id = await ClinicalReasoningChatMessageTable.add(
+            data
+        );
+
+        const newMessage: ReasoningChatMessage = {
+            id: Number(id),
+            role: data.role,
+            content: data.content,
+            avatar:
+                data.role === 'system'
+                    ? '/images/LVP1.jpeg'
+                    : '/images/doctor1.png',
+        };
 
         setChatHistory((prev) => [
             ...prev,
-            {
-                id: messageId,
-                role: 'patient',
-                message: '',
-                avatar: '/images/LVP1.jpeg',
-            },
+            newMessage,
         ]);
 
-        return messageId;
+        return Number(id);
     };
 
-    const updateMessageById = (id: number, message: string) => {
+    const updateMessageById = async (
+        id: number,
+        content: string
+    ) => {
+        /*
+        UPDATE REACT STATE
+        */
+
         setChatHistory((prev) =>
-            prev.map((item) =>
-                item.id === id
+            prev.map((msg) =>
+                msg.id === id
                     ? {
-                        ...item,
-                        message,
+                        ...msg,
+                        content,
                     }
-                    : item,
-            ),
+                    : msg
+            )
+        );
+
+        /*
+        UPDATE DEXIE
+        */
+
+        await ClinicalReasoningChatMessageTable.update(
+            id,
+            {
+                content,
+            }
         );
     };
 
-    const removeMessageById = (id: number) => {
-        setChatHistory((prev) => prev.filter((item) => item.id !== id));
+    const removeMessageById = async (
+        id: number
+    ) => {
+        setChatHistory((prev) =>
+            prev.filter((m) => m.id !== id)
+        );
+
+        await ClinicalReasoningChatMessageTable.delete(
+            id
+        );
     };
 
     const patientCase = useMemo(
@@ -67,18 +204,29 @@ export const ReasoningPage = ({ id }: { id: string }) => {
         [id],
     );
 
-    const appendChatMessage = (role: ChatMessage['role'], message: string) => {
-        if (!message.trim()) {
+    const appendChatMessage = async (role: ReasoningChatMessage['role'], content: string, dimension: string, question: string) => {
+        if (!content.trim()) {
             return;
         }
 
-        setChatHistory((prev) => [
+        await addMessage({
+            role: role,
+            content: content,
+            dimension: dimension,
+        });
+
+        await ClinicalReasoningDimensionTable.add({
+            dimension,
+            question,
+            answer: content,
+        });
+
+        setInteractionHistory((prev) => [
             ...prev,
             {
-                id: messageIdRef.current++,
-                role,
-                message,
-                avatar: role === 'patient' ? '/images/LVP1.jpeg' : '/images/doctor1.png',
+                dimension: dimension,
+                question: question,
+                answer: content,
             },
         ]);
     };
@@ -102,7 +250,11 @@ export const ReasoningPage = ({ id }: { id: string }) => {
         setIsReasoningLoading(true);
         setReasoningError(null);
 
-        const streamingPatientMessageId = createPatientMessage();
+        const streamingPatientMessageId = await addMessage({
+            role: 'system',
+            content: '',
+            dimension: '',
+        });
         let streamedQuestion = '';
 
         try {
@@ -111,7 +263,7 @@ export const ReasoningPage = ({ id }: { id: string }) => {
                 learner_diagnosis: learnerDiagnosis,
                 interaction_history: historyPayload,
             },
-                (token) => {
+                async (token) => {
                     streamedQuestion += token;
 
                     // tránh render raw json
@@ -121,16 +273,16 @@ export const ReasoningPage = ({ id }: { id: string }) => {
                         return;
                     }
 
-                    updateMessageById(
+                    await updateMessageById(
                         streamingPatientMessageId,
                         streamedQuestion
                     );
                 },
-                (finalData) => {
+                async (finalData) => {
                     const finalQuestion = (finalData.question || streamedQuestion).trim();
 
                     if (finalData.stop) {
-                        updateMessageById(
+                        await updateMessageById(
                             streamingPatientMessageId,
                             'Phiên phản biện đã kết thúc hãy nộp bài'
                         );
@@ -139,7 +291,7 @@ export const ReasoningPage = ({ id }: { id: string }) => {
                     }
 
                     if (finalQuestion) {
-                        updateMessageById(
+                        await updateMessageById(
                             streamingPatientMessageId,
                             finalQuestion
                         );
@@ -153,10 +305,14 @@ export const ReasoningPage = ({ id }: { id: string }) => {
             });
 
             if (response.stop) {
+                await updateMessageById(
+                    streamingPatientMessageId,
+                    'Phiên phản biện đã kết thúc hãy nộp bài'
+                );
                 setCurrentQuestion(null);
             }
         } catch (error) {
-            removeMessageById(streamingPatientMessageId);
+            await removeMessageById(streamingPatientMessageId);
             setReasoningError(mapReasoningError(error));
         } finally {
             setIsReasoningLoading(false);
@@ -168,9 +324,7 @@ export const ReasoningPage = ({ id }: { id: string }) => {
             return;
         }
 
-        appendChatMessage('doctor', answer);
-
-        const nextInteractionHistory: ClinicalReasoningHistoryItem[] = [
+        const nextHistory = [
             ...interactionHistory,
             {
                 dimension: currentQuestion.dimension,
@@ -179,17 +333,19 @@ export const ReasoningPage = ({ id }: { id: string }) => {
             },
         ];
 
-        setInteractionHistory(nextInteractionHistory);
-        await requestNextQuestion(nextInteractionHistory);
+        await appendChatMessage('user', answer, currentQuestion.dimension, currentQuestion.question);
+
+        await requestNextQuestion(nextHistory);
     };
 
     useEffect(() => {
         messageIdRef.current = 1;
-        setChatHistory([
+        setChatHistory((prev) => [
+            ...prev,
             {
                 id: messageIdRef.current++,
-                role: 'patient',
-                message: INITIAL_REASONING_QUESTION,
+                role: 'system',
+                content: INITIAL_REASONING_QUESTION,
                 avatar: '/images/LVP1.jpeg',
             },
         ]);
@@ -228,6 +384,7 @@ export const ReasoningPage = ({ id }: { id: string }) => {
             <SubmitModal
                 isOpen={isConfirmModalOpen}
                 onClose={() => setIsConfirmModalOpen(false)}
+                clinicalCaseId={id}
             />
         </div>
     );

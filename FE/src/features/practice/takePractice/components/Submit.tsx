@@ -2,13 +2,17 @@
 
 import { useState } from 'react';
 import { ConfirmModal } from './ConfirmModal';
-
+import { buildEvaluationPayload, submitEvaluation } from '@/src/services/submition-practice-session';
+import { ValidationNoteTable } from '@/src/hooks/dexieConfigurations/ValidationNotes.table';
+import { ClinicalReasoningChatMessageTable, ClinicalReasoningDimensionTable } from '@/src/hooks/dexieConfigurations/ClinicalReasoningChatMessages.table';
+import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
 interface SubmitModalProps {
     isOpen: boolean;
     onClose: () => void;
+    clinicalCaseId: string
 }
 
-export const SubmitModal = ({ isOpen, onClose }: SubmitModalProps) => {
+export const SubmitModal = ({ isOpen, onClose, clinicalCaseId }: SubmitModalProps,) => {
     const [diagnosis, setDiagnosis] = useState('');
     const [checklist, setChecklist] = useState('');
     const [openConfirm, setOpenConfirm] = useState(false);
@@ -18,6 +22,35 @@ export const SubmitModal = ({ isOpen, onClose }: SubmitModalProps) => {
     const handleConfirm = () => {
         console.log('Diagnosis:', diagnosis);
         console.log('Checklist:', checklist);
+
+        buildEvaluationPayload({
+            userId: 'user_123', // bạn có thể lấy từ auth context
+            clinicalCaseId,
+            finalDiagnosis: diagnosis,
+            overallScore: 0
+        }).then(async payload => {
+            try {
+                const response = await submitEvaluation(payload);
+                alert('Practice session submitted successfully!');
+
+                // Clear local data after successful submission
+                // WILL KEEP DATA FOR DEBUGGING PURPOSES NOW
+                // await Promise.all([
+                //     VPChatMessageTable.clear(),
+                //     ClinicalReasoningChatMessageTable.clear(),
+                //     ClinicalReasoningDimensionTable.clear(),
+                //     ValidationNoteTable.clear()
+                // ]);
+
+                /// Call evaluation here
+                ////////////////////////
+                ///////////////////////
+
+            } catch (error) {
+                console.error('Submission failed:', error);
+                alert('Failed to submit practice session. Please try again.');
+            }
+        });
 
         setOpenConfirm(false);
         onClose();

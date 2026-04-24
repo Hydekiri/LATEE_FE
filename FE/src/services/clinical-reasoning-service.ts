@@ -76,6 +76,8 @@ const requestClinicalReasoning = async (
         body: JSON.stringify(payload),
     });
 
+    console.log("Payload sent to clinical reasoning API:", payload);
+
     if (!response.ok) {
         const detail = await parseErrorDetail(response);
         throw new Error(detail || `Clinical reasoning request failed with status ${response.status}`);

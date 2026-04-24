@@ -4,7 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 interface AiMessageBlockProps {
-    noteId?: string;
+    noteId?: number;
     message?: string;
     children?: React.ReactNode;
 }

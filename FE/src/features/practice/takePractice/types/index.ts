@@ -10,3 +10,10 @@ export interface PracticeSessionState {
     timeLeft: string;
     progress: number;
 }
+
+export interface ReasoningChatMessage {
+    id: number;
+    role: 'user' | 'system';
+    content: string;
+    avatar: string;
+}

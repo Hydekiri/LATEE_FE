@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Send } from 'lucide-react';
-import { ChatMessage } from '../types';
+import { ReasoningChatMessage } from '../types';
 
 interface ReasoningChatProps {
-    history: ChatMessage[];
+    history: ReasoningChatMessage[];
     isSending: boolean;
     errorMessage?: string | null;
     onSendMessage: (message: string) => Promise<void> | void;
@@ -15,7 +15,6 @@ interface ReasoningChatProps {
 
 export const ReasoningChat = ({ history, isSending, errorMessage, onSendMessage, onRetry }: ReasoningChatProps) => {
     const [inputMessage, setInputMessage] = useState('');
-
     const handleSend = async () => {
         const trimmedMessage = inputMessage.trim();
         if (!trimmedMessage || isSending) {
@@ -30,17 +29,17 @@ export const ReasoningChat = ({ history, isSending, errorMessage, onSendMessage,
         <main className="flex-1 flex flex-col bg-white relative transition-all duration-300">
             <div className="flex-1 overflow-y-auto p-8 space-y-6">
                 {history.map((chat) => (
-                    <div key={chat.id} className={`flex gap-4 ${chat.role === 'doctor' ? 'justify-end' : 'justify-start'}`}>
-                        {chat.role === 'patient' && (
+                    <div key={chat.id} className={`flex gap-4 ${chat.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        {chat.role === 'system' && (
                             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
                                 <Image src="/images/LVP1.jpeg" width={40} height={40} alt="Patient" className="object-cover h-full w-full" />
                             </div>
                         )}
-                        <div className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${chat.role === 'doctor' ? 'bg-[#D1EFF9] text-gray-800 rounded-tr-none' : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'
+                        <div className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${chat.role === 'user' ? 'bg-[#D1EFF9] text-gray-800 rounded-tr-none' : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'
                             }`}>
-                            {chat.message}
+                            {chat.content}
                         </div>
-                        {chat.role === 'doctor' && (
+                        {chat.role === 'user' && (
                             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
                                 <Image src="/images/VirtualPatient/VP3.jpeg" width={40} height={40} alt="Doctor" className="object-cover h-full w-full" />
                             </div>
