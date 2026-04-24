@@ -3,42 +3,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { Sparkles, Send, User } from 'lucide-react';
 import { AiMessageBlock, fetchAiAssistantResponse } from '@/src/services/aiAssistant-service';
-
-const AI_ASSISTANT_CACHE_KEY = 'latee:practice:ai-assistant-sidebar:messages';
+import { AIAssistantChatMessageTable, ChatMessageEntity } from '@/src/hooks/dexieConfigurations/AIAssistantChatMessages.table';
 
 // Type cho message
 interface Message {
+    id?: number;
     role: 'user' | 'assistant';
-    noteId?: string;
     content: string;
 }
 
-const loadCachedMessages = (): Message[] => {
-    if (typeof window === 'undefined') return [];
-
-    try {
-        const cached = window.localStorage.getItem(AI_ASSISTANT_CACHE_KEY);
-        if (!cached) return [];
-
-        const parsed = JSON.parse(cached) as Message[];
-
-        if (!Array.isArray(parsed)) return [];
-
-        return parsed.filter((message) => {
-            return (
-                message &&
-                (message.role === 'user' || message.role === 'assistant') &&
-                typeof message.content === 'string'
-            );
-        });
-    } catch {
-        return [];
-    }
-};
-
 export const AiAssistantSidebar = () => {
     const [aiInput, setAiInput] = useState('');
-    const [messages, setMessages] = useState<Message[]>(loadCachedMessages);
+    const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -51,91 +27,149 @@ export const AiAssistantSidebar = () => {
         scrollToBottom();
     }, [messages]);
 
+    /*
+     ========================================
+     LOAD MESSAGES FROM DEXIE
+     ========================================
+    */
     useEffect(() => {
-        try {
-            window.localStorage.setItem(AI_ASSISTANT_CACHE_KEY, JSON.stringify(messages));
-        } catch {
-            // Ignore storage quota / privacy mode errors.
-        }
-    }, [messages]);
+        const loadMessages = async () => {
+            try {
+                const cached =
+                    await AIAssistantChatMessageTable.getAll();
 
-    const fetchAiResponse = async (question: string) => {
-        // Kiểm tra input rỗng
+                setMessages(cached);
+            } catch (error) {
+                console.error('Failed to load messages:', error);
+            }
+        };
+
+        loadMessages();
+    }, []);
+
+    /*
+     ========================================
+     ADD MESSAGE HELPER
+     ========================================
+    */
+    const addMessage = async (
+        message: Omit<ChatMessageEntity, 'id'>
+    ) => {
+        try {
+            const id = await AIAssistantChatMessageTable.add(message);
+
+            const newMessage: Message = {
+                id: Number(id),
+                role: message.role,
+                content: message.content,
+            };
+
+            setMessages((prev) => [...prev, newMessage]);
+
+            return newMessage;
+        } catch (error) {
+            console.error('Failed to save message:', error);
+
+            return null;
+        }
+    };
+
+    /*
+     ========================================
+     UPDATE MESSAGE
+     ========================================
+    */
+    const updateAssistantMessage = async (
+        id: number,
+        content: string
+    ) => {
+        // update react state
+        setMessages((prev) =>
+            prev.map((msg) =>
+                msg.id === id
+                    ? {
+                        ...msg,
+                        content,
+                    }
+                    : msg
+            )
+        );
+
+        // update dexie
+        await AIAssistantChatMessageTable.update(id, {
+            content,
+        });
+    };
+
+
+    const fetchAiResponse = async (
+        question: string
+    ) => {
         if (!question.trim()) return;
 
         setIsLoading(true);
 
-        // 1. Thêm câu hỏi của user vào messages
-        setMessages((prev) => [
-            ...prev,
-            {
+        try {
+            /*
+            USER MESSAGE
+            */
+
+            await addMessage({
                 role: 'user',
                 content: question,
-            },
-        ]);
+            });
 
-        // Clear input ngay sau khi thêm câu hỏi
-        setAiInput("");
+            /*
+            EMPTY ASSISTANT MESSAGE
+            */
 
-        // tạo block rỗng nơi sẽ stream token vào
-        let streamedText = "";
-
-        // 2. Tạo 1 block AI rỗng để fill từ SSE stream
-        setMessages((prev) => [
-            ...prev,
-            {
-                role: 'assistant',
-                content: ""
-            },
-        ]);
-
-        await fetchAiAssistantResponse(
-            question,
-            messages,
-
-            // TOKEN STREAM
-            (token) => {
-                streamedText += token;
-
-                setMessages((prev) => {
-                    const updated = [...prev];
-
-                    updated[updated.length - 1] = {
-                        role: 'assistant',
-                        content: streamedText,
-                    };
-
-                    return updated;
+            const assistantMessage =
+                await addMessage({
+                    role: 'assistant',
+                    content: '',
                 });
-            },
 
-            // DONE EVENT
-            (payload) => {
-                setMessages((prev) => {
-                    const updated = [...prev];
-                    updated[updated.length - 1] = {
-                        role: 'assistant',
-                        content: streamedText,
-                    };
-                    return updated;
-                });
-                setIsLoading(false);
-            },
+            let streamedText = '';
 
-            // ERROR EVENT
-            (errorMessage) => {
-                setMessages((prev) => [
-                    ...prev,
-                    {
+            await fetchAiAssistantResponse(
+                question,
+                messages,
+
+                // token
+                async (token) => {
+                    streamedText += token;
+
+                    if (assistantMessage && assistantMessage.id) {
+                        await updateAssistantMessage(
+                            assistantMessage.id,
+                            streamedText
+                        );
+                    }
+                },
+
+                // done
+                async () => {
+                    setIsLoading(false);
+                },
+
+                // error
+                async (errorMessage) => {
+                    await addMessage({
                         role: 'assistant',
-                        isValid: false,
-                        noteId: "Error",
-                        content: "❌ " + errorMessage,
-                    },
-                ]);
-                setIsLoading(false);
-            }
-        );
+                        content:
+                            '❌ ' + errorMessage,
+                    });
+
+                    setIsLoading(false);
+                }
+            );
+
+            setAiInput('');
+        } catch (err) {
+            console.error(err);
+
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -182,7 +216,7 @@ export const AiAssistantSidebar = () => {
                         </div>
                     ) : (
                         // AI Message
-                        <AiMessageBlock key={i} noteId={m.noteId} message={m.content}>
+                        <AiMessageBlock key={i} noteId={m.id} message={m.content}>
                             <p></p>
                         </AiMessageBlock>
                     )
