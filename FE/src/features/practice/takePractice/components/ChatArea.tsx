@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { Send } from 'lucide-react';
 import { ChatMessage } from '../types';
 import { WarningPanel } from '@/src/features/practice/takePractice/components/WarningPanel';
+import { NoteChatMessage, NoteChatState } from '../types/note';
+import { ValidateQuestion } from '@/src/services/validate-question-service';
 
 interface ChatAreaProps {
     history: ChatMessage[];
@@ -17,8 +19,11 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
     const [inputMessage, setInputMessage] = useState('');
     const [isPanelExpanded, setIsPanelExpanded] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
-    
+
     const scrollRef = useRef<HTMLDivElement>(null);
+
+    const [noteID, setNoteID] = useState<number>(0);
+    const [notesState, setNotesState] = useState<Record<number, NoteChatState>>({});
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -33,15 +38,30 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
             role: 'patient',
             message: "Good morning, Doctor...",
             avatar: '/images/LVP1.jpeg'
-        }]); 
+        }]);
     }, [patientId, setHistory]);
 
-    const handleSendMessage = async () => {
-        if (!inputMessage.trim() || isLoading) return;
+    const handleSubmit = async (
+        e: React.FormEvent
+    ) => {
 
-        const userMessage = inputMessage;
-        setInputMessage(''); 
+        e.preventDefault();
 
+        if (!inputMessage.trim() || isLoading) {
+            return;
+        }
+
+        const message = inputMessage.trim();
+
+        setInputMessage('');
+
+        await Promise.all([
+            handleSendMessage(message),
+            handleValidateQuestion(message),
+        ]);
+    };
+
+    const handleSendMessage = async (userMessage: string) => {
         // 1. Lưu lại snapshot của history HIỆN TẠI để gửi xuống Backend
         const chatHistoryForBE = history.map(msg => ({
             role: msg.role,
@@ -55,7 +75,7 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
             message: userMessage,
             avatar: '/images/VirtualPatient/VP3.jpeg'
         }]);
-        
+
         setIsLoading(true);
 
         try {
@@ -96,11 +116,11 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
                         try {
                             const rawData = line.substring(6).trim();
                             if (!rawData) continue;
-                            
+
                             const data = JSON.parse(rawData);
                             if (data.type === 'token') {
                                 accumulatedMessage += data.content;
-                                setHistory(prev => prev.map(msg => 
+                                setHistory(prev => prev.map(msg =>
                                     msg.id === patientMsgId ? { ...msg, message: accumulatedMessage } : msg
                                 ));
                             }
@@ -117,6 +137,67 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
         }
     };
 
+    const handleValidateQuestion = async (message: string) => {
+        const validationResponse = await ValidateQuestion({
+            doctor_id: "example_doctor_id",
+            learner_question: message,
+            conversation_context: history.map(msg => ({
+                role: msg.role === 'doctor' ? 'doctor' : 'patient',
+                content: msg.message
+            }))
+        });
+
+        if (validationResponse && validationResponse.isValid === false) {
+            //find 5 nearest messages from history to include in the note's context from the newest to oldest
+            const recentContext = history.slice(-5).map(msg => ({
+                role: msg.role === 'doctor' ? 'doctor' : 'patient',
+                content: msg.message
+            }));
+
+            const userMessage: NoteChatMessage = {
+                role: 'user',
+                content: message
+            };
+            recentContext.push(userMessage);
+
+            setNoteID(prevId => {
+
+                const newId = prevId + 1;
+
+                setNotesState(prev => ({
+                    ...prev,
+
+                    [newId]: {
+                        noteId: newId,
+                        isOpen: false,
+                        showChat: false,
+                        messages: [],
+                        interactionHistory: recentContext.map(item => ({
+                            role: item.role === 'doctor' ? 'doctor' : 'patient',
+                            content: item.content
+                        })),
+                        questionValidationResponse: {
+                            isValid:
+                                validationResponse.isValid,
+                            reason:
+                                validationResponse.reason,
+                            suggestion:
+                                validationResponse.suggestion,
+                            severity:
+                                validationResponse.severity,
+                            category:
+                                validationResponse.category,
+                            confidence:
+                                validationResponse.confidence,
+                        }
+                    }
+                }));
+
+                return newId;
+            });
+        }
+    };
+
     return (
         <main className="flex-1 flex flex-col bg-white relative transition-all duration-300">
             {/* Vùng Chat History */}
@@ -128,9 +209,8 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
                                 <Image src="/images/LVP1.jpeg" width={40} height={40} alt="Patient" className="object-cover h-full w-full" />
                             </div>
                         )}
-                        <div className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                            chat.role === 'doctor' ? 'bg-[#D1EFF9] text-gray-800 rounded-tr-none' : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'
-                        }`}>
+                        <div className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${chat.role === 'doctor' ? 'bg-[#D1EFF9] text-gray-800 rounded-tr-none' : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'
+                            }`}>
                             {chat.message || (chat.role === 'patient' && <span className="animate-pulse">...</span>)}
                         </div>
                         {chat.role === 'doctor' && (
@@ -142,25 +222,30 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
                 ))}
             </div>
 
-            <WarningPanel 
+            <WarningPanel
                 isPanelExpanded={isPanelExpanded}
                 setIsPanelExpanded={setIsPanelExpanded}
+
+                noteID={noteID}
+                setNoteID={setNoteID}
+
+                notesState={notesState}
+                setNotesState={setNotesState}
             />
 
             {/* Input Area */}
             <div className="p-6 pt-0 bg-white">
-                <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="relative group">
-                    <input 
-                        type="text" 
+                <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }} className="relative group">
+                    <input
+                        type="text"
                         value={inputMessage}
                         onChange={(e) => setInputMessage(e.target.value)}
                         disabled={isLoading}
                         placeholder={isLoading ? "Patient is typing..." : "Type your message here..."}
-                        className={`w-full pl-5 pr-14 py-4 border border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 ${
-                            isPanelExpanded ? ' rounded-b-xl' : 'rounded-tr-xl rounded-br-xl rounded-bl-xl'
-                        } ${isLoading ? 'bg-gray-50' : 'bg-white'}`}
+                        className={`w-full pl-5 pr-14 py-4 border border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 ${isPanelExpanded ? ' rounded-b-xl' : 'rounded-tr-xl rounded-br-xl rounded-bl-xl'
+                            } ${isLoading ? 'bg-gray-50' : 'bg-white'}`}
                     />
-                    <button 
+                    <button
                         type="submit"
                         disabled={isLoading || !inputMessage.trim()}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#235697] p-2 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-30"

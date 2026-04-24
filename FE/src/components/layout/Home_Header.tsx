@@ -11,10 +11,10 @@ import { getCookie, deleteCookie } from "@/src/utils/cookies";
 type PageType = "Home" | "Practice" | "Assessment" | "Progress" | "Blog" | "About";
 
 interface NavbarProps {
-    page?: PageType; 
+    page?: PageType;
 }
 
-export default function Navbar({ page }: NavbarProps) { 
+export default function Navbar({ page }: NavbarProps) {
     const router = useRouter();
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
@@ -53,19 +53,19 @@ export default function Navbar({ page }: NavbarProps) {
 
         return `relative text-base px-2 py-2 text-white transition whitespace-nowrap
         ${isActive
-        ? "font-inter-semibold after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[4px] after:bg-white after:rounded-full"
-        : "font-inter-medium after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[4px] after:bg-white/50 after:rounded-full hover:after:w-full transition-all duration-300"
-        }`;
+                ? "font-inter-semibold after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[4px] after:bg-white after:rounded-full"
+                : "font-inter-medium after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[4px] after:bg-white/50 after:rounded-full hover:after:w-full transition-all duration-300"
+            }`;
 
     };
 
     return (
         <nav className="w-full top-0 left-0 bg-linear-to-r from-[#1ba7d9] to-[#235697] shadow-md z-50 flex justify-center sticky">
             <div className="w-[86%] flex items-center justify-between py-3">
-                
+
                 {/* --- 1. LOGO --- */}
                 <div className="shrink-0">
-                    <Link href="/" className="relative block w-30 h-10 sm:w-37.5 sm:h-12 lg:w-45 lg:h-14">
+                    <Link href="/home" className="relative block w-30 h-10 sm:w-37.5 sm:h-12 lg:w-45 lg:h-14">
                         <Image
                             src="/images/LATEE2.png"
                             alt="LATEE Logo"
@@ -79,7 +79,7 @@ export default function Navbar({ page }: NavbarProps) {
 
                 {/* --- 2. DESKTOP MENU --- */}
                 <div className="hidden xl:flex items-center">
-                    
+
                     {/* A. MENU LINKS */}
                     <div className="flex items-center gap-5 2xl:gap-10">
                         <Link href="/home" className={getLinkClasses("/home", "Home")}>Home</Link>
@@ -108,7 +108,7 @@ export default function Navbar({ page }: NavbarProps) {
                                     </div>
                                     <div className="flex flex-col text-white">
                                         <span className="font-bold text-sm max-w-25 truncate">{userInfo.name}</span>
-                                        <button 
+                                        <button
                                             onClick={handleLogout}
                                             className="text-xs text-blue-200 hover:text-white text-left underline transition"
                                         >
@@ -140,7 +140,7 @@ export default function Navbar({ page }: NavbarProps) {
             {isOpen && (
                 <div className="fixed inset-y-0 right-0 z-60 flex justify-end w-full">
                     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setIsOpen(false)}></div>
-                    
+
                     <div className="w-72 bg-linear-to-b from-[#1ba7d9] to-[#235697] h-full shadow-2xl p-6 pt-10 relative animate-slide-left z-50 flex flex-col overflow-y-auto">
                         <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 hover:bg-white/10 rounded-full p-1 transition">
                             <X className="w-7 h-7 text-white" />

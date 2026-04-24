@@ -1,18 +1,44 @@
+"use client";
+
 import { useState, useRef, useEffect } from 'react';
-import { Sparkles, Send, AlertTriangle, User } from 'lucide-react';
+import { Sparkles, Send, User } from 'lucide-react';
 import { AiMessageBlock, fetchAiAssistantResponse } from '@/src/services/aiAssistant-service';
+
+const AI_ASSISTANT_CACHE_KEY = 'latee:practice:ai-assistant-sidebar:messages';
 
 // Type cho message
 interface Message {
     role: 'user' | 'assistant';
-    isValid: boolean;
     noteId?: string;
     content: string;
 }
 
+const loadCachedMessages = (): Message[] => {
+    if (typeof window === 'undefined') return [];
+
+    try {
+        const cached = window.localStorage.getItem(AI_ASSISTANT_CACHE_KEY);
+        if (!cached) return [];
+
+        const parsed = JSON.parse(cached) as Message[];
+
+        if (!Array.isArray(parsed)) return [];
+
+        return parsed.filter((message) => {
+            return (
+                message &&
+                (message.role === 'user' || message.role === 'assistant') &&
+                typeof message.content === 'string'
+            );
+        });
+    } catch {
+        return [];
+    }
+};
+
 export const AiAssistantSidebar = () => {
     const [aiInput, setAiInput] = useState('');
-    const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>(loadCachedMessages);
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -22,6 +48,14 @@ export const AiAssistantSidebar = () => {
 
     useEffect(() => {
         scrollToBottom();
+    }, [messages]);
+
+    useEffect(() => {
+        try {
+            window.localStorage.setItem(AI_ASSISTANT_CACHE_KEY, JSON.stringify(messages));
+        } catch {
+            // Ignore storage quota / privacy mode errors.
+        }
     }, [messages]);
 
     const fetchAiResponse = async (question: string) => {
@@ -35,7 +69,6 @@ export const AiAssistantSidebar = () => {
             ...prev,
             {
                 role: 'user',
-                isValid: true,
                 content: question,
             },
         ]);
@@ -51,13 +84,13 @@ export const AiAssistantSidebar = () => {
             ...prev,
             {
                 role: 'assistant',
-                isValid: true,
                 content: ""
             },
         ]);
 
         await fetchAiAssistantResponse(
             question,
+            messages,
 
             // TOKEN STREAM
             (token) => {
@@ -68,7 +101,6 @@ export const AiAssistantSidebar = () => {
 
                     updated[updated.length - 1] = {
                         role: 'assistant',
-                        isValid: true,
                         content: streamedText,
                     };
 
@@ -82,7 +114,6 @@ export const AiAssistantSidebar = () => {
                     const updated = [...prev];
                     updated[updated.length - 1] = {
                         role: 'assistant',
-                        isValid: true,
                         content: streamedText,
                     };
                     return updated;
@@ -120,7 +151,7 @@ export const AiAssistantSidebar = () => {
                     </div>
                 </div>
 
-                <div className="flex gap-3">
+                {/* <div className="flex gap-3">
                     <div className="shrink-0 w-8 h-8 bg-[#235697] rounded-full flex items-center justify-center text-white shadow-md mt-1">
                         <Sparkles className="w-4 h-4" />
                     </div>
@@ -132,7 +163,7 @@ export const AiAssistantSidebar = () => {
                             Incorrect response. Instead of ending the conversation, you should continue gathering more information...
                         </p>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Render ALL Messages */}
                 {messages.map((m, i) => (
@@ -150,7 +181,7 @@ export const AiAssistantSidebar = () => {
                         </div>
                     ) : (
                         // AI Message
-                        <AiMessageBlock key={i} isValid={m.isValid} noteId={m.noteId} message={m.content}>
+                        <AiMessageBlock key={i} noteId={m.noteId} message={m.content}>
                             <p></p>
                         </AiMessageBlock>
                     )

@@ -40,7 +40,7 @@ export const PatientInfo = ({ data }: { data: PatientData }) => {
 
                 {/* Nút Start - Đã thêm onClick handler */}
                 <div>
-                    <button 
+                    <button
                         onClick={handleStartPractice}
                         className="flex items-center gap-2 bg-[#E0F2FE] text-[#235697] px-8 py-4 rounded-xl font-bold hover:bg-[#235697] hover:text-white transition shadow-sm hover:shadow-md"
                     >

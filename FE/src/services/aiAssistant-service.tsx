@@ -4,13 +4,12 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 interface AiMessageBlockProps {
-    isValid: boolean;
     noteId?: string;
     message?: string;
     children?: React.ReactNode;
 }
 
-export const AiMessageBlock = ({ isValid, noteId, message, children }: AiMessageBlockProps) => {
+export const AiMessageBlock = ({ noteId, message, children }: AiMessageBlockProps) => {
     return (
         <div className="flex gap-3" >
             {/* Avatar */}
@@ -21,14 +20,6 @@ export const AiMessageBlock = ({ isValid, noteId, message, children }: AiMessage
             {/* Message Content */}
             <div className="bg-white rounded-xl p-4 shadow-sm border border-blue-50 flex-1" >
 
-                {/* Nếu sai thì hiển thị banner đỏ */}
-                {
-                    !isValid && (
-                        <div className="inline-block bg-[#FF8A8A] text-white text-[10px] font-bold px-2 py-0.5 rounded-sm mb-2" >
-                            <AlertTriangle className="w-3 h-3 inline mr-1" /> {noteId ?? "Note"
-                            }
-                        </div>
-                    )}
                 {children}
                 {message && <p className="whitespace-pre-wrap text-xs text-gray-700 leading-relaxed">{message}</p>}
             </div>
@@ -44,13 +35,49 @@ export interface AiAssistantEvent {
     source_documents?: string[];
 }
 
+export interface AiAssistantHistoryMessage {
+    role: 'user' | 'assistant' | 'doctor' | 'patient' | 'system';
+    content: string;
+}
+
+interface AssistantRequestMessageItem {
+    role: 'doctor' | 'patient' | 'system';
+    content: string;
+}
+
+const normalizeHistoryRole = (
+    role: AiAssistantHistoryMessage['role']
+): AssistantRequestMessageItem['role'] => {
+    if (role === 'doctor' || role === 'patient' || role === 'system') {
+        return role;
+    }
+
+    if (role === 'user') {
+        return 'doctor';
+    }
+
+    return 'system';
+};
+
+const buildPatientHistory = (
+    history: AiAssistantHistoryMessage[] = []
+): AssistantRequestMessageItem[] => {
+    return history
+        .filter((item) => item && typeof item.content === 'string' && item.content.trim().length > 0)
+        .map((item) => ({
+            role: normalizeHistoryRole(item.role),
+            content: item.content.trim(),
+        }));
+};
+
 export async function fetchAiAssistantResponse(
     question: string,
+    history: AiAssistantHistoryMessage[] = [],
     onToken: (token: string) => void,
     onDone?: (payload: AiAssistantEvent) => void,
     onError?: (message: string) => void
 ) {
-    const response = await fetch(`${API_BASE_URL}/ai-assistant/assistant/stream`, {
+    const response = await fetch(`${API_BASE_URL}/ai-assistant/assistant/stream/hf`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -59,7 +86,7 @@ export async function fetchAiAssistantResponse(
         body: JSON.stringify({
             doctor_id: "doctor_demo",
             question,
-            patient_history: [],
+            patient_history: buildPatientHistory(history),
             use_rag: true,
         }),
     });

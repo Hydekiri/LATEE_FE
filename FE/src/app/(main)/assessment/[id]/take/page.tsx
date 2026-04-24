@@ -8,5 +8,5 @@ interface PageProps {
 
 export default function TakePracticeRoute({ params }: PageProps) {
     console.log('Taking practice session with ID:', params.id);
-    return <TakePracticePage />;
+    return <TakePracticePage id={params.id} />;
 }
