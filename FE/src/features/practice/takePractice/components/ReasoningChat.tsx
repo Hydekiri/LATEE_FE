@@ -79,7 +79,7 @@ export const ReasoningChat = ({ history, isSending, errorMessage, onSendMessage,
                         }}
                         disabled={isSending}
                         placeholder="Type your message here..."
-                        className="w-full pl-5 pr-14 py-4 border border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 rounded-xl disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full pl-5 pr-14 py-4 border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 rounded-xl disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
                     <button
                         onClick={() => void handleSend()}

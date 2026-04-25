@@ -33,7 +33,6 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
         }
     }, [history]);
 
-    // CHỈ CẦN RESET TRÊN UI, KHÔNG CẦN GỌI BACKEND NỮA
     useEffect(() => {
         setHistory([{
             id: Date.now(),
@@ -43,18 +42,10 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
         }]);
     }, [patientId, setHistory]);
 
-    /*
-   ========================================
-   LOAD FROM DEXIE
-   ========================================
-   */
 
     useEffect(() => {
 
         const loadData = async () => {
-            /*
-            LOAD CHAT
-            */
             const chatData = await VPChatMessageTable.getAll();
 
             if (chatData.length > 0) {
@@ -73,9 +64,6 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
                     }))
                 );
             } else {
-                /*
-                INIT FIRST MESSAGE
-                */
                 const firstId =
                     await VPChatMessageTable.add({
                         role: 'patient',
@@ -90,9 +78,6 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
                     }
                 ]);
             }
-            /*
-            LOAD VALIDATION NOTES
-            */
             const noteData = await ValidationNoteTable.getAll();
             const restoredNotes: Record<number, NoteChatState> = {};
             let maxNoteId = 0;
@@ -127,11 +112,6 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
 
     }, [patientId, setHistory]);
 
-    /*
-    ========================================
-    HELPERS
-    ========================================
-    */
 
     const addChatMessage = async (
         role: 'user' | 'patient',
@@ -203,18 +183,12 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
         setInputMessage('');
 
         await Promise.all([
-            handleSendMessage(message),
             handleValidateQuestion(message),
+            handleSendMessage(message),
         ]);
     };
 
-    /*
-    ========================================
-    SEND MESSAGE
-    ========================================
-    */
     const handleSendMessage = async (userMessage: string) => {
-        // 1. Lưu lại snapshot của history HIỆN TẠI để gửi xuống Backend
         const chatHistoryForBE = history.map(msg => ({
             role: msg.role,
             content: msg.message
@@ -241,7 +215,7 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
                     doctor_id: "25697",
                     patient_id: patientId,
                     question: userMessage,
-                    chat_history: chatHistoryForBE // ĐÍNH KÈM LỊCH SỬ CHAT TỪ FE XUỐNG
+                    chat_history: chatHistoryForBE 
                 }),
             });
 
@@ -301,11 +275,6 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
         }
     };
 
-    /*
-    ========================================
-    VALIDATE
-    ========================================
-    */
     const handleValidateQuestion = async (message: string) => {
         const validationResponse = await ValidateQuestion({
             doctor_id: "example_doctor_id",
@@ -317,7 +286,6 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
         });
 
         if (validationResponse && validationResponse.isValid === false) {
-            //find 5 nearest messages from history to include in the note's context from the newest to oldest
             const recentContext = history.slice(-5).map(msg => ({
                 role: msg.role === 'doctor' ? 'doctor' : 'patient',
                 content: msg.message

@@ -13,7 +13,7 @@ const MOCK_EXPERTS = [
     },
 ];
 export const MOCK_PATIENTS: PatientData[] = Array.from({ length: 9 }).map((_, i) => ({
-    id: `1188772${i + 2}`,
+    id: `1040732${i + 2}`,
     caseId: `TH18${72 + i}`,
     img: `/images/VirtualPatient/VP${i + 1}.jpeg`, 
     name: "Abigail Park",
