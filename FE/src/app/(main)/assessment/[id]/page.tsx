@@ -52,7 +52,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                     <div className="flex items-center gap-2 text-sm text-[#235697] mb-6 font-medium pl-2 px-4 py-1">
                         <Link href="/assessment" className="hover:underline">Assessment</Link>
                         <ChevronRight className="w-4 h-4" />
-                        <span>Case #{assessmentData.id}</span>
+                        <span>Case #{assessmentData.assessmentId}</span>
                         <ChevronRight className="w-4 h-4" />
                         <span className="text-[#235697] underline decoration-[#235697] underline-offset-4">About Assessment</span>
                     </div>

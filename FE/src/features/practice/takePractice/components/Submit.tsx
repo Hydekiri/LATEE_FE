@@ -29,10 +29,11 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
             alert('Vui lòng nhập chẩn đoán cuối cùng của bạn.');
             return;
         }
-
+        // const sessionResponse = await fetch(`${API_BASE_URL}/evaluation/api/evaluation/practice-session`, {
+        // const sessionResponse = await fetch(`${API_BASE_URL}/practice-session/api/practice-sessions`, {
         setIsSubmitting(true);
         try {
-            const sessionResponse = await fetch(`${API_BASE_URL}/practice-session/api/practice-sessions`, {
+            const sessionResponse = await fetch(`${API_BASE_URL}/evaluation/api/evaluation/practice-session`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

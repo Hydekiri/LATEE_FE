@@ -154,7 +154,7 @@ export default function AssessmentList() {
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation(); 
-                                    router.push(`/assessment/${item.id}`);
+                                    router.push(`/assessment/${item.id}?tab=about`);
                                 }}
                                 className="flex items-center gap-2 bg-[#1BA7D9] text-white px-7 py-3 rounded-xl font-lato-bold text-sm hover:bg-[#235697] transition-all shadow-md group/btn whitespace-nowrap"
                             >

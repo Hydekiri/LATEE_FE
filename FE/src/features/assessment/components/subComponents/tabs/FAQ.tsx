@@ -12,7 +12,7 @@ import {
     CalendarDaysIcon,
     UserCircleIcon
 } from '@heroicons/react/24/solid';
-import { PatientData } from '@/src/types/practice';
+import { AssessmentData } from '@/src/types/assessment';
 
 interface FAQItem {
     id: number;
@@ -60,10 +60,10 @@ const FAQ_DATA: FAQItem[] = [
     }
 ];
 
-export default function FAQ({ data }: { data: PatientData }) {
+export default function FAQ({ data }: { data: AssessmentData }) {
     const [openId, setOpenId] = useState<number | null>(1);
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-    const [caseId] = useState(data?.id ?? 'N/A');
+    const [caseId] = useState(data?.assessmentId ?? 'N/A');
 
     return (
         <div className="flex flex-col gap-10 pb-10 animate-fadeIn max-w-5xl mx-auto font-sans">

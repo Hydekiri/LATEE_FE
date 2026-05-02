@@ -1,12 +1,6 @@
-import { TakePracticePage } from '@/src/features/practice/takePractice/components/TakePracticePage';
+import TakeAssessmentFeature from "@/src/features/assessment/takeAssessment/TakeAssessmentPage";
+import { MOCK_FULL_ASSESSMENT } from "@/src/data/mockAssessment";
 
-interface PageProps {
-    params: {
-        id: string;
-    };
-}
-
-export default function TakePracticeRoute({ params }: PageProps) {
-    console.log('Taking practice session with ID:', params.id);
-    return <TakePracticePage id={params.id} />;
+export default function Page() {
+    return <TakeAssessmentFeature assessmentData={MOCK_FULL_ASSESSMENT} />;
 }

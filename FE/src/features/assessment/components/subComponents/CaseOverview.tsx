@@ -15,8 +15,8 @@ export const CaseOverview = ({ data }: { data: AssessmentData }) => {
         { icon: BookmarkIcon, title: "Chief Concern", desc: "Understand the main reason the patient seeks care and identify key symptoms." },
         { icon: ComputerDesktopIcon, title: "Interactive Case", desc: "Engage with a realistic clinical scenario designed to train your diagnostic reasoning." },
         { icon: ChatBubbleLeftRightIcon, title: "AI Feedback", desc: "Receive instant feedback and insights from the AI system to refine your thought process." },
-        { icon: ChartBarIcon, title: "Skill Level", desc: `Suitable for Level ${data.level} medical learners.` },
-        { icon: ClockIcon, title: data.timeRequired, desc: "Estimated time for patient interaction and reasoning." }
+        { icon: ChartBarIcon, title: "Skill Level", desc: `Suitable for Level ${data.difficultyLevel} medical learners.` },
+        { icon: ClockIcon, title: `${data.timeLimitMinutes} minutes`, desc: "Estimated time for patient interaction and reasoning." }
     ];
 
     return (

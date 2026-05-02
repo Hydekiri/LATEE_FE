@@ -18,7 +18,7 @@ import {
     fetchClinicalReasoningQuestion,
 } from '@/src/services/clinical-reasoning-service';
 
-const INITIAL_REASONING_QUESTION = 'Vậy kết luận của bạn là gì ?';
+const INITIAL_REASONING_QUESTION = 'So what is your conclusion?';
 const ReasoningContent = ({ id }: { id: string }) => {
     const searchParams = useSearchParams();
     const sessionId = useMemo(() => 
@@ -67,6 +67,11 @@ const ReasoningContent = ({ id }: { id: string }) => {
                         content: INITIAL_REASONING_QUESTION,
                         avatar: '/images/LVP1.jpeg',
                     }]);
+
+                    setCurrentQuestion({
+                        question: INITIAL_REASONING_QUESTION,
+                        dimension: 'Mở đầu',
+                    });
                 }
                 const dimensionsData = await ClinicalReasoningDimensionTable.getAll();
                 setInteractionHistory(dimensionsData.map(d => ({
@@ -75,10 +80,7 @@ const ReasoningContent = ({ id }: { id: string }) => {
                     answer: d.answer,
                 })));
 
-                setCurrentQuestion({
-                    question: INITIAL_REASONING_QUESTION,
-                    dimension: 'Mở đầu',
-                });
+                
 
             } catch (err) {
                 console.error("Load Dexie Error:", err);
@@ -192,7 +194,6 @@ const ReasoningContent = ({ id }: { id: string }) => {
     );
 };
 
-// Component Export chính thức (có Wrap Suspense vì dùng useSearchParams)
 export const ReasoningPage = ({ id }: { id: string }) => {
     return (
         <Suspense fallback={<div>Loading reasoning session...</div>}>
