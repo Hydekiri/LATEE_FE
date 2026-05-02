@@ -92,7 +92,7 @@ export default function PatientCard({ item }: PatientCardProps) {
                         </p>
 
                         <button
-                            onClick={() => router.push(`/practice/${item.id}`)}
+                            onClick={() => router.push(`/practice/${item.id}?tab=about`)}
                             className="
                                 group/btn
                                 shrink-0
