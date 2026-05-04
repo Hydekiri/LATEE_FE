@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { AssessmentData } from '@/src/types/assessment';
 import { AssessmentAbout } from "./subComponents/tabs/AssessmentAbout";
 import { CaseOverview } from "./subComponents/CaseOverview";

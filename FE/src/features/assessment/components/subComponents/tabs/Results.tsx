@@ -1,100 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { 
     CheckCircleIcon, 
     XCircleIcon, 
     ChevronDownIcon, 
     ChevronUpIcon,
     DocumentTextIcon,
-    PlayIcon,
-    InformationCircleIcon // Dùng cho phần Explanation
+    InformationCircleIcon
 } from '@heroicons/react/24/solid';
-import { MOCK_FULL_ASSESSMENT } from "@/src/data/mockAssessment";
+import { Loader2 } from 'lucide-react';
 
-export default function Results() {
-    const [currentAttempt, setCurrentAttempt] = useState(1);
+interface OptionResult {
+    id: string;
+    content: string;
+    isCorrect: boolean;
+}
+
+interface QuestionResult {
+    questionId: string;
+    content: string;
+    userAnswerId: string;
+    correctAnswerId: string;
+    isCorrect: boolean;
+    explanation: string;
+    options: OptionResult[];
+}
+
+interface AttemptDetail {
+    attemptId: string;
+    score: number;
+    isPassed: boolean;
+    correctCount: number;
+    questions: QuestionResult[];
+}
+
+function ResultsContent() {
+    const searchParams = useSearchParams();
+    const attemptId = searchParams.get('attemptId');
+    
+    const [loading, setLoading] = useState<boolean>(true);
+    const [data, setData] = useState<AttemptDetail | null>(null);
     const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-    const toggleExpand = (index: number) => {
-        setExpandedIndex(expandedIndex === index ? null : index);
-    };
-
-    const handlePrevAttempt = () => {
-        if (currentAttempt > 1) setCurrentAttempt(prev => prev - 1);
-    };
-
-    const handleNextAttempt = () => {
-        if (currentAttempt < MOCK_FULL_ASSESSMENT.maxAttempts) setCurrentAttempt(prev => prev + 1);
-    };
-
-    // Giả lập kết quả và bổ sung trường Explanation
-    const userResults = MOCK_FULL_ASSESSMENT.questions.map((q, idx) => {
-        const userChoice = idx % 2 === 0 ? "C" : "A";
-        const correctChoice = q.options[2].id;
-        return {
-            ...q,
-            userAnswerId: userChoice,
-            correctAnswerId: correctChoice,
-            isCorrect: userChoice === correctChoice,
-            // Thêm giải thích giả lập cho từng câu hỏi
-            explanation: `The clinical presentation of ${q.content.split('presents with')[1]?.split('.')[0] || "this condition"} points toward ${q.options[2].content}. Diagnostic criteria and pathophysiology support this choice over other differentials.`
+    useEffect(() => {
+        const fetchAttemptDetails = async () => {
+            if (!attemptId) return;
+            
+            setLoading(true);
+            try {
+                const response = await fetch(`http://localhost:5000/assessment/api/assessments/attempts/${attemptId}`, {
+                    headers: { 'accept': '*/*' }
+                });
+                
+                if (!response.ok) throw new Error("Không thể lấy dữ liệu kết quả.");
+                
+                const result = await response.json();
+                setData(result.data); 
+            } catch (error) {
+                console.error("Fetch error:", error);
+            } finally {
+                setLoading(false);
+            }
         };
-    });
 
-    const score = userResults.filter(r => r.isCorrect).length;
+        fetchAttemptDetails();
+    }, [attemptId]);
+
+    if (loading) return (
+        <div className="flex flex-col items-center py-20 text-slate-400">
+            <Loader2 className="animate-spin mb-4 w-10 h-10" />
+            <p>Đang tải kết quả bài thi...</p>
+        </div>
+    );
+
+    if (!data) return <div className="py-20 text-center text-slate-500">Không tìm thấy dữ liệu lượt thi.</div>;
 
     return (
         <div className="flex flex-col gap-8 pb-10">
-            
-            {/* --- Section 1: Attempt Selection --- */}
-            <div className="pt-2 mb-2 relative w-full">
-                <div className="flex items-center w-full"> 
-                    <button 
-                        onClick={handlePrevAttempt}
-                        className="absolute -left-12 p-4 hover:bg-gray-100 rounded-full text-[#235697] transition-all disabled:opacity-20 z-30"
-                        disabled={currentAttempt <= 1}
-                    >
-                        <PlayIcon className="w-6 h-6 rotate-180" />
-                    </button>
-                    
-                    <div className="flex flex-1 items-center gap-2">
-                        {Array.from({ length: MOCK_FULL_ASSESSMENT.maxAttempts }).map((_, i) => {
-                            const num = i + 1;
-                            const isActive = num === currentAttempt;
-                            const label = num === 1 ? "st" : num === 2 ? "nd" : num === 3 ? "rd" : "th";
-
-                            return (
-                                <div key={num} className="flex-1 relative">
-                                    <button 
-                                        onClick={() => setCurrentAttempt(num)}
-                                        className={`pb-4 w-full text-base font-bold transition-colors relative text-center whitespace-nowrap ${
-                                            isActive ? 'text-[#235697]' : 'text-gray-400 hover:text-gray-600'
-                                        }`}
-                                    >
-                                        {num}{label} attempt result
-                                        <span className={`absolute -bottom-px left-0 w-full h-1 rounded-full transition-all duration-300 ${
-                                            isActive ? 'bg-[#235697] z-20' : 'bg-gray-300'
-                                        }`} />
-                                    </button>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <button 
-                        onClick={handleNextAttempt}
-                        className="absolute -right-12 p-4 hover:bg-gray-100 rounded-full text-[#235697] transition-all disabled:opacity-20 z-30"
-                        disabled={currentAttempt >= MOCK_FULL_ASSESSMENT.maxAttempts}
-                    >
-                        <PlayIcon className="w-6 h-6" />
-                    </button>
-                </div>
-            </div>
-
-            {/* --- Section 2: Case Result Summary Card --- */}
-            <div className="grid grid-cols-10 gap-8 bg-white rounded-xl">
+            {/* Tóm tắt kết quả - CSS CŨ TRẢ LẠI */}
+            <div className="grid grid-cols-10 gap-8 bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                {/* Phần 1: Ảnh Robot - Chiếm 3/10 */}
                 <div className="col-span-3 relative w-full h-full rounded-2xl overflow-hidden shadow-inner bg-[#A7E6FF] min-h-[200px]">
                     <Image 
                         src="/images/Robot2.png" 
@@ -105,141 +93,88 @@ export default function Results() {
                 </div>
                 
                 <div className="col-span-7 flex flex-col justify-center">
-                    <h3 className="text-[#235697] font-bold text-2xl mb-2">Case Result</h3>
-                    <ul className="space-y-1 text-md">
+                    <h3 className="text-[#235697] font-bold text-2xl mb-2 text-left">
+                        Case Result
+                    </h3>
+                    
+                    <ul className="space-y-1 text-md text-left">
                         <li>
                             <span className="font-bold text-[#235697]">Final Score:</span> 
-                            <span className="text-[#0E2A46] ml-1">{score * 10} / 100</span>
+                            <span className="text-[#0E2A46] ml-1">{Math.round(data.score)}/100</span>
                         </li>
+                        
                         <li className="flex items-center gap-1">
-                            <span className="font-bold text-[#235697]">Accuracy:</span>
-                            <span className="text-[#10B981] font-bold ml-1">
-                                {Math.round((score / userResults.length) * 100)}%
-                            </span>
+                            <span className="font-bold text-[#235697]">Correct Answer:</span>
+                            <span className="text-[#0E2A46] ml-1">{data.correctCount} / </span>
+                            <span className="text-[#10B981] font-bold ml-1">{data.questions.length}</span>
                             <CheckCircleIcon className="w-4 h-4 text-[#10B981]" />
                         </li>
+
                         <li>
-                            <span className="font-bold text-[#235697]">Difficulty:</span> 
-                            <span className="text-[#0E2A46] ml-1">{MOCK_FULL_ASSESSMENT.difficultyLevel}</span>
+                            <span className="font-bold text-[#235697]">Status:</span> 
+                            <span className={`ml-1 font-bold ${data.isPassed ? 'text-green-600' : 'text-red-600'}`}>
+                                {data.isPassed ? 'PASSED' : 'FAILED'}
+                            </span>
                         </li>
+                        
                         <li>
-                            <span className="font-bold text-[#235697]">Topic:</span> 
-                            <span className="text-[#0E2A46] ml-1">{MOCK_FULL_ASSESSMENT.topic}</span>
+                            <span className="font-bold text-[#235697]">Attempt ID:</span> 
+                            <span className="text-[#0E2A46] ml-1 text-md">#{data.attemptId.substring(0, 8)}</span>
+                        </li>
+
+                        <li>
+                            <span className="font-bold text-[#235697]">Evaluation:</span> 
+                            <span className="text-[#0E2A46] ml-1">
+                                {data.score >= 80 ? "Excellent clinical reasoning." : "Good effort, review the explanations below."}
+                            </span>
                         </li>
                     </ul>
                 </div>
             </div>
 
-            {/* --- Section 3: Detailed Question Review --- */}
-            <div className="flex flex-col gap-6">
-                <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-                    <DocumentTextIcon className="w-5 h-5 text-[#235697]" />
-                    <h3 className="text-[#235697] text-2xl font-bold tracking-tight">
-                        Detailed Results Review
-                    </h3>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                    {userResults.map((item, index) => {
-                        const isExpanded = expandedIndex === index;
-                        const isCorrect = item.isCorrect;
-
-                        return (
-                            <div key={item.questionId} className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm transition-all">
-                                {/* Header Toggle */}
-                                <div 
-                                    onClick={() => toggleExpand(index)} 
-                                    className="p-6 cursor-pointer hover:bg-slate-50 transition flex items-start gap-4"
-                                >
-                                    <div className="mt-1 shrink-0">
-                                        {isCorrect ? (
-                                            <CheckCircleIcon className="w-6 h-6 text-green-500" />
-                                        ) : (
-                                            <XCircleIcon className="w-6 h-6 text-red-500" />
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <h3 className="font-bold text-[#235697] text-lg mb-1">
-                                            Question {index + 1}: <span className="font-normal text-slate-600 ml-1">{item.content}</span>
-                                        </h3>
-                                        <div className="flex gap-4 text-sm mt-2">
-                                            <span className={isCorrect ? "text-green-600 font-bold" : "text-red-600 font-bold"}>
-                                                Your Answer: {item.userAnswerId}
-                                            </span>
-                                            {!isCorrect && (
-                                                <span className="text-green-600 font-bold">
-                                                    Correct Answer: {item.correctAnswerId}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="text-slate-400">
-                                        {isExpanded ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
-                                    </div>
+            <div className="flex flex-col gap-4">
+                <h3 className="text-xl font-bold text-[#235697] flex items-center gap-2 mb-2">
+                    <DocumentTextIcon className="w-6 h-6" /> Review chi tiết
+                </h3>
+                {data.questions.map((q, idx) => (
+                    <div key={q.questionId} className={`bg-white rounded-xl border transition-all ${q.isCorrect ? 'border-slate-200' : 'border-red-100 shadow-sm'}`}>
+                        <div 
+                            onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
+                            className={`p-6 cursor-pointer flex items-start gap-4 ${!q.isCorrect && 'bg-red-50/10'}`}
+                        >
+                            {q.isCorrect ? <CheckCircleIcon className="w-6 h-6 text-green-500" /> : <XCircleIcon className="w-6 h-6 text-red-500" />}
+                            <div className="flex-1 text-left">
+                                <p className="font-bold text-[#235697]">Câu {idx + 1}: <span className="font-normal text-slate-700">{q.content}</span></p>
+                                <div className="flex gap-4 mt-2 text-sm">
+                                    <span className={q.isCorrect ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>Bạn chọn: {q.userAnswerId || "N/A"}</span>
+                                    {!q.isCorrect && <span className="text-green-600 font-bold">Đáp án đúng: {q.correctAnswerId}</span>}
                                 </div>
-
-                                {/* Expanded Content */}
-                                {isExpanded && (
-                                    <div className="px-6 pb-6 pt-0 animate-fadeIn">
-                                        <div className="border-t border-slate-100 my-4"></div>
-                                        
-                                        {/* Options List */}
-                                        <div className="space-y-3 mb-6">
-                                            {item.options.map((opt) => {
-                                                const isUserChoice = opt.id === item.userAnswerId;
-                                                const isCorrectChoice = opt.id === item.correctAnswerId;
-
-                                                let styleClass = "border-slate-100 bg-white";
-                                                let badgeClass = "bg-white border-slate-200 text-slate-800";
-                                                let Icon = null;
-
-                                                if (isUserChoice && isCorrectChoice) {
-                                                    styleClass = "border-green-500 bg-green-50 text-green-800";
-                                                    badgeClass = "bg-green-500 border-green-500 text-white";
-                                                    Icon = <CheckCircleIcon className="w-5 h-5 text-green-600" />;
-                                                } else if (isUserChoice && !isCorrectChoice) {
-                                                    styleClass = "border-red-500 bg-red-50 text-red-800";
-                                                    badgeClass = "bg-red-500 border-red-500 text-white";
-                                                    Icon = <XCircleIcon className="w-5 h-5 text-red-600" />;
-                                                } else if (isCorrectChoice) {
-                                                    styleClass = "border-green-500 bg-white text-green-700";
-                                                    badgeClass = "bg-green-500 border-green-500 text-white";
-                                                    Icon = <CheckCircleIcon className="w-5 h-5 text-green-600" />;
-                                                }
-
-                                                return (
-                                                    <div key={opt.id} className={`p-4 rounded-xl border-2 flex justify-between items-center transition-all ${styleClass}`}>
-                                                        <div className="flex gap-4 items-center">
-                                                            <span className={`w-9 h-9 flex shrink-0 items-center justify-center rounded-lg font-bold border ${badgeClass}`}>
-                                                                {opt.id}
-                                                            </span>
-                                                            <span className="font-semibold">{opt.content}</span>
-                                                        </div>
-                                                        {Icon}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-
-                                        {/* Explanation Section */}
-                                        {item.explanation && (
-                                            <div className="bg-blue-50 rounded-xl p-5 border border-blue-100">
-                                                <div className="flex items-center gap-2 mb-2 text-[#235697] font-bold text-xs uppercase tracking-wider">
-                                                    <InformationCircleIcon className="w-5 h-5" /> 
-                                                    Explanation
-                                                </div>
-                                                <p className="text-slate-700 text-sm leading-relaxed">
-                                                    {item.explanation}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
                             </div>
-                        );
-                    })}
-                </div>
+                            {expandedIndex === idx ? <ChevronUpIcon className="w-5 h-5 text-slate-400" /> : <ChevronDownIcon className="w-5 h-5 text-slate-400" />}
+                        </div>
+
+                        {expandedIndex === idx && (
+                            <div className="px-6 pb-6 animate-in fade-in duration-300">
+                                <div className="h-px bg-slate-100 mb-6" />
+                                <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 text-left">
+                                    <div className="flex items-center gap-2 mb-2 text-[#235697] font-bold text-xs uppercase">
+                                        <InformationCircleIcon className="w-5 h-5" /> Clinical Explanation
+                                    </div>
+                                    <p className="text-slate-600 text-sm leading-relaxed">{q.explanation}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
+    );
+}
+
+export default function Results() {
+    return (
+        <Suspense fallback={<div className="p-20 text-center text-slate-400"><Loader2 className="animate-spin mx-auto mb-2" /> Loading Results...</div>}>
+            <ResultsContent />
+        </Suspense>
     );
 }

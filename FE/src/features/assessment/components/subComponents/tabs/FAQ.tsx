@@ -1,4 +1,3 @@
-// src/features/practice/takePractice/components/FAQ.tsx
 'use client';
 
 import { useState } from 'react';
@@ -20,7 +19,7 @@ interface FAQItem {
     answer: string;
 }
 
-// Dữ liệu giả lập các báo cáo từ người học khác về case này
+
 const LEARNER_ISSUES = [
     {
         id: 101,

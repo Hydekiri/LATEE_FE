@@ -9,7 +9,7 @@ import {
     PaperAirplaneIcon
 } from '@heroicons/react/24/solid';
 
-// Dữ liệu mẫu EPA chính xác theo ca lâm sàng Kidney Function
+
 const EPA_RESULTS = [
     {
         id: 1,

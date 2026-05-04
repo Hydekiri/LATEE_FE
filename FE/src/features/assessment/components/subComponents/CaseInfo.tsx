@@ -4,8 +4,10 @@ import { AssessmentData } from '@/src/types/assessment';
 
 export const CaseInfo = ({ data }: { data: AssessmentData }) => {
     const getImageSrc = (img: string | File) => {
-        if (typeof img === 'string') return img
-        return URL.createObjectURL(img)
+        if (!img) return '/images/quizz1.jpeg';
+        if (typeof img === 'string') return img;
+        if (img instanceof File) { return URL.createObjectURL(img) }
+        return '/images/quizz1.jpeg';
     }
     return (
         <div className="mb-10">

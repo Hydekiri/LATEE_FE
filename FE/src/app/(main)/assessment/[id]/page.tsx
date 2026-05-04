@@ -13,14 +13,20 @@ interface PageProps {
         id: string;
     }>;
 }
+async function getAssessmentData(id: string) {
+    const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}`, {
+        cache: 'no-store'
+    });
+    if (!res.ok) return null;
+    return res.json();
+}
 
 export default async function AssessmentDetailPage(props: PageProps) {
     const params = await props.params;
     const assessmentId = params.id;
 
-    // Fetch data using the corrected service
-    const assessmentData = await getAssessmentById(assessmentId);
-
+    const assessmentData = await getAssessmentData(assessmentId);
+    
     if (!assessmentData) {
         return notFound();
     }

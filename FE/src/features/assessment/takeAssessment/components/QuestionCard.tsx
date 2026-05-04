@@ -76,7 +76,7 @@ export default function QuestionCard({ question, selectedAnswer, onSelect, index
                             <span className={`text-lg font-semibold transition-colors ${
                                 isSelected ? "text-[#235697]" : "text-slate-800"
                             }`}>
-                                {opt.content}
+                                {opt.text || opt.content}
                             </span>
                         </button>
                     );

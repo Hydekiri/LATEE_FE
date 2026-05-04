@@ -63,11 +63,11 @@ export interface Expert {
 
 export interface QuestionOption {
     id: string;     
-    content: string; 
+    content?: string; 
+    text?: string;    
 }
 
 export interface AssessmentData {
-    // --- Database Fields ---
     assessmentId: string;   
     creatorId: string;
     clinicalCaseId?: string;
