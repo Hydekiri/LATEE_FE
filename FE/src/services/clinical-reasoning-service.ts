@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/src/config/env';
+import { getCookie } from '../utils/cookies';
 
 export const ALL_DIMENSIONS = [
     'Cơ sở bằng chứng',
@@ -67,11 +68,14 @@ const requestClinicalReasoning = async (
     onDone?: (response: ClinicalReasoningResponse) => void,
     onError?: (message: string) => void,
 ): Promise<ClinicalReasoningResponse> => {
+    const accessToken = getCookie('accessToken');
+
     const response = await fetch(CLINICAL_REASONING_STREAM_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'text/event-stream',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify(payload),
     });

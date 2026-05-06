@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/src/config/env';
+import { getCookie } from '../utils/cookies';
 
 export interface ValidationMessageItem {
     role: 'doctor' | 'patient' | 'system';
@@ -23,10 +24,13 @@ export interface QuestionValidationResponse {
 export async function ValidateQuestion(
     payload: QuestionValidationRequest,
 ): Promise<QuestionValidationResponse> {
+    const accessToken = getCookie('accessToken');
+
     const response = await fetch(`${API_BASE_URL}/ai-assistant/assistant/validate_question/hf`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
         },
         body: JSON.stringify({
             doctor_id: payload.doctor_id,

@@ -17,11 +17,11 @@ export default function Home() {
 
             {/* Hero Section */}
             <section className="flex justify-center">
-                <Image 
-                    src="/images/bghomepage.png" 
-                    alt="background" 
-                    width={1920} 
-                    height={1080} 
+                <Image
+                    src="/images/bghomepage.png"
+                    alt="background"
+                    width={1920}
+                    height={1080}
                     className="w-full h-auto pointer-events-none absolute top-0 left-0 -z-10"
                     priority // Tải ngay lập tức vì là ảnh lớn nhất (LCP)
                 />
@@ -57,7 +57,7 @@ export default function Home() {
                             Learning Modules
                         </h2>
                     </div>
-                    
+
                     {/* Modules Grid */}
                     <div className="grid xl:grid-cols-2 gap-8 w-[92.7%] mx-auto">
                         {[

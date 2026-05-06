@@ -10,6 +10,7 @@ import { NoteChatMessage, NoteChatState } from '../types/note';
 import { ValidateQuestion } from '@/src/services/validate-question-service';
 import { VPChatMessageTable, ChatMessageEntity } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
 import { ValidationNoteTable, ValidationNoteEntity } from '@/src/hooks/dexieConfigurations/ValidationNotes.table';
+import { getCookie } from '@/src/utils/cookies';
 
 interface ChatAreaProps {
     history: ChatMessage[];
@@ -208,9 +209,14 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
         // setIsLoading(true);
 
         try {
+            const accessToken = getCookie('accessToken');
+
             const response = await fetch('http://localhost:5000/virtual-patient/ai/stream', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                },
                 body: JSON.stringify({
                     doctor_id: "25697",
                     patient_id: patientId,

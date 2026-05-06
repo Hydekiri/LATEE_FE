@@ -6,7 +6,7 @@ import { Menu, X, Bell } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { getCookie, deleteCookie } from "@/src/utils/cookies";
-
+import { logoutApi } from '@/src/services/auth-service';
 
 type PageType = "Home" | "Practice" | "Assessment" | "Progress" | "Blog" | "About";
 
@@ -35,10 +35,30 @@ export default function Navbar({ page }: NavbarProps) {
     });
 
     // --- LOGIC: Đăng xuất ---
-    const handleLogout = () => {
-        console.log("🚪 Logging out...");
-        deleteCookie("isLoggedIn");
-        deleteCookie("userEmail");
+    const handleLogout = async () => {
+
+        /*
+         * Process logout API call here if needed, e.g. to invalidate refresh token on server 
+        */
+        try {
+            await logoutApi();
+
+            console.log("[LOGOUT] Logging out...");
+            deleteCookie("isLoggedIn");
+            deleteCookie("userEmail");
+            deleteCookie('accessToken');
+            deleteCookie('accessTokenExpiresAt');
+            deleteCookie('refreshToken');
+            deleteCookie('refreshTokenExpiresAt');
+            deleteCookie('userId');
+            deleteCookie('username');
+            deleteCookie('role');
+            deleteCookie('isRemembered');
+
+        } catch (error) {
+            console.error("[LOGOUT] Logout API call failed", error);
+        }
+
         router.replace("/login");
     };
 

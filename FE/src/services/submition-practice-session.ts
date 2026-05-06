@@ -2,6 +2,7 @@ import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessag
 import { ClinicalReasoningChatMessageTable } from '@/src/hooks/dexieConfigurations/ClinicalReasoningChatMessages.table';
 import { ValidationNoteTable } from '@/src/hooks/dexieConfigurations/ValidationNotes.table';
 import { API_BASE_URL } from '../config/env';
+import { getCookie } from '../utils/cookies';
 
 export interface EvaluationSubmitDTO {
     SessionId: string;
@@ -59,11 +60,13 @@ export async function buildEvaluationPayload(params: {
 }
 
 export async function submitEvaluation(payload: EvaluationSubmitDTO) {
+    const accessToken = getCookie('accessToken');
     const res = await fetch(`${API_BASE_URL}/evaluation/api/evaluation/submit`, {
         method: 'POST',
         headers: { 
             'accept': '*/*',
-            'Content-Type': 'application/json' 
+            'Content-Type': 'application/json',
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
         },
         body: JSON.stringify(payload),
     });

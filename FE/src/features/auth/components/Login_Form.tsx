@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
-import { setCookie } from '@/src/utils/cookies'; 
+import { setCookie } from '@/src/utils/cookies';
+import { loginApi } from '@/src/services/auth-service';
+//import { saveAuth } from '@/src/utils/auth-storage';
 
 export const LoginForm = () => {
     const router = useRouter();
@@ -12,24 +14,48 @@ export const LoginForm = () => {
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [selectedRole, setSelectedRole] = useState<'learner' | 'expert'>('learner');
+    const [rememberMe, setRememberMe] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!email || !password) {
-            setError('Vui lòng điền đầy đủ thông tin');
+            setError('Please fill in all required fields');
             return;
         }
-        
-        console.log('🔐 Đăng nhập với:', email, 'Role:', selectedRole);
-        
-        // LƯU COOKIE
-        setCookie('isLoggedIn', 'true', 1);
-        setCookie('userEmail', email, 1);
-        setCookie('userRole', selectedRole, 1);
-        
-        setError('');
-        router.push('/home');
+
+        /*
+         * Solve authentication here 
+         */
+        try {
+            const data = await loginApi(email, password);
+
+            // optional: check role
+            if (data.role.toLowerCase() !== selectedRole) {
+                setError('You have selected the wrong role. Please choose the correct role and try again.');
+                return;
+            }
+
+            const accessDays = 1;
+            const refreshDays = rememberMe ? 30 : 1;
+
+            setCookie('isLoggedIn', 'true', { days: refreshDays });
+            setCookie('accessToken', data.accessToken, { days: accessDays });
+            setCookie('accessTokenExpiresAt', data.accessTokenExpiresAt, { days: accessDays });
+            setCookie('refreshToken', data.refreshToken, { days: refreshDays });
+            setCookie('refreshTokenExpiresAt', data.refreshTokenExpiresAt, { days: refreshDays });
+            setCookie('userEmail', email, { days: refreshDays });
+            setCookie('userId', data.userId, { days: refreshDays });
+            setCookie('username', data.username, { days: refreshDays });
+            setCookie('role', data.role, { days: refreshDays });
+            setCookie('isRemembered', rememberMe ? 'true' : 'false', { days: refreshDays });
+
+            setError('');
+            router.push('/home');
+
+        } catch (err) {
+            setError('Wrong email or password');
+        }
     };
 
     return (
@@ -41,11 +67,10 @@ export const LoginForm = () => {
                         <button
                             key={role}
                             onClick={() => setSelectedRole(role)}
-                            className={`w-1/2 py-3 font-bold text-base rounded-[10px] transition-all capitalize ${
-                                selectedRole === role
-                                    ? 'bg-linear-to-r from-[#235697] to-[#1BA7D9] text-white'
-                                    : 'bg-gray-200 text-gray-400'
-                            }`}
+                            className={`w-1/2 py-3 font-bold text-base rounded-[10px] transition-all capitalize ${selectedRole === role
+                                ? 'bg-linear-to-r from-[#235697] to-[#1BA7D9] text-white'
+                                : 'bg-gray-200 text-gray-400'
+                                }`}
                             style={{
                                 boxShadow: selectedRole === role
                                     ? 'inset 0 2px 4px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.1)'
@@ -57,7 +82,7 @@ export const LoginForm = () => {
                     ))}
                 </div>
 
-                <h1 className="text-3xl font-lato-heavy-i text-gray-800 mb-6">ĐĂNG NHẬP</h1>
+                <h1 className="text-3xl font-lato-heavy-i text-gray-800 mb-6">LOGIN</h1>
 
                 {error && (
                     <div className="p-4 bg-red-100 text-red-700 rounded-lg mb-6 text-sm">
@@ -68,7 +93,7 @@ export const LoginForm = () => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Email Input */}
                     <div>
-                        <label className="block text-[#235697] font-semibold mb-2 text-md">Tên đăng nhập</label>
+                        <label className="block text-[#235697] font-semibold mb-2 text-md">User Name</label>
                         <input
                             type="email"
                             value={email}
@@ -80,13 +105,13 @@ export const LoginForm = () => {
 
                     {/* Password Input */}
                     <div>
-                        <label className="block text-[#235697] font-semibold mb-2 text-md">Mật khẩu</label>
+                        <label className="block text-[#235697] font-semibold mb-2 text-md">Password</label>
                         <div className="relative">
                             <input
                                 type={showPassword ? 'text' : 'password'}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="xinchaoLatee123*"
+                                placeholder="Fill your password"
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#235697] bg-white placeholder-gray-400"
                             />
                             <button
@@ -102,25 +127,31 @@ export const LoginForm = () => {
                     {/* Checkbox & Forgot Password */}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <input type="checkbox" id="remember" className="w-4 h-4 text-[#235697] border-gray-300 rounded focus:ring-[#235697]" />
-                            <label htmlFor="remember" className="text-gray-700 text-sm cursor-pointer">Ghi nhớ đăng nhập</label>
+                            <input
+                                type="checkbox"
+                                id="remember"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                                className="w-4 h-4 text-[#235697] border-gray-300 rounded focus:ring-[#235697]"
+                            />
+                            <label htmlFor="remember" className="text-gray-700 text-sm cursor-pointer">Remember me</label>
                         </div>
-                        <a href="#" className="text-[#235697] text-sm underline hover:text-blue-800 transition-colors">Quên mật khẩu?</a>
+                        <a href="#" className="text-[#235697] text-sm underline hover:text-blue-800 transition-colors">Forgot password?</a>
                     </div>
 
                     <button
                         type="submit"
                         className="w-full bg-linear-to-r from-[#235697] to-[#1BA7D9] text-white font-bold py-3 rounded-lg hover:shadow-lg transition duration-200"
                     >
-                        ĐĂNG NHẬP
+                        LOGIN
                     </button>
                 </form>
 
-                <div className="text-center mt-6">
+                {/* <div className="text-center mt-6">
                     <span className="text-gray-600 text-sm">
-                        Chưa có tài khoản? <a href="#" className="text-[#235697] font-bold hover:underline">Đăng ký ngay!</a>
+                        Dont have an account? <a href="#" className="text-[#235697] font-bold hover:underline">Register now!</a>
                     </span>
-                </div>
+                </div> */}
             </div>
         </div>
     );

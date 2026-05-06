@@ -48,7 +48,7 @@ export const ReasoningChat = ({ history, isSending, errorMessage, onSendMessage,
                 ))}
 
                 {isSending && (
-                    <div className="text-sm text-gray-500">Đang tạo câu hỏi tiếp theo...</div>
+                    <div className="text-sm text-gray-500">Creating new question...</div>
                 )}
 
                 {errorMessage && (
@@ -59,7 +59,7 @@ export const ReasoningChat = ({ history, isSending, errorMessage, onSendMessage,
                             disabled={isSending}
                             className="px-3 py-1.5 rounded-md border border-red-200 bg-white text-red-700 text-xs font-medium hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            Thử lại
+                            Try again
                         </button>
                     </div>
                 )}

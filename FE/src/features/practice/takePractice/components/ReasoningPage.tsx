@@ -21,9 +21,9 @@ import {
 const INITIAL_REASONING_QUESTION = 'So what is your conclusion?';
 const ReasoningContent = ({ id }: { id: string }) => {
     const searchParams = useSearchParams();
-    const sessionId = useMemo(() => 
-        searchParams.get('sessionId') || `SESS_${id}_FALLBACK`, 
-    [searchParams, id]);
+    const sessionId = useMemo(() =>
+        searchParams.get('sessionId') || `SESS_${id}_FALLBACK`,
+        [searchParams, id]);
 
     const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(true);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -59,7 +59,7 @@ const ReasoningContent = ({ id }: { id: string }) => {
                     const firstId = await ClinicalReasoningChatMessageTable.add({
                         role: 'system',
                         content: INITIAL_REASONING_QUESTION,
-                        dimension: 'Mở đầu',
+                        dimension: 'Opening',
                     });
                     setChatHistory([{
                         id: Number(firstId),
@@ -70,7 +70,7 @@ const ReasoningContent = ({ id }: { id: string }) => {
 
                     setCurrentQuestion({
                         question: INITIAL_REASONING_QUESTION,
-                        dimension: 'Mở đầu',
+                        dimension: 'Opening',
                     });
                 }
                 const dimensionsData = await ClinicalReasoningDimensionTable.getAll();
@@ -80,7 +80,7 @@ const ReasoningContent = ({ id }: { id: string }) => {
                     answer: d.answer,
                 })));
 
-                
+
 
             } catch (err) {
                 console.error("Load Dexie Error:", err);
@@ -131,7 +131,7 @@ const ReasoningContent = ({ id }: { id: string }) => {
                 },
                 async (finalData) => {
                     if (finalData.stop) {
-                        await updateMessageById(streamingId, 'Phiên phản biện đã kết thúc, hãy nộp bài.');
+                        await updateMessageById(streamingId, 'Clinical reasoning session ended. Please submit your final diagnosis.');
                         setCurrentQuestion(null);
                         return;
                     }
@@ -142,7 +142,7 @@ const ReasoningContent = ({ id }: { id: string }) => {
             );
         } catch (error) {
             setChatHistory(prev => prev.filter(m => m.id !== streamingId));
-            setReasoningError("Dịch vụ đang bận, vui lòng thử lại.");
+            setReasoningError("An error occurred while fetching the next question. Please try again.");
         } finally {
             setIsReasoningLoading(false);
         }

@@ -2,6 +2,7 @@ import { API_BASE_URL } from '@/src/config/env';
 import { Sparkles, AlertTriangle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { getCookie } from '../utils/cookies';
 
 interface AiMessageBlockProps {
     noteId?: number;
@@ -77,61 +78,88 @@ export async function fetchAiAssistantResponse(
     onDone?: (payload: AiAssistantEvent) => void,
     onError?: (message: string) => void
 ) {
-    const response = await fetch(`${API_BASE_URL}/ai-assistant/assistant/stream/hf`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Accept: "text/event-stream",
-        },
-        body: JSON.stringify({
-            doctor_id: "doctor_demo",
-            question,
-            patient_history: buildPatientHistory(history),
-            use_rag: true,
-        }),
-    });
+    const accessToken = getCookie('accessToken');
 
-    if (!response.body) {
-        throw new Error("Response body is empty – cannot read SSE stream");
-    }
+    const controller = new AbortController();
+    const TIMEOUT = 60 * 1000; // 60 seconds
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
+    const timeoutId = setTimeout(() => {
+        controller.abort(); //cancel request
+    }, TIMEOUT);
 
-    let buffer = "";
+    try {
+        const response = await fetch(`${API_BASE_URL}/ai-assistant/assistant/stream/hf`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "text/event-stream",
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+            },
+            body: JSON.stringify({
+                doctor_id: "doctor_demo",
+                question,
+                patient_history: buildPatientHistory(history),
+                use_rag: true,
+            }),
+            signal: controller.signal
+        });
 
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        if (!response.body) {
+            throw new Error("Response body is empty");
+        }
 
-        buffer += decoder.decode(value, { stream: true });
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
 
-        const events = buffer.split("\n\n");
-        buffer = events.pop() ?? "";
+        let buffer = "";
 
-        for (const event of events) {
-            if (!event.startsWith("data:")) continue;
+        while (true) {
+            const { done, value } = await reader.read();
 
-            const jsonStr = event.replace("data:", "").trim();
-            if (!jsonStr) continue;
+            if (done) break;
 
-            try {
-                const data: AiAssistantEvent = JSON.parse(jsonStr);
+            buffer += decoder.decode(value, { stream: true });
 
-                if (data.type === "token" && data.content) {
-                    onToken(data.content);
+            const events = buffer.split("\n\n");
+            buffer = events.pop() ?? "";
+
+            for (const event of events) {
+                if (!event.startsWith("data:")) continue;
+
+                const jsonStr = event.replace("data:", "").trim();
+                if (!jsonStr) continue;
+
+                try {
+                    const data: AiAssistantEvent = JSON.parse(jsonStr);
+
+                    if (data.type === "token" && data.content) {
+                        onToken(data.content);
+                    }
+
+                    if (data.type === "done") {
+                        onDone?.(data);
+                        // clear when done
+                        clearTimeout(timeoutId);
+                    }
+
+                    if (data.type === "error") {
+                        onError?.(data.message ?? "Unknown error");
+                        clearTimeout(timeoutId);
+                    }
+                } catch (err) {
+                    console.error("JSON parse error:", err);
                 }
-
-                if (data.type === "done") {
-                    onDone?.(data);
-                }
-
-                if (data.type === "error") {
-                    onError?.(data.message ?? "Unknown error");
-                }
-            } catch (err) {
-                console.error("JSON parse error:", err);
             }
         }
+
+    } catch (err: any) {
+        if (err.name === 'AbortError') {
+            //TIMEOUT HANDLE
+            onError?.("TIME OUT TO GENERATE RESPONSE");
+        } else {
+            onError?.("Something went wrong");
+        }
+    } finally {
+        clearTimeout(timeoutId);
     }
 }

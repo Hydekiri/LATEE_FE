@@ -1,10 +1,14 @@
 import TakeAssessmentFeature from "@/src/features/assessment/takeAssessment/TakeAssessmentPage";
+import { checkIsLoggedInAndRedirectToLogin } from "@/src/app/authFilterChain";
 
 async function getFullAssessmentDetails(id: string) {
+    const checkIsLoggedInAndRedirectToLoginResult = await checkIsLoggedInAndRedirectToLogin();
+
+    console.log('[INFO]: User is logged in, fetching assessment data for id:', id);
     const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}`, {
         cache: 'no-store'
     });
-    
+
     if (!res.ok) return null;
     return res.json();
 }
@@ -20,6 +24,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
             </div>
         );
     }
-    
+
     return <TakeAssessmentFeature assessmentData={data} />;
 }

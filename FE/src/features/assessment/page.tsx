@@ -19,7 +19,7 @@ export default function AssessmentPageFeature() {
                 content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
             />
 
-            <section 
+            <section
                 className="w-full py-16 flex flex-col items-center bg-cover bg-center bg-no-repeat"
             >
                 <div className="w-[90%] xl:w-[86%] flex flex-col gap-16">
