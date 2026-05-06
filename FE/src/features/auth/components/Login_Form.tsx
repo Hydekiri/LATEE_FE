@@ -23,13 +23,17 @@ export const LoginForm = () => {
         
         console.log('🔐 Đăng nhập với:', email, 'Role:', selectedRole);
         
-        // LƯU COOKIE
         setCookie('isLoggedIn', 'true', 1);
         setCookie('userEmail', email, 1);
         setCookie('userRole', selectedRole, 1);
         
         setError('');
-        router.push('/home');
+
+        if (selectedRole === 'expert') {
+            router.push('/expert');
+        } else {
+            router.push('/home');
+        }
     };
 
     return (
