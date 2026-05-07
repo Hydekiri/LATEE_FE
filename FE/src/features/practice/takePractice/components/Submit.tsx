@@ -3,17 +3,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { buildEvaluationPayload, submitEvaluation } from '@/src/services/submition-practice-session'; 
+import { buildEvaluationPayload, submitEvaluation } from '@/src/services/submition-practice-session';
 import { ValidationNoteTable } from '@/src/hooks/dexieConfigurations/ValidationNotes.table';
-import { ClinicalReasoningChatMessageTable } from '@/src/hooks/dexieConfigurations/ClinicalReasoningChatMessages.table';
+import { ClinicalReasoningChatMessageTable, ClinicalReasoningDimensionTable } from '@/src/hooks/dexieConfigurations/ClinicalReasoningChatMessages.table';
+import { AIAssistantChatMessageTable } from '@/src/hooks/dexieConfigurations/AIAssistantChatMessages.table';
 import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
 import { API_BASE_URL } from '@/src/config/env';
+import { getCookie } from '@/src/utils/cookies';
 
 interface SubmitModalProps {
     isOpen: boolean;
     onClose: () => void;
     clinicalCaseId: string;
-    sessionId: string; 
+    sessionId: string;
 }
 
 export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: SubmitModalProps) => {
@@ -25,6 +27,7 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
     if (!isOpen) return null;
 
     const handleConfirm = async () => {
+        const learnerId = getCookie("userId") || "USR001";
         if (!diagnosis.trim()) {
             alert('Vui lòng nhập chẩn đoán cuối cùng của bạn.');
             return;
@@ -38,7 +41,7 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id: sessionId,
-                    learnerId: 'USR001', 
+                    learnerId: learnerId,
                     clinicalCaseId: clinicalCaseId,
                     status: 'Completed'
                 }),
@@ -49,11 +52,11 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
             }
 
             const payload = await buildEvaluationPayload({
-                userId: 'USR001', 
-                sessionId: sessionId,           
+                userId: learnerId,
+                sessionId: sessionId,
                 clinicalCaseId: clinicalCaseId,
-                diagnosis: diagnosis,          
-                duration: "30:25" 
+                diagnosis: diagnosis,
+                duration: "30:25"
             });
 
             const response = await submitEvaluation(payload);
@@ -62,7 +65,9 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
                 await Promise.all([
                     VPChatMessageTable.clear(),
                     ClinicalReasoningChatMessageTable.clear(),
-                    ValidationNoteTable.clear()
+                    ValidationNoteTable.clear(),
+                    AIAssistantChatMessageTable.clear(),
+                    ClinicalReasoningDimensionTable.clear(),
                 ]);
 
                 alert('Đã nộp bài thành công!');
@@ -82,7 +87,7 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
         <div className="fixed inset-0 z-[50] flex items-center justify-center bg-black/40 backdrop-blur-sm transition-opacity">
             <div className="bg-white rounded-3xl p-8 w-[520px] shadow-2xl animate-in zoom-in duration-300">
                 <h2 className="text-3xl font-bold text-[#0E2A46] text-center mb-8">Submit Practice</h2>
-                
+
                 <div className="mb-6">
                     <label className="block text-[#2A5DA8] text-sm font-bold uppercase mb-2">Final diagnosis</label>
                     <textarea
@@ -107,16 +112,16 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
                 </div>
 
                 <div className="flex justify-center gap-4">
-                    <button 
-                        onClick={onClose} 
-                        disabled={isSubmitting} 
+                    <button
+                        onClick={onClose}
+                        disabled={isSubmitting}
                         className="flex-1 px-6 py-3 rounded-2xl bg-gray-200 text-gray-700 font-bold hover:bg-gray-300 transition disabled:opacity-50"
                     >
                         Cancel
                     </button>
-                    <button 
-                        onClick={handleConfirm} 
-                        disabled={isSubmitting} 
+                    <button
+                        onClick={handleConfirm}
+                        disabled={isSubmitting}
                         className="flex-[2] px-6 py-3 rounded-2xl bg-[#235697] text-white font-bold hover:bg-[#1a4175] transition flex justify-center items-center gap-2 shadow-lg active:scale-95 disabled:opacity-50"
                     >
                         {isSubmitting ? (

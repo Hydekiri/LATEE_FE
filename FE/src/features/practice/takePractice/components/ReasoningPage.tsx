@@ -89,6 +89,10 @@ const ReasoningContent = ({ id }: { id: string }) => {
         loadData();
     }, []);
 
+    /*
+     * NEED TO CALL API TO GET PATIENT CASE
+     */
+
     const patientCase = useMemo(() => `Clinical case for session ${sessionId}`, [sessionId]);
     const learnerDiagnosis = useMemo(() => `Diagnosis for session ${sessionId}`, [sessionId]);
 

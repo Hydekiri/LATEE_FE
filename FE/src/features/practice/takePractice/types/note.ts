@@ -12,7 +12,7 @@ export interface QuestionValidationResponse {
 }
 
 export interface NoteChatState {
-    noteId: number;
+    noteId: string;
     isOpen: boolean;
     showChat: boolean;
     messages: NoteChatMessage[];

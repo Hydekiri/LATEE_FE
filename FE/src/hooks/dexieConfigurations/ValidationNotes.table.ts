@@ -1,7 +1,7 @@
 import { db } from './database';
 
 export interface ValidationNoteEntity {
-    id?: number;
+    id: string;
     question: string;
     reason: string;
     suggestion: string;
@@ -11,7 +11,7 @@ export interface ValidationNoteEntity {
 }
 
 export const ValidationNoteTable = {
-    async add(data: Omit<ValidationNoteEntity, 'id'>) {
+    async add(data: ValidationNoteEntity) {
         return await db.table('ValidationNotes').add(data);
     },
 
@@ -36,7 +36,7 @@ export const ValidationNoteTable = {
             .toArray();
     },
 
-    async delete(id: number) {
+    async delete(id: string) {
         return await db.table('ValidationNotes').delete(id);
     },
 

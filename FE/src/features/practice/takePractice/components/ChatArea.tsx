@@ -25,8 +25,8 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const [noteID, setNoteID] = useState<number>(0);
-    const [notesState, setNotesState] = useState<Record<number, NoteChatState>>({});
+    const [noteID, setNoteID] = useState<string>('');
+    const [notesState, setNotesState] = useState<Record<string, NoteChatState>>({});
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -80,13 +80,12 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
                 ]);
             }
             const noteData = await ValidationNoteTable.getAll();
-            const restoredNotes: Record<number, NoteChatState> = {};
-            let maxNoteId = 0;
+            const restoredNotes: Record<string, NoteChatState> = {};
+            let maxNoteId = '';
 
             for (const note of noteData) {
-                const currentId = note.id ?? 0;
-                maxNoteId =
-                    Math.max(maxNoteId, currentId);
+                const currentId = note.id ?? '';
+                maxNoteId = currentId;
 
                 restoredNotes[currentId] = {
                     noteId: currentId,
@@ -210,18 +209,19 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
 
         try {
             const accessToken = getCookie('accessToken');
+            const learnerId = getCookie("userId") || "unknown_learner";
 
             const response = await fetch('http://localhost:5000/virtual-patient/ai/stream', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
                 },
                 body: JSON.stringify({
-                    doctor_id: "25697",
+                    doctor_id: learnerId,
                     patient_id: patientId,
                     question: userMessage,
-                    chat_history: chatHistoryForBE 
+                    chat_history: chatHistoryForBE
                 }),
             });
 
@@ -282,8 +282,9 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
     };
 
     const handleValidateQuestion = async (message: string) => {
+        const learnerId = getCookie("userId");
         const validationResponse = await ValidateQuestion({
-            doctor_id: "example_doctor_id",
+            doctor_id: learnerId || "unknown_learner",
             learner_question: message,
             conversation_context: history.map(msg => ({
                 role: msg.role === 'doctor' ? 'doctor' : 'patient',
@@ -343,23 +344,23 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
             /*
                 SAVE NOTE TO DEXIE
                 */
+            const newId = crypto.randomUUID();
+            await ValidationNoteTable.add({
+                id: newId,
+                question: message,
+                reason:
+                    validationResponse.reason,
+                suggestion:
+                    validationResponse.suggestion,
+                category:
+                    validationResponse.category,
+                severity:
+                    validationResponse.severity,
+                confidence:
+                    validationResponse.confidence,
+            });
 
-            const noteDbId =
-                await ValidationNoteTable.add({
-                    question: message,
-                    reason:
-                        validationResponse.reason,
-                    suggestion:
-                        validationResponse.suggestion,
-                    category:
-                        validationResponse.category,
-                    severity:
-                        validationResponse.severity,
-                    confidence:
-                        validationResponse.confidence,
-                });
-
-            const newId = Number(noteDbId);
+            //const newId = crypto.randomUUID()
 
             setNotesState(prev => ({
 

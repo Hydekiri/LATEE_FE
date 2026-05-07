@@ -14,21 +14,21 @@ export const WarningPanel = ({
 }: {
     isPanelExpanded: boolean;
     setIsPanelExpanded: (v: boolean) => void;
-    noteID: number;
-    setNoteID: React.Dispatch<React.SetStateAction<number>>;
-    notesState: Record<number, NoteChatState>;
-    setNotesState: React.Dispatch<React.SetStateAction<Record<number, NoteChatState>>>;
+    noteID: string;
+    setNoteID: React.Dispatch<React.SetStateAction<string>>;
+    notesState: Record<string, NoteChatState>;
+    setNotesState: React.Dispatch<React.SetStateAction<Record<string, NoteChatState>>>;
 }) => {
     // const [noteID, setNoteID] = useState<number>(0);
     // const [notesState, setNotesState] = useState<Record<number, NoteChatState>>({
     // });
-    const [inputValues, setInputValues] = useState<Record<number, string>>({});
+    const [inputValues, setInputValues] = useState<Record<string, string>>({});
 
-    const toggleNote = (id: number) => {
+    const toggleNote = (id: string) => {
         setNotesState(prev => ({ ...prev, [id]: { ...prev[id], isOpen: !prev[id].isOpen } }));
     };
 
-    const toggleChat = (e: React.MouseEvent, id: number) => {
+    const toggleChat = (e: React.MouseEvent, id: string) => {
         e.stopPropagation();
 
         setNotesState(prev => {
@@ -36,13 +36,13 @@ export const WarningPanel = ({
             const isCurrentlyShowing = prev[id].showChat;
 
             Object.keys(newState).forEach((key) => {
-                newState[Number(key)] = {
-                    ...newState[Number(key)],
+                newState[key] = {
+                    ...newState[key],
                     showChat: false
                 };
             });
 
-            
+
             newState[id] = {
                 ...newState[id],
                 showChat: !isCurrentlyShowing,
@@ -53,7 +53,7 @@ export const WarningPanel = ({
         });
     };
 
-    const handleSendChat = (id: number) => {
+    const handleSendChat = (id: string) => {
         const text = inputValues[id];
         if (!text?.trim()) return;
 
@@ -70,7 +70,7 @@ export const WarningPanel = ({
                 }
             }
         }));
-        
+
         setInputValues(prev => ({ ...prev, [id]: '' }));
 
         setTimeout(() => {
@@ -121,7 +121,7 @@ export const WarningPanel = ({
                             <div key={note.noteId} className="transition-all bg-[#FFF1F1]">
                                 <div
                                     className={`px-6 py-2 flex items-start justify-between mb-1 hover:bg-red-100/30 cursor-pointer transition-colors ${note.showChat ? 'bg-[#a3d3ff] text-[#235697]' : 'bg-[#FFF1F1]'}`}
-                                    onClick={() => toggleNote(note.noteId)}
+                                    onClick={() => toggleNote(note.noteId.toString())}
                                 >
                                     <div className="flex gap-3">
                                         <span className={`font-bold text-red-600 text-xs shrink-0`}>! Note #{note.noteId}:</span>
@@ -130,7 +130,7 @@ export const WarningPanel = ({
                                         </span>
                                     </div>
                                     <button
-                                        onClick={(e) => toggleChat(e, note.noteId)}
+                                        onClick={(e) => toggleChat(e, note.noteId.toString())}
                                         className={`p-1.5 rounded-lg transition-all ${note.showChat ? 'bg-[#235697] text-white' : 'text-[#235697] hover:bg-red-200'}`}
                                     >
                                         <MessageSquare className="w-4 h-4" />
