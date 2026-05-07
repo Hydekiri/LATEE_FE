@@ -8,15 +8,14 @@ import {
     ChartBarIcon 
 } from "@heroicons/react/24/solid";
 
-// Cập nhật Interface khớp với dữ liệu từ API /all và chi tiết
 interface AssessmentItem {
     assessmentId: string;
     title: string;
-    descriptions?: string; // API /all có thể không trả về field này, nên để optional
+    descriptions?: string; 
     topic?: string;
     specialty?: string;
     difficultyLevel: string;
-    timeLimitMinutes?: number; // Có thể thiếu trong bản all
+    timeLimitMinutes?: number; 
     numQuestions: number;
     createdAt: string;
 }

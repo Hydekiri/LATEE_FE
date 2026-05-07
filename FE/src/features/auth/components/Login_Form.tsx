@@ -31,10 +31,10 @@ export const LoginForm = () => {
             const data = await loginApi(email, password);
 
             // optional: check role
-            if (data.role.toLowerCase() !== selectedRole) {
-                setError('You have selected the wrong role. Please choose the correct role and try again.');
-                return;
-            }
+            // if (data.role.toLowerCase() !== selectedRole) {
+            //     setError('You have selected the wrong role. Please choose the correct role and try again.');
+            //     return;
+            // }
 
             const accessDays = 1;
             const refreshDays = rememberMe ? 30 : 1;
@@ -51,6 +51,9 @@ export const LoginForm = () => {
             setCookie('isRemembered', rememberMe ? 'true' : 'false', { days: refreshDays });
 
             setError('');
+            if(data.role.toLowerCase() === 'expert') {
+                router.push('/expert')
+            }
             router.push('/home');
 
         } catch (err) {
