@@ -7,9 +7,9 @@ import {
     ClockIcon, 
     ChartBarIcon 
 } from "@heroicons/react/24/solid";
-
+import { getCookie } from "@/src/utils/cookies";
 interface AssessmentItem {
-    assessmentId: string;
+    assessmentId: string; 
     title: string;
     descriptions?: string; 
     topic?: string;
@@ -17,6 +17,7 @@ interface AssessmentItem {
     difficultyLevel: string;
     timeLimitMinutes?: number; 
     numQuestions: number;
+    isActive: boolean; 
     createdAt: string;
 }
 
@@ -27,7 +28,20 @@ export default function AssessmentList() {
 
     const fetchAssessments = useCallback(async () => {
         try {
-            const res = await fetch("http://localhost:5000/assessment/api/assessments/all");
+            const token = getCookie('accessToken');
+                    if (!token) {
+                        alert("Phiên làm việc hết hạn, vui lòng đăng nhập lại.");
+                        return;
+                    }   
+            const res = await fetch("http://localhost:5000/assessment/api/assessments/all", {
+                method: "GET",
+                headers: { 
+                    "accept": "*/*",
+                    "Content-Type": "application/json" ,
+                    "Authorization": `Bearer ${token}`
+                },
+            });
+            
             if (!res.ok) throw new Error("Failed to fetch assessments");
             
             const data: AssessmentItem[] = await res.json();
@@ -105,13 +119,12 @@ export default function AssessmentList() {
                                 {item.title}
                             </h3>
                             
-                            <p className="text-[13px] text-[#0E2A46] opacity-90 mb-4">
-                                <span className="font-bold text-[#235697]">Topic: </span>
-                                {item.topic || "N/A"}
+                            <div className="text-[13px] text-[#0E2A46] opacity-90 mb-4">
+                                <p><span className="font-bold text-[#235697]">Topic: </span>{item.topic || "N/A"}</p>
                                 {item.descriptions && (
-                                    <> <br /> <span className="font-bold text-[#235697]">Desc: </span>{item.descriptions}</>
+                                    <p className="line-clamp-2"><span className="font-bold text-[#235697]">Desc: </span>{item.descriptions}</p>
                                 )}
-                            </p>
+                            </div>
 
                             <div className="mt-auto">
                                 <span className="text-[12px] font-bold text-[#235697]">

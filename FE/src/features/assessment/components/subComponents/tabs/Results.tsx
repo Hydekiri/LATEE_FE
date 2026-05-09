@@ -51,6 +51,7 @@ function ResultsContent() {
             
             setLoading(true);
             try {
+                // Sử dụng endpoint từ API V1 bạn cung cấp
                 const response = await fetch(`http://localhost:5000/assessment/api/assessments/attempts/${attemptId}`, {
                     headers: { 'accept': '*/*' }
                 });
@@ -71,7 +72,7 @@ function ResultsContent() {
 
     if (loading) return (
         <div className="flex flex-col items-center py-20 text-slate-400">
-            <Loader2 className="animate-spin mb-4 w-10 h-10" />
+            <Loader2 className="animate-spin mb-4 w-10 h-10 text-[#235697]" />
             <p>Đang tải kết quả bài thi...</p>
         </div>
     );
@@ -80,10 +81,9 @@ function ResultsContent() {
 
     return (
         <div className="flex flex-col gap-8 pb-10">
-            {/* Tóm tắt kết quả - CSS CŨ TRẢ LẠI */}
-            <div className="grid grid-cols-10 gap-8 bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
-                {/* Phần 1: Ảnh Robot - Chiếm 3/10 */}
-                <div className="col-span-3 relative w-full h-full rounded-2xl overflow-hidden shadow-inner bg-[#A7E6FF] min-h-[200px]">
+            {/* Tóm tắt kết quả tổng quan */}
+            <div className="grid grid-cols-1 md:grid-cols-10 gap-8 bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                <div className="md:col-span-3 relative w-full h-48 md:h-full rounded-2xl overflow-hidden bg-[#A7E6FF]">
                     <Image 
                         src="/images/Robot2.png" 
                         alt="AI Assistant Result" 
@@ -92,46 +92,35 @@ function ResultsContent() {
                     />
                 </div>
                 
-                <div className="col-span-7 flex flex-col justify-center">
-                    <h3 className="text-[#235697] font-bold text-2xl mb-2 text-left">
-                        Case Result
-                    </h3>
+                <div className="md:col-span-7 flex flex-col justify-center">
+                    <h3 className="text-[#235697] font-black text-3xl mb-4 uppercase tracking-tight">Case Evaluation</h3>
                     
-                    <ul className="space-y-1 text-md text-left">
-                        <li>
-                            <span className="font-bold text-[#235697]">Final Score:</span> 
-                            <span className="text-[#0E2A46] ml-1">{Math.round(data.score)}/100</span>
-                        </li>
-                        
-                        <li className="flex items-center gap-1">
-                            <span className="font-bold text-[#235697]">Correct Answer:</span>
-                            <span className="text-[#0E2A46] ml-1">{data.correctCount} / </span>
-                            <span className="text-[#10B981] font-bold ml-1">{data.questions.length}</span>
-                            <CheckCircleIcon className="w-4 h-4 text-[#10B981]" />
-                        </li>
-
-                        <li>
-                            <span className="font-bold text-[#235697]">Status:</span> 
-                            <span className={`ml-1 font-bold ${data.isPassed ? 'text-green-600' : 'text-red-600'}`}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <p className="text-slate-500 text-sm font-bold uppercase tracking-wider">Final Score</p>
+                            <p className="text-4xl font-black text-[#235697]">{Math.round(data.score)}<span className="text-xl text-slate-400">/100</span></p>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-slate-500 text-sm font-bold uppercase tracking-wider">Status</p>
+                            <p className={`text-2xl font-black ${data.isPassed ? 'text-green-500' : 'text-red-500'}`}>
                                 {data.isPassed ? 'PASSED' : 'FAILED'}
-                            </span>
-                        </li>
-                        
-                        <li>
-                            <span className="font-bold text-[#235697]">Attempt ID:</span> 
-                            <span className="text-[#0E2A46] ml-1 text-md">#{data.attemptId.substring(0, 8)}</span>
-                        </li>
+                            </p>
+                        </div>
+                    </div>
 
-                        <li>
-                            <span className="font-bold text-[#235697]">Evaluation:</span> 
-                            <span className="text-[#0E2A46] ml-1">
-                                {data.score >= 80 ? "Excellent clinical reasoning." : "Good effort, review the explanations below."}
-                            </span>
-                        </li>
-                    </ul>
+                    <div className="mt-6 pt-6 border-t border-slate-100 flex items-center gap-6">
+                        <div className="flex items-center gap-2">
+                            <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                            <span className="text-slate-700 font-bold">{data.correctCount} / {data.questions.length} Correct</span>
+                        </div>
+                        <div className="text-slate-400 text-sm">
+                            Attempt ID: <span className="font-mono">#{data.attemptId.substring(0, 8)}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
+            {/* Danh sách câu hỏi chi tiết */}
             <div className="flex flex-col gap-4">
                 <h3 className="text-xl font-bold text-[#235697] flex items-center gap-2 mb-2">
                     <DocumentTextIcon className="w-6 h-6" /> Review chi tiết
@@ -154,10 +143,10 @@ function ResultsContent() {
                         </div>
 
                         {expandedIndex === idx && (
-                            <div className="px-6 pb-6 animate-in fade-in duration-300">
+                            <div className="px-6 pb-6 animate-in fade-in slide-in-from-top-2 duration-300">
                                 <div className="h-px bg-slate-100 mb-6" />
                                 <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 text-left">
-                                    <div className="flex items-center gap-2 mb-2 text-[#235697] font-bold text-xs uppercase">
+                                    <div className="flex items-center gap-2 mb-2 text-[#235697] font-bold text-xs uppercase tracking-widest">
                                         <InformationCircleIcon className="w-5 h-5" /> Clinical Explanation
                                     </div>
                                     <p className="text-slate-600 text-sm leading-relaxed">{q.explanation}</p>

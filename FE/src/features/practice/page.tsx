@@ -1,17 +1,40 @@
 // src/features/practice/page.tsx
 "use client";
 
+import { useEffect, useState } from "react";
 import Home_Header from "@/src/components/layout/Home_Header";
 import HeroSection from "@/src/components/layout/herosection"; 
 import Testimonial from "@/src/components/layout/testimonial";
 import Footer from "@/src/components/layout/Footer";
 import PatientCard from "@/src/features/practice/components/Practice_Card";
-import { MOCK_PATIENTS } from "@/src/data/mockData"; // IMPORT SHARED DATA
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { patientService } from "@/src/services/patient-servvice";
+import { PatientData } from "@/src/types/practice";
 
 export default function PracticePageFeature() {
-    // Use the shared mock data directly. No need for useEffect/useState for static mock data.
-    const data = MOCK_PATIENTS;
+    const [patients, setPatients] = useState<PatientData[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [totalItems, setTotalItems] = useState<number>(0);
+
+    useEffect(() => {
+        let isMounted = true;
+        
+        patientService.getVirtualPatients(1, 20)
+            .then((res) => {
+                if (isMounted) {
+                    setPatients(res.items);
+                    setTotalItems(res.total);
+                }
+            })
+            .catch((err: Error) => {
+                console.error("[ERROR]: Failed to fetch patients", err.message);
+            })
+            .finally(() => {
+                if (isMounted) setIsLoading(false);
+            });
+
+        return () => { isMounted = false; };
+    }, []);
 
     return (
         <main className="w-full flex flex-col items-center overflow-hidden bg-gray-50">
@@ -20,7 +43,7 @@ export default function PracticePageFeature() {
             <HeroSection
                 image="/images/bgLearner2.jpg"
                 title="Lavender Teeducation"
-                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
+                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
             />
 
             <section className="relative w-full flex flex-col items-center bg-cover bg-center bg-no-repeat"
@@ -61,20 +84,38 @@ export default function PracticePageFeature() {
 
                     {/* GRID LIST */}
                     <div className="w-full min-h-125">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-7.5">
-                            {data.map((item) => (
-                                <PatientCard key={item.id} item={item} />
-                            ))}
-                        </div>
+                        {isLoading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#235697]"></div>
+                            </div>
+                        ) : patients.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-7.5">
+                                {patients.map((item) => (
+                                    <PatientCard key={item.id} item={item} />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                                <p className="text-gray-500">No virtual patients found.</p>
+                            </div>
+                        )}
                     </div>
 
-                    {/* PAGINATION */}
+                    {/* PAGINATION*/}
                     <div className="w-full flex flex-col sm:flex-row justify-between items-center mb-12 text-[#235697] text-sm bg-white border border-[#235697] px-4 py-3 rounded-lg shadow-sm gap-4">
-                        <p className="font-medium">Showing 1 – {data.length} of {data.length} items</p>
+                        <p className="font-medium">
+                            Showing 1 – {patients.length} of {totalItems} items
+                        </p>
                         <div className="flex items-center gap-2 text-[14px]">
-                            <button className="px-3 py-1.5 border border-[#235697] rounded-md hover:bg-gray-100 transition disabled:opacity-50">&lt;</button>
-                            <button className="px-3 py-1.5 border border-[#235697] rounded-md bg-[#235697] text-white font-bold shadow-md">1</button>
-                            <button className="px-3 py-1.5 border border-[#235697] rounded-md hover:bg-gray-100 transition">&gt;</button>
+                            <button className="px-3 py-1.5 border border-[#235697] rounded-md hover:bg-gray-100 transition disabled:opacity-50">
+                                &lt;
+                            </button>
+                            <button className="px-3 py-1.5 border border-[#235697] rounded-md bg-[#235697] text-white font-bold shadow-md">
+                                1
+                            </button>
+                            <button className="px-3 py-1.5 border border-[#235697] rounded-md hover:bg-gray-100 transition">
+                                &gt;
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -82,6 +123,6 @@ export default function PracticePageFeature() {
 
             <Testimonial />
             <Footer />
-        </main >
+        </main>
     );
 }

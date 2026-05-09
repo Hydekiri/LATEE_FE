@@ -24,7 +24,7 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
         const activeTab = searchParams.get('tab') || 'about';
     
         const tabs = [
-            { name: 'About Assessment', slug: 'about' },
+            { name: 'About Patient', slug: 'about' },
             { name: 'Experts', slug: 'experts' },
             { name: 'Insights', slug: 'insights' },
             { name: 'Results', slug: 'results' },
@@ -95,3 +95,4 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
             </div>
         );
 };
+

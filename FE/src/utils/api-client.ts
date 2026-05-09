@@ -1,6 +1,8 @@
 // src/utils/api-client.ts
 import axios from 'axios';
 import { API_BASE_URL } from '@/src/config/env';
+import { env } from "@/src/config/env";
+import { getCookie } from "cookies-next"; 
 
 export const ApiClient = axios.create({
     baseURL: API_BASE_URL || 'http://localhost:5000', 
@@ -31,3 +33,36 @@ ApiClient.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+export const apiClient = {
+    async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+        const token = getCookie('accessToken');
+        
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...options.headers,
+        };
+
+        const response = await fetch(`${env.NEXT_PUBLIC_API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers,
+        });
+
+        if (!response.ok) {
+            const errorData: unknown = await response.json().catch(() => ({}));
+            const message = (errorData as { message?: string })?.message || "Internal Server Error";
+            throw new Error(message);
+        }
+
+        return response.json() as Promise<T>;
+    },
+
+    get: <T>(url: string) => apiClient.fetch<T>(url, { method: 'GET' }),
+
+    post: <T, B = unknown>(url: string, body: B) => 
+        apiClient.fetch<T>(url, { 
+            method: 'POST', 
+            body: JSON.stringify(body) 
+        }),
+};

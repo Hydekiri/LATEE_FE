@@ -1,11 +1,14 @@
 import TakeAssessmentFeature from "@/src/features/assessment/takeAssessment/TakeAssessmentPage";
 import { checkIsLoggedInAndRedirectToLogin } from "@/src/app/authFilterChain";
+import { cookies } from "next/headers";
 
 async function getFullAssessmentDetails(id: string) {
-    const checkIsLoggedInAndRedirectToLoginResult = await checkIsLoggedInAndRedirectToLogin();
+    await checkIsLoggedInAndRedirectToLogin();
+    const cookieStore = await cookies();
+    const token = cookieStore.get("accessToken")?.value;
 
-    console.log('[INFO]: User is logged in, fetching assessment data for id:', id);
     const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` },
         cache: 'no-store'
     });
 
@@ -13,17 +16,15 @@ async function getFullAssessmentDetails(id: string) {
     return res.json();
 }
 
-export default async function Page(props: { params: Promise<{ id: string }> }) {
-    const { id } = await props.params;
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const data = await getFullAssessmentDetails(id);
 
-    if (!data) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <p className="text-[#235697] font-bold">Assessment data not found.</p>
-            </div>
-        );
-    }
+    if (!data) return (
+        <div className="h-screen flex items-center justify-center text-[#235697] font-bold">
+            Assessment Not Found
+        </div>
+    );
 
     return <TakeAssessmentFeature assessmentData={data} />;
 }

@@ -4,14 +4,31 @@ import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PatientData } from '@/src/types/practice';
+import { apiClient } from '@/src/utils/api-client';
 
 export const PatientInfo = ({ data }: { data: PatientData }) => {
     const router = useRouter();
 
-    const handleStartPractice = () => {
-        router.push(`/practice/${data.id}/take`);
-    };
+    // const handleStartPractice = () => {
+    //         router.push(`/practice/${data.id}/take`);
+    //     };
+    const handleStartPractice = async () => {
+        try {
+            const sessionPayload = {
+                id: `SESS_${Date.now()}`,
+                learnerId: "USER_ID_FROM_AUTH", 
+                patientId: data.id,
+                moduleId: "EPA_STANDARD_V1",
+                discussionType: "Message Type",
+                status: "Practicing"
+            };
 
+            const result = await apiClient.post<{ id: string }>('/practice-session/api/practice-sessions', sessionPayload);
+            router.push(`/practice/${data.id}/take?sessionId=${result.id}`);
+        } catch (error) {
+            alert("Failed to initialize session");
+        }
+    };
     return (
         <>
             {/* Header: PatientID & Case */}
@@ -37,8 +54,7 @@ export const PatientInfo = ({ data }: { data: PatientData }) => {
                     </p>
                     <span className="text-[#2AA8D8] text-sm font-bold">Times practiced: {data.timesPracticed}</span>
                 </div>
-
-                {/* Nút Start - Đã thêm onClick handler */}
+                
                 <div>
                     <button
                         onClick={handleStartPractice}
