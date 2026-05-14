@@ -89,7 +89,7 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
         try {
             const createRes = await fetch("http://localhost:5000/assessment/api/assessments", {
                 method: "POST",
-                headers: { 
+                headers: {
                     "accept": "*/*",
                     "Content-Type": "application/json" ,
                     "Authorization": `Bearer ${token}`

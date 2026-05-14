@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
 import { setCookie } from '@/src/utils/cookies';
 import { loginApi } from '@/src/services/auth-service';
-//import { saveAuth } from '@/src/utils/auth-storage';
+import { Sparkles } from "lucide-react";
 
-export const LoginForm = () => {
+export const AdminLoginForm = () => {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -24,56 +24,52 @@ export const LoginForm = () => {
             return;
         }
 
+        /*
+         * Solve authentication here 
+         */
         try {
+            const data = await loginApi(email, password);
+
+            if (data.role.toLowerCase() !== "admin") {
+                setError('You do not have permission to access this page');
+                return;
+            }
+
             const accessDays = 1;
             const refreshDays = rememberMe ? 30 : 1;
-            const data = await loginApi(email, password, accessDays, refreshDays);
 
-            if (data.role.toLowerCase() !== selectedRole) {
-                setError('You have selected the wrong role. Please choose the correct role and try again.');
-                return;
-            }
-
+            setCookie('isLoggedIn', 'true', { days: refreshDays });
+            setCookie('accessToken', data.accessToken, { days: accessDays });
+            setCookie('accessTokenExpiresAt', data.accessTokenExpiresAt, { days: accessDays });
+            setCookie('refreshToken', data.refreshToken, { days: refreshDays });
+            setCookie('refreshTokenExpiresAt', data.refreshTokenExpiresAt, { days: refreshDays });
+            setCookie('userEmail', email, { days: refreshDays });
+            setCookie('userId', data.userId, { days: refreshDays });
+            setCookie('username', data.username, { days: refreshDays });
+            setCookie('role', data.role, { days: refreshDays });
             setCookie('isRemembered', rememberMe ? 'true' : 'false', { days: refreshDays });
 
-            setError('');
-            if (data.role.toLowerCase() === 'expert') {
-                console.log("Redirecting to expert dashboard...");
-                router.push('/expert')
-                return;
-            }
-            router.push('/home');
+            router.push('/admin/dashboard');
 
         } catch (err) {
-            setError('Wrong email or password' + (err instanceof Error ? `: ${err.message}` : ''));
+            setError('Wrong email or password');
         }
     };
 
     return (
         <div className="w-full lg:w-1/2 flex items-center justify-center px-8 py-12">
             <div className="w-full max-w-xl bg-white rounded-[10px] shadow-lg p-8 border border-gray-100">
-                {/* Tabs Role Selection */}
-                <div className="flex gap-2 mb-8">
-                    {(['learner', 'expert'] as const).map((role) => (
-                        <button
-                            key={role}
-                            onClick={() => setSelectedRole(role)}
-                            className={`w-1/2 py-3 font-bold text-base rounded-[10px] transition-all capitalize ${selectedRole === role
-                                ? 'bg-linear-to-r from-[#235697] to-[#1BA7D9] text-white'
-                                : 'bg-gray-200 text-gray-400'
-                                }`}
-                            style={{
-                                boxShadow: selectedRole === role
-                                    ? 'inset 0 2px 4px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.1)'
-                                    : 'inset 0 2px 4px rgba(0,0,0,0.05)'
-                            }}
-                        >
-                            {role}
-                        </button>
-                    ))}
-                </div>
+                <div className="w-full grid grid-cols-2 gap-2 mb-8 items-center">
+                    <div className="col-span-1">
+                        <h1 className="text-4xl font-lato-heavy-i text-gray-800 mb-3">SIGN IN</h1>
+                        <p className="text-2xl font-lato-heavy-i text-gray-800 mb-3">Welcome Back, Admin!</p>
+                    </div>
 
-                <h1 className="text-3xl font-lato-heavy-i text-gray-800 mb-6">LOGIN</h1>
+                    {/* Right icon */}
+                    <div className="col-span-1 w-[75%] h-14 flex items-end justify-end">
+                        <Sparkles size={72} className="text-[#235697]" />
+                    </div>
+                </div>
 
                 {error && (
                     <div className="p-4 bg-red-100 text-red-700 rounded-lg mb-6 text-sm">

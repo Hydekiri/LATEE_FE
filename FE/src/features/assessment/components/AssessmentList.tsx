@@ -3,19 +3,19 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { 
-    ClockIcon, 
-    ChartBarIcon 
+import {
+    ClockIcon,
+    ChartBarIcon
 } from "@heroicons/react/24/solid";
 import { getCookie } from "@/src/utils/cookies";
 interface AssessmentItem {
     assessmentId: string; 
     title: string;
-    descriptions?: string; 
+    descriptions?: string;
     topic?: string;
     specialty?: string;
     difficultyLevel: string;
-    timeLimitMinutes?: number; 
+    timeLimitMinutes?: number;
     numQuestions: number;
     isActive: boolean; 
     createdAt: string;
@@ -43,9 +43,9 @@ export default function AssessmentList() {
             });
             
             if (!res.ok) throw new Error("Failed to fetch assessments");
-            
+
             const data: AssessmentItem[] = await res.json();
-            
+
             const sorted = data
                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                 .slice(0, 3);
@@ -91,14 +91,14 @@ export default function AssessmentList() {
 
             <div className="flex flex-col gap-6">
                 {assessments.map((item) => (
-                    <div 
-                        key={item.assessmentId} 
+                    <div
+                        key={item.assessmentId}
                         onClick={() => router.push(`/assessment/${item.assessmentId}?tab=about`)}
                         className="group flex flex-col lg:flex-row items-stretch bg-[#F0F8FF] rounded-[18px] border border-[#235697]/10 p-5 gap-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                     >
                         <div className="relative w-full lg:w-75 h-45 rounded-xl overflow-hidden shrink-0 shadow-inner">
                             <Image
-                                src="/images/quizz1.jpeg" 
+                                src="/images/quizz1.jpeg"
                                 alt={item.title}
                                 fill
                                 className="object-cover"
@@ -134,9 +134,9 @@ export default function AssessmentList() {
                         </div>
 
                         <div className="shrink-0 flex flex-col justify-between items-end pl-4 py-1">
-                            <button 
+                            <button
                                 onClick={(e) => {
-                                    e.stopPropagation(); 
+                                    e.stopPropagation();
                                     goToDetail(item.assessmentId);
                                 }}
                                 className="flex items-center gap-2 bg-[#1BA7D9] text-white px-7 py-3 rounded-xl font-bold text-sm hover:bg-[#235697] transition-all shadow-md active:scale-95"

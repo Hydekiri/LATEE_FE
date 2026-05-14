@@ -1,48 +1,28 @@
-import { MoreHorizontal } from "lucide-react";
+import UsersTable from "@/src/features/admin/components/UsersTable";
+import { useState } from "react";
 
 export default function MainAnalytics() {
+    const [search, setSearch] = useState("");
+    const [role, setRole] = useState("");
+    const [status, setStatus] = useState("");
+    const [date, setDate] = useState("");
+    const [refreshKey, setRefreshKey] = useState(0);
+    const refreshUsers = () => {
+        setRefreshKey(prev => prev + 1);
+    };
+    const [currentPage, setCurrentPage] = useState(1);
     return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 bg-white rounded-3xl p-6 shadow-sm">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-bold text-[#235697]">Người dùng</h2>
-                    <button className="text-xs font-bold text-[#1BA7D9] uppercase tracking-wider">Xem chi tiết</button>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="text-[10px] uppercase text-gray-400 border-b border-gray-50">
-                            <tr>
-                                <th className="pb-4 font-bold">Email người dùng</th>
-                                <th className="pb-4 font-bold">Vai trò</th>
-                                <th className="pb-4 font-bold">Trạng thái</th>
-                                <th className="pb-4 font-bold">Ngày cấp</th>
-                                <th className="pb-4"></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                            {[1, 2, 3, 4].map((i) => (
-                                <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                    <td className="py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-lg bg-emerald-100" />
-                                            <div>
-                                                <p className="font-bold text-slate-700">Esthera Jackson</p>
-                                                <p className="text-[10px] text-gray-400 italic">esthera@simmmple.com</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="py-4 font-medium text-slate-600">Manager</td>
-                                    <td className="py-4">
-                                        <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-[10px] font-bold">Online</span>
-                                    </td>
-                                    <td className="py-4 text-gray-500 text-[11px]">14/06/26</td>
-                                    <td className="py-4 text-right"><button className="text-gray-300 font-bold text-[10px]">Edit</button></td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <UsersTable
+                search={search}
+                role={role}
+                status={status}
+                date={date}
+                refreshKey={refreshKey}
+                onRefresh={refreshUsers}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+            />
 
             <div className="lg:col-span-4 bg-white rounded-3xl p-5 shadow-sm flex flex-col justify-between">
                 <div className="h-40 w-full bg-linear-to-r from-[#235697] to-[#1BA7D9] rounded-2xl mb-4" />

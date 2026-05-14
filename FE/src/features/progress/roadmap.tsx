@@ -1,17 +1,9 @@
+import type { GenerateRoadmapResponse, RoadmapItem } from '@/src/services/roadmap-service';
 import React, { useEffect, useState } from "react";
-import { ChevronRight, Star, CircleStar, Sparkles, CalendarDays, Target, Clock3 } from "lucide-react";
+import { ChevronRight, Star, Sparkles, CalendarDays, Target, Clock3 } from "lucide-react";
 import generateRoadmap, { getLatestRoadmap, updateRoadmapWithId } from "@/src/services/roadmap-service";
 
-type RoadmapItem = {
-    order_id: number;
-    recommended_content: string;
-    detailed_explain: string;
-    amount_of_time_days: number;
-    start_date: Date | null;
-    status: "done" | "in_progress";
-};
-
-type RoadmapData = {
+export interface RoadmapData {
     roadmap_id: string;
     roadmap_version: string;
     total_days: number;
@@ -68,13 +60,14 @@ export default function RoadmapPage() {
             // Load the latest Roadmap data here.
             getLatestRoadmap().then(async (result) => {
                 if (result && result.content) {
+                    const content = result.content;
                     setRoadmapListState({
                         roadmap_id: result.roadmap_id,
                         roadmap_version: result.version,
-                        total_days: result.content.total_days,
-                        title: result.content.roadmap_title,
-                        goal: result.content.goal,
-                        roadmap: result.content.roadmap.map((item: any, index: number) => ({
+                        total_days: content.total_days,
+                        title: content.roadmap_title,
+                        goal: content.goal,
+                        roadmap: content.roadmap.map((item: GenerateRoadmapResponse['roadmap'][number], index: number) => ({
                             order_id: index + 1,
                             recommended_content: item.recommended_content,
                             detailed_explain: item.detailed_explain,
@@ -85,8 +78,6 @@ export default function RoadmapPage() {
                     });
                     setLoadLastedRoadmap(true);
                 }
-            }).catch((error) => {
-                console.error("Error loading latest roadmap:", error);
             });
         }
     }, [roadmapListState]);
@@ -94,14 +85,23 @@ export default function RoadmapPage() {
 
     function getDateLabel(index: number) {
         if (index === 0 && !roadmapListState.roadmap[0].start_date) {
-            roadmapListState.roadmap[index].start_date = new Date(Date.now());
+            //roadmapListState.roadmap[index].start_date = new Date();
+            setRoadmapListState(prev => {
+                const updatedRoadmap = [...prev.roadmap];
+                updatedRoadmap[0].start_date = new Date();
+                return { ...prev, roadmap: updatedRoadmap };
+            })
         }
         else if (index > 0 && !roadmapListState.roadmap[index].start_date) {
             // increate the date by the amount of time of the previous roadmap item
             const prevItem = roadmapListState.roadmap[index - 1];
-            const prevStartDate = prevItem.start_date ?? new Date(Date.now());
+            const prevStartDate = prevItem.start_date ?? new Date();
             const newStartDate = new Date(prevStartDate.getTime() + prevItem.amount_of_time_days * 24 * 60 * 60 * 1000);
-            roadmapListState.roadmap[index].start_date = newStartDate;
+            setRoadmapListState(prev => {
+                const updatedRoadmap = [...prev.roadmap];
+                updatedRoadmap[index].start_date = newStartDate;
+                return { ...prev, roadmap: updatedRoadmap };
+            });
         }
 
         return roadmapListState.roadmap[index].start_date?.toLocaleDateString("vn-VN", { month: "short", day: "numeric" }) ?? "";
@@ -203,7 +203,7 @@ export default function RoadmapPage() {
                     total_days: result.content.total_days,
                     title: result.content.roadmap_title,
                     goal: result.content.goal,
-                    roadmap: result.content.roadmap.map((item: any, index: number) => ({
+                    roadmap: result.content.roadmap.map((item: GenerateRoadmapResponse['roadmap'][number], index: number) => ({
                         order_id: index + 1,
                         recommended_content: item.recommended_content,
                         detailed_explain: item.detailed_explain,

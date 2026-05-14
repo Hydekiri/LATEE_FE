@@ -6,8 +6,8 @@ import Footer from "@/src/components/layout/Footer";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { checkIsLoggedInAndRedirectToLogin } from "@/src/app/authFilterChain";
+import { notFound, redirect } from "next/navigation";
+import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 
 interface PageProps {
     params: Promise<{
@@ -16,11 +16,16 @@ interface PageProps {
 }
 
 export default async function PatientDetailPage(props: PageProps) {
-    const checkIsLoggedInAndRedirectToLoginResult = await checkIsLoggedInAndRedirectToLogin();
+    const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
+
+    if (!isLearnerLoggedIn) {
+        console.log("Learner has not been logged in. Redirect to login page....");
+        redirect('/login');
+    }
 
     const params = await props.params;
     const practiceId = params.id;
-    console.log('[INFO]: User is logged in, fetching patient data with id', practiceId);
+    console.log('[INFO]: Learner is logged in, fetching patient data with id', practiceId);
 
     // Fetch data using the corrected service
     const patientData = await getPatientById(practiceId);

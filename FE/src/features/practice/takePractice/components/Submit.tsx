@@ -14,11 +14,11 @@ import { getCookie } from '@/src/utils/cookies';
 interface SubmitModalProps {
     isOpen: boolean;
     onClose: () => void;
-    clinicalCaseId: string;
+    patientId: string;
     sessionId: string;
 }
 
-export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: SubmitModalProps) => {
+export const SubmitModal = ({ isOpen, onClose, patientId, sessionId }: SubmitModalProps) => {
     const router = useRouter();
     const [diagnosis, setDiagnosis] = useState('');
     const [checklist, setChecklist] = useState('EPA_STANDARD_V1');
@@ -36,25 +36,34 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
         // const sessionResponse = await fetch(`${API_BASE_URL}/practice-session/api/practice-sessions`, {
         setIsSubmitting(true);
         try {
-            const sessionResponse = await fetch(`${API_BASE_URL}/evaluation/api/evaluation/practice-session`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: sessionId,
-                    learnerId: learnerId,
-                    clinicalCaseId: clinicalCaseId,
-                    status: 'Completed'
-                }),
-            });
+            const accessToken = getCookie("accessToken");
 
-            if (!sessionResponse.ok) {
-                throw new Error('Không thể khởi tạo hoặc cập nhật phiên thực hành trong Database.');
-            }
+            // const sessionResponse = await fetch(`${API_BASE_URL}/practice-session/api/practice-sessions`, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'Authorization': `Bearer ${accessToken}`
+            //     },
+            //     body: JSON.stringify(
+            //         {
+            //             id: sessionId,
+            //             learnerId: learnerId,
+            //             patientId: "10070247",
+            //             moduleId: "Modul SMART3220",
+            //             discussionType: "Message Type",
+            //             guidelinesId: null,
+            //             status: 'Practicing'
+            //         }),
+            // });
+
+            // if (!sessionResponse.ok) {
+            //     throw new Error('Không thể khởi tạo hoặc cập nhật phiên thực hành trong Database.');
+            // }
 
             const payload = await buildEvaluationPayload({
                 userId: learnerId,
                 sessionId: sessionId,
-                clinicalCaseId: clinicalCaseId,
+                patientId: patientId,
                 diagnosis: diagnosis,
                 duration: "30:25"
             });
@@ -72,7 +81,7 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
 
                 alert('Đã nộp bài thành công!');
 
-                router.push(`/practice/${clinicalCaseId}?tab=results&resultId=${response.data.resultId}`);
+                router.push(`/practice/${patientId}?tab=results&resultId=${response.data.resultId}`);
                 onClose();
             }
         } catch (error) {
@@ -93,7 +102,7 @@ export const SubmitModal = ({ isOpen, onClose, clinicalCaseId, sessionId }: Subm
                     <textarea
                         value={diagnosis}
                         onChange={(e) => setDiagnosis(e.target.value)}
-                        placeholder="Kết luận y khoa của bạn là gì?"
+                        placeholder="What is your final diagnosis?"
                         rows={3}
                         className="w-full border border-gray-300 rounded-xl px-4 py-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2A5DA8] resize-none"
                     />

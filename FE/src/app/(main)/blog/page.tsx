@@ -1,8 +1,14 @@
 import BlogFeature from "@/src/features/blog/page";
-import { checkIsLoggedInAndRedirectToLogin } from "../../authFilterChain";
+import { checkIsLearnerLoggedIn } from "../../authFilterChain";
+import { redirect } from "next/navigation";
 
 export default async function BlogPage() {
-    const checkIsLoggedInAndRedirectToLoginResult = await checkIsLoggedInAndRedirectToLogin();
+    const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
+
+    if (!isLearnerLoggedIn) {
+        console.log("Learner has not been logged in. Redirect to login page....");
+        redirect('/login');
+    }
 
     return <BlogFeature />;
 }

@@ -11,7 +11,7 @@ import Link from "next/link";
 type PageType = "Home" | "Module" | "Blog" | "About";
 
 interface NavbarProps {
-    page?: PageType; 
+    page?: PageType;
 }
 
 export default function Navbar({ page }: NavbarProps) {
@@ -29,15 +29,15 @@ export default function Navbar({ page }: NavbarProps) {
 
         return `relative text-base px-2 py-2 text-white transition whitespace-nowrap
             ${isActive
-            ? "font-inter-semibold after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[4px] after:bg-white after:rounded-full"
-            : "font-inter-medium after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[4px] after:bg-white/50 after:rounded-full hover:after:w-full transition-all duration-300"
+                ? "font-inter-semibold after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-full after:h-[4px] after:bg-white after:rounded-full"
+                : "font-inter-medium after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[4px] after:bg-white/50 after:rounded-full hover:after:w-full transition-all duration-300"
             }`;
     }
 
     return (
         <nav className="w-full top-0 left-0 bg-linear-to-r from-[#1ba7d9] to-[#235697] z-50 flex justify-center sticky">
             <div className="w-[86%] py-3 border-b-[3px] border-white flex justify-between items-center">
-                
+
                 {/* --- PHẦN 1: LOGO (Luôn nằm bên trái) --- */}
                 <div className="flex-shrink-0 flex items-center">
                     <Link href="/" className="relative w-[120px] h-10 sm:w-[150px] sm:h-12 lg:w-[180px] lg:h-14 block">
@@ -54,13 +54,13 @@ export default function Navbar({ page }: NavbarProps) {
 
                 {/* --- DESKTOP MENU (Ẩn trên mobile, hiện trên lg hoặc xl) --- */}
                 <div className="hidden xl:flex flex-1 justify-end items-center">
-                    
+
                     {/* --- PHẦN 2: LINKS  --- */}
                     <div className="flex items-center gap-4 2xl:gap-8 mr-8 2xl:mr-16">
-                        <Link href="/home" className={getLinkClasses("/home", "Home")}>Home</Link>
-                        <Link href="/module" className={getLinkClasses("/module", "Module")}>Module</Link>
-                        <Link href="/blog" className={getLinkClasses("/blog", "Blog")}>Blog</Link>
-                        <Link href="/about" className={getLinkClasses("/about", "About")}>About us</Link>
+                        <Link href="/home" className={getLinkClasses("/", "Home")}>Home</Link>
+                        <Link href="/module" className={getLinkClasses("/login", "Module")}>Module</Link>
+                        <Link href="/blog" className={getLinkClasses("/login", "Blog")}>Blog</Link>
+                        <Link href="/about" className={getLinkClasses("/login", "About")}>About us</Link>
                     </div>
 
                     {/* --- PHẦN 3: AUTH BUTTONS (Căn phải ngoài cùng) --- */}
@@ -89,7 +89,7 @@ export default function Navbar({ page }: NavbarProps) {
                 <div className="fixed inset-y-0 right-0 z-15 flex justify-end w-full">
                     {/* Backdrop */}
                     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setIsOpen(false)}></div>
-                    
+
                     {/* Drawer Content */}
                     <div className="w-72 bg-linear-to-b from-[#1ba7d9] to-[#235697] h-full shadow-2xl p-6 pt-10 relative animate-slide-left z-50 flex flex-col">
                         <button

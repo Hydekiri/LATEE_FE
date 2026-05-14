@@ -176,7 +176,7 @@ const ReasoningContent = ({ id }: { id: string }) => {
             <Header isAiSidebarOpen={isAiSidebarOpen} onToggleAi={() => setIsAiSidebarOpen(!isAiSidebarOpen)} />
             <div className="flex flex-1 overflow-hidden">
                 <ReasoningSidebar onEndConversationClick={() => setIsConfirmModalOpen(true)} />
-                <div className="flex-1 flex flex-col" ref={scrollRef}>
+                <div className="flex-1 flex flex-col overflow-auto no-scrollbar" ref={scrollRef}>
                     <ReasoningChat
                         history={chatHistory}
                         isSending={isReasoningLoading}
@@ -191,7 +191,7 @@ const ReasoningContent = ({ id }: { id: string }) => {
             <SubmitModal
                 isOpen={isConfirmModalOpen}
                 onClose={() => setIsConfirmModalOpen(false)}
-                clinicalCaseId={id}
+                patientId={id}
                 sessionId={sessionId}
             />
         </div>

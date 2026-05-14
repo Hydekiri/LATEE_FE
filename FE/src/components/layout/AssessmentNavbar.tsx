@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BellIcon } from '@heroicons/react/24/outline'
-import { ArrowLeftEndOnRectangleIcon  } from "@heroicons/react/24/solid";
+import { ArrowLeftEndOnRectangleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import Link from "next/link";
 import { getCookie } from "@/src/utils/cookies";
@@ -12,15 +12,13 @@ export default function AssessmentNavbar() {
     const router = useRouter();
 
     const [userInfo] = useState<{ name: string; email: string } | null>(() => {
-        if (typeof window !== "undefined") {
-            const email = getCookie("userEmail");
-            if (email) {
-                const namePart = email.split("@")[0];
-                const formattedName =
-                    namePart.charAt(0).toUpperCase() +
-                    namePart.slice(1).replace(/[._-]/g, " ");
-                return { email, name: formattedName };
-            }
+        const email = getCookie("userEmail");
+        const userName = getCookie("username");
+        if (email && userName) {
+            return {
+                email,
+                name: userName.charAt(0).toUpperCase() + userName.slice(1),
+            };
         }
         return null;
     });
@@ -63,11 +61,11 @@ export default function AssessmentNavbar() {
                     {userInfo && (
                         <div className="flex items-center gap-3 pl-2 border-l border-white/20">
                             <div className="w-10 h-10 rounded-full bg-white overflow-hidden relative border-2 border-white/50 shadow-sm">
-                                <Image 
-                                    src="/images/ava1.jpg" 
-                                    alt="Avatar" 
-                                    fill 
-                                    className="object-cover" 
+                                <Image
+                                    src="/images/ava1.jpg"
+                                    alt="Avatar"
+                                    fill
+                                    className="object-cover"
                                 />
                             </div>
                             <div className="flex flex-col text-white text-left sm:flex">
@@ -76,7 +74,7 @@ export default function AssessmentNavbar() {
                                 </span>
                                 <span className="text-[10px] opacity-70">Student</span>
                             </div>
-                            
+
                         </div>
                     )}
                 </div>
