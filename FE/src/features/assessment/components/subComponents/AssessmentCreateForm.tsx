@@ -1,7 +1,7 @@
 "use client";
 
 
-import React, { useState, ChangeEvent} from "react";
+import React, { useState, ChangeEvent } from "react";
 import { X, Loader2, ChevronDown, CheckCircle } from "lucide-react";
 import router from "next/dist/shared/lib/router/router";
 import { useRouter } from "next/navigation";
@@ -35,8 +35,9 @@ interface AssessmentCreateFormProps {
     onSuccess: (assessmentId: string) => void;
 }
 const generateRandomCourseId = (): string => {
-        const randomNum = Math.floor(100 + Math.random() * 900);
-        return `MED_${randomNum}`;
+    // const randomNum = Math.floor(100 + Math.random() * 900);
+    // return `MED_${randomNum}`;
+    return "1";
 };
 
 export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentCreateFormProps) {
@@ -63,7 +64,7 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
     });
 
     const specialties: string[] = ["Cardiology", "Neurology", "Pediatrics", "Internal Medicine", "General Medicine"];
-    
+
     const questionTypeOptions = [
         { label: "Multiple Choice", value: "MultipleChoice" },
         { label: "True / False", value: "TrueFalse" }
@@ -92,9 +93,9 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
         try {
             const createRes = await fetch("http://localhost:5000/assessment/api/assessments", {
                 method: "POST",
-                headers: { 
+                headers: {
                     "accept": "*/*",
-                    "Content-Type": "application/json" 
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
                     ...formData,
@@ -118,7 +119,7 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
                 });
 
                 if (!genRes.ok) throw new Error("Lỗi khi sinh câu hỏi");
-                
+
                 window.dispatchEvent(new Event("assessmentCreated"));
                 router.push(`/assessment/${newId}?tab=about`);
                 onSuccess(newId);
@@ -149,45 +150,45 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
             <form onSubmit={handleCreateAssessment} className="p-6 space-y-6 overflow-y-auto scrollbar-hide">
                 <div className="space-y-1.5">
                     <label className="text-[13px] font-medium text-slate-700">Assessment Title</label>
-                    <input 
-                        required 
+                    <input
+                        required
                         name="title"
-                        className="form-input-full" 
-                        placeholder="e.g. Neurology: Acute Stroke Evaluation" 
-                        value={formData.title} 
-                        onChange={handleChange} 
+                        className="form-input-full"
+                        placeholder="e.g. Neurology: Acute Stroke Evaluation"
+                        value={formData.title}
+                        onChange={handleChange}
                     />
                 </div>
                 <div className="space-y-1.5">
                     <label className="text-[13px] font-medium text-slate-700">Topic</label>
-                    <input 
-                        required 
+                    <input
+                        required
                         name="topic"
-                        className="form-input-full" 
-                        placeholder="e.g. Neurology: Acute Stroke Evaluation" 
-                        value={formData.topic} 
-                        onChange={handleChange} 
+                        className="form-input-full"
+                        placeholder="e.g. Neurology: Acute Stroke Evaluation"
+                        value={formData.topic}
+                        onChange={handleChange}
                     />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                         <label className="text-[13px] font-medium text-slate-700">Sub-topic</label>
-                        <input 
+                        <input
                             name="subtopic"
-                            className="form-input-full" 
-                            placeholder="e.g. Acute Ischemic Stroke" 
-                            value={formData.subtopic} 
-                            onChange={handleChange} 
+                            className="form-input-full"
+                            placeholder="e.g. Acute Ischemic Stroke"
+                            value={formData.subtopic}
+                            onChange={handleChange}
                         />
                     </div>
                     <div className="space-y-1.5">
                         <label className="text-[13px] font-medium text-slate-700">Specialty</label>
                         <div className="relative">
-                            <select 
+                            <select
                                 name="specialty"
-                                className="form-input-full appearance-none pr-10" 
-                                value={formData.specialty} 
+                                className="form-input-full appearance-none pr-10"
+                                value={formData.specialty}
                                 onChange={handleChange}
                             >
                                 {specialties.map(s => <option key={s} value={s}>{s}</option>)}
@@ -198,13 +199,13 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
                 </div>
                 <div className="space-y-1.5">
                     <label className="text-[13px] font-medium text-slate-700">Short Description</label>
-                    <input 
-                        required 
+                    <input
+                        required
                         name="descriptions"
-                        className="form-input-full" 
-                        placeholder="e.g. Neurology: Acute Stroke Evaluation" 
-                        value={formData.descriptions} 
-                        onChange={handleChange} 
+                        className="form-input-full"
+                        placeholder="e.g. Neurology: Acute Stroke Evaluation"
+                        value={formData.descriptions}
+                        onChange={handleChange}
                     />
                 </div>
                 <div className="grid grid-cols-5 gap-4">
@@ -213,11 +214,11 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
                         <div className="flex gap-3">
                             {questionTypeOptions.map((option) => (
                                 <label key={option.value} className={`flex items-center gap-2.5 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer transition-all ${formData.allowedQuestionTypes.includes(option.value) ? 'border-[#235697] bg-[#235697] text-white shadow-md' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}>
-                                    <input 
-                                        type="checkbox" 
-                                        className="hidden" 
-                                        checked={formData.allowedQuestionTypes.includes(option.value)} 
-                                        onChange={() => handleQuestionTypeChange(option.value)} 
+                                    <input
+                                        type="checkbox"
+                                        className="hidden"
+                                        checked={formData.allowedQuestionTypes.includes(option.value)}
+                                        onChange={() => handleQuestionTypeChange(option.value)}
                                     />
                                     {option.label}
                                     {formData.allowedQuestionTypes.includes(option.value) && <CheckCircle size={14} className="text-white" />}
@@ -254,10 +255,10 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
                     <div className="space-y-1.5">
                         <label className="text-[11px] font-semibold text-slate-700 uppercase tracking-tight">Difficulty</label>
                         <div className="relative">
-                            <select 
+                            <select
                                 name="difficultyLevel"
-                                className="form-input-small appearance-none pr-8" 
-                                value={formData.difficultyLevel} 
+                                className="form-input-small appearance-none pr-8"
+                                value={formData.difficultyLevel}
                                 onChange={handleChange}
                             >
                                 <option value="Beginner">Beginner</option>
@@ -284,23 +285,23 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
 
                 <div className="space-y-1.5">
                     <label className="text-[13px] font-medium text-slate-700">Learning Goal</label>
-                    <input 
+                    <input
                         name="goal"
-                        className="form-input-full" 
-                        placeholder="What should the learner achieve?" 
-                        value={formData.goal} 
-                        onChange={handleChange} 
+                        className="form-input-full"
+                        placeholder="What should the learner achieve?"
+                        value={formData.goal}
+                        onChange={handleChange}
                     />
                 </div>
 
                 <div className="space-y-1.5">
                     <label className="text-[13px] font-medium text-slate-700">Extra Note</label>
-                    <textarea 
+                    <textarea
                         name="additionalPrompt"
-                        className="form-input-full h-28 resize-none" 
-                        placeholder="Provide more details for AI..." 
-                        value={formData.additionalPrompt} 
-                        onChange={handleChange} 
+                        className="form-input-full h-28 resize-none"
+                        placeholder="Provide more details for AI..."
+                        value={formData.additionalPrompt}
+                        onChange={handleChange}
                     />
                 </div>
 

@@ -1,6 +1,7 @@
 // src/app/(main)/practice/page.tsx
 import PracticePageFeature from "@/src/features/practice/page";
-import { checkIsLoggedInAndRedirectToLogin } from "../../authFilterChain";
+import { checkIsLearnerLoggedIn } from "../../authFilterChain";
+import { redirect } from "next/navigation";
 
 export const metadata = {
     title: "Practice - Lavender Teeducation",
@@ -8,8 +9,13 @@ export const metadata = {
 };
 
 export default async function PracticePage() {
-    const checkIsLoggedInAndRedirectToLoginResult = await checkIsLoggedInAndRedirectToLogin();
+    const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
 
-    console.log('[INFO]: User is logged in, rendering PracticePage');
+    if (!isLearnerLoggedIn) {
+        console.log("Learner has not been logged in. Redirect to login page....");
+        redirect('/login');
+    }
+
+    console.log('[INFO]: Learner is logged in, rendering PracticePage');
     return <PracticePageFeature />;
 }

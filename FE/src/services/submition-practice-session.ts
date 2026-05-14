@@ -7,9 +7,9 @@ import { getCookie } from '../utils/cookies';
 export interface EvaluationSubmitDTO {
     SessionId: string;
     userId: string;
-    clinicalCaseId: string;
-    vpLog: string;        
-    reasoningLog: string; 
+    patientId: string;
+    vpLog: string;
+    reasoningLog: string;
     diagnosis: string;
     overallScore: number;
     caseType: string;
@@ -25,7 +25,7 @@ export interface EvaluationSubmitDTO {
 export async function buildEvaluationPayload(params: {
     sessionId: string;
     userId: string;
-    clinicalCaseId: string;
+    patientId: string;
     diagnosis: string;
     duration?: string;
 }): Promise<EvaluationSubmitDTO> {
@@ -42,17 +42,17 @@ export async function buildEvaluationPayload(params: {
     return {
         SessionId: params.sessionId,
         userId: params.userId,
-        clinicalCaseId: params.clinicalCaseId,
+        patientId: params.patientId,
         vpLog: JSON.stringify(vpLogData),
         reasoningLog: JSON.stringify(reasoningLogData),
         diagnosis: params.diagnosis,
-        overallScore: 0, 
-        caseType: "Diagnosis", 
+        overallScore: 0,
+        caseType: "Diagnosis",
         discussionType: "Clinical Simulation",
         duration: params.duration || "00:00",
-        
+
         warnings: notes.map(w => ({
-            warningId: w.id?.toString() || `warn_${Date.now()}`,
+            warningId: w.id?.toString(),
             label: w.category || "Clinical Rule Violation",
             description: w.reason || ""
         })),
@@ -63,7 +63,7 @@ export async function submitEvaluation(payload: EvaluationSubmitDTO) {
     const accessToken = getCookie('accessToken');
     const res = await fetch(`${API_BASE_URL}/evaluation/api/evaluation/submit`, {
         method: 'POST',
-        headers: { 
+        headers: {
             'accept': '*/*',
             'Content-Type': 'application/json',
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})

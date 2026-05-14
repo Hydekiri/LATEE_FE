@@ -18,18 +18,14 @@ export default function Navbar({ page }: NavbarProps) {
     const router = useRouter();
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
-
-    // --- LOGIC: Lấy thông tin User từ Cookie ---
     const [userInfo] = useState<{ name: string; email: string } | null>(() => {
-        if (typeof window !== "undefined") {
-            const email = getCookie("userEmail");
-            if (email) {
-                const namePart = email.split("@")[0];
-                const formattedName =
-                    namePart.charAt(0).toUpperCase() +
-                    namePart.slice(1).replace(/[._-]/g, " ");
-                return { email, name: formattedName };
-            }
+        const email = getCookie("userEmail");
+        const userName = getCookie("username");
+        if (email && userName) {
+            return {
+                email,
+                name: userName.charAt(0).toUpperCase() + userName.slice(1),
+            };
         }
         return null;
     });
@@ -42,19 +38,6 @@ export default function Navbar({ page }: NavbarProps) {
         */
         try {
             await logoutApi();
-
-            console.log("[LOGOUT] Logging out...");
-            deleteCookie("isLoggedIn");
-            deleteCookie("userEmail");
-            deleteCookie('accessToken');
-            deleteCookie('accessTokenExpiresAt');
-            deleteCookie('refreshToken');
-            deleteCookie('refreshTokenExpiresAt');
-            deleteCookie('userId');
-            deleteCookie('username');
-            deleteCookie('role');
-            deleteCookie('isRemembered');
-
         } catch (error) {
             console.error("[LOGOUT] Logout API call failed", error);
         }

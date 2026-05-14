@@ -6,8 +6,8 @@ import Footer from "@/src/components/layout/Footer";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { checkIsLoggedInAndRedirectToLogin } from "@/src/app/authFilterChain";
+import { notFound, redirect } from "next/navigation";
+import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 
 interface PageProps {
     params: Promise<{
@@ -15,9 +15,14 @@ interface PageProps {
     }>;
 }
 async function getAssessmentData(id: string) {
-    const checkIsLoggedInAndRedirectToLoginResult = await checkIsLoggedInAndRedirectToLogin();
+    const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
 
-    console.log('[INFO]: User is logged in, fetching assessment data for id:', id);
+    if (!isLearnerLoggedIn) {
+        console.log("Learner has not been logged in. Redirect to login page....");
+        redirect('/login');
+    }
+
+    console.log('[INFO]: Learner is logged in, fetching assessment data for id:', id);
     const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}`, {
         cache: 'no-store'
     });

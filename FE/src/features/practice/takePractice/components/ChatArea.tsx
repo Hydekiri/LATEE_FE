@@ -36,7 +36,7 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
 
     useEffect(() => {
         setHistory([{
-            id: Date.now(),
+            id: 1706,
             role: 'patient',
             message: "Good morning, Doctor...",
             avatar: '/images/LVP1.jpeg'
@@ -52,7 +52,7 @@ export const ChatArea = ({ history, setHistory, patientId }: ChatAreaProps) => {
             if (chatData.length > 0) {
                 setHistory(
                     chatData.map((msg) => ({
-                        id: msg.id ?? Date.now(),
+                        id: msg.id ?? (msg.role === 'user' ? 2004 : 1706), // Fallback ID
                         role:
                             msg.role === 'user'
                                 ? 'doctor'

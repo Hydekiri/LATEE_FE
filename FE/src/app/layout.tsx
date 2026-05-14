@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
-import { 
+import {
   // Inter
   interThin, interThinItalic, interExtraLight, interExtraLightItalic,
   interLight, interLightItalic, interRegular, interItalic,
   interMedium, interMediumItalic, interSemiBold, interSemiBoldItalic,
   interBold, interBoldItalic, interExtraBold, interExtraBoldItalic,
   interBlack, interBlackItalic,
-  
+
   // Lato
   latoThin, latoThinItalic, latoLight, latoLightItalic,
   latoRegular, latoItalic, latoMedium, latoMediumItalic,
   latoSemibold, latoSemiboldItalic, latoBold, latoBoldItalic,
   latoHeavy, latoHeavyItalic, latoBlack, latoBlackItalic,
-  
+
   // Tahoma
   tahomaRegular, tahomaBold,
-  
+
   // Space Mono
   spaceMono
 } from "../config/fonts";
@@ -33,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
+      <body suppressHydrationWarning
         className={`
           ${interThin.variable} ${interThinItalic.variable} ${interExtraLight.variable} ${interExtraLightItalic.variable}
           ${interLight.variable} ${interLightItalic.variable} ${interRegular.variable} ${interItalic.variable}

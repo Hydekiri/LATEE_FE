@@ -1,10 +1,16 @@
 import TakeAssessmentFeature from "@/src/features/assessment/takeAssessment/TakeAssessmentPage";
-import { checkIsLoggedInAndRedirectToLogin } from "@/src/app/authFilterChain";
+import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
+import { redirect } from "next/navigation";
 
 async function getFullAssessmentDetails(id: string) {
-    const checkIsLoggedInAndRedirectToLoginResult = await checkIsLoggedInAndRedirectToLogin();
+    const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
 
-    console.log('[INFO]: User is logged in, fetching assessment data for id:', id);
+    if (!isLearnerLoggedIn) {
+        console.log("Learner has not been logged in. Redirect to login page....");
+        redirect('/login');
+    }
+
+    console.log('[INFO]: Learner is logged in, fetching assessment data for id:', id);
     const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}`, {
         cache: 'no-store'
     });

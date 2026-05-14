@@ -1,6 +1,7 @@
 import AssessmentPageFeature from "@/src/features/assessment/page";
 import { Metadata } from "next";
-import { checkIsLoggedInAndRedirectToLogin } from "@/src/app/authFilterChain";
+import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
     title: "Assessment - Lavender Teeducation",
@@ -8,7 +9,13 @@ export const metadata: Metadata = {
 };
 
 export default async function AssessmentPage() {
-    const checkIsLoggedInAndRedirectToLoginResult = await checkIsLoggedInAndRedirectToLogin();
-    console.log('[INFO]: User is logged in, rendering AssessmentPage');
+    const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
+
+    if (!isLearnerLoggedIn) {
+        console.log("Learner has not been logged in. Redirect to login page....");
+        redirect('/login');
+    }
+
+    console.log('[INFO]: Learner is logged in, rendering AssessmentPage');
     return <AssessmentPageFeature />;
 }
