@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
     ClockIcon,
-    ChartBarIcon
+    ChartBarIcon,
+    MagnifyingGlassIcon,
+    ChevronDownIcon
 } from "@heroicons/react/24/solid";
 import { getCookie } from "@/src/utils/cookies";
 
@@ -18,13 +20,29 @@ interface AssessmentItem {
     difficultyLevel: string;
     timeLimitMinutes?: number;
     numQuestions: number;
+    isActive: boolean;
     createdAt: string;
 }
+
+type SortField =
+    | "createdAt"
+    | "title"
+    | "difficultyLevel"
+    | "specialty";
+
+type SortOrder = "asc" | "desc";
 
 export default function AssessmentList() {
     const router = useRouter();
     const [assessments, setAssessments] = useState<AssessmentItem[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+
+    // ================= FILTER STATES =================
+    const [search, setSearch] = useState("");
+    const [selectedLevel, setSelectedLevel] = useState("All");
+    const [selectedSpecialty, setSelectedSpecialty] = useState("All specialties");
+    const [sortField, setSortField] = useState<SortField>("createdAt");
+    const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
     const fetchAssessments = useCallback(async () => {
         try {
@@ -39,10 +57,12 @@ export default function AssessmentList() {
 
             const data: AssessmentItem[] = await res.json();
 
-            const sorted = data
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                .slice(0, 3);
-            setAssessments(sorted);
+            // const sorted = data
+            //     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            //     .slice(0, 3);
+            // setAssessments(sorted);
+            setAssessments(data);
+            console.log("Fetched assessments:", data);
         } catch (err) {
             console.error("Error:", err);
         } finally {
@@ -65,6 +85,67 @@ export default function AssessmentList() {
         };
     }, [fetchAssessments]);
 
+    // ================= SPECIALTY OPTIONS =================
+    const specialtyOptions = useMemo(() => {
+        const specialties = assessments.map((a) => a.specialty).filter(Boolean);
+
+        return ["All specialties", ...Array.from(new Set(specialties))];
+    }, [assessments]);
+
+    // ================= FILTER + SORT =================
+    const filteredAssessments = useMemo(() => {
+        let filtered = [...assessments];
+
+        // ---------- SEARCH ----------
+        if (search.trim()) {
+            const keyword = search.toLowerCase();
+
+            filtered = filtered.filter((item) => {
+                return (
+                    item.assessmentId?.toLowerCase().includes(keyword) ||
+                    item.title?.toLowerCase().includes(keyword) ||
+                    item.descriptions?.toLowerCase().includes(keyword) ||
+                    item.topic?.toLowerCase().includes(keyword)
+                );
+            });
+        }
+
+        // ---------- LEVEL ----------
+        if (selectedLevel !== "All") {
+            filtered = filtered.filter(
+                (item) => item.difficultyLevel === selectedLevel
+            );
+        }
+
+        // ---------- SPECIALTY ----------
+        if (selectedSpecialty !== "All specialties") {
+            filtered = filtered.filter(
+                (item) => item.specialty === selectedSpecialty
+            );
+        }
+
+        // ---------- SORT ----------
+        filtered.sort((a, b) => {
+            let compareValue = 0;
+
+            // TIME FIELD
+            if (sortField === "createdAt") {
+                compareValue = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            }
+
+            // STRING FIELD
+            else {
+                compareValue = String(a[sortField]).toLowerCase()
+                    .localeCompare(String(b[sortField])
+                        .toLowerCase());
+            }
+
+            return sortOrder === "asc" ? compareValue : -compareValue;
+        });
+
+        return filtered;
+    }, [assessments, search, selectedLevel, selectedSpecialty, sortField, sortOrder]);
+
     const goToDetail = (id: string) => {
         router.push(`/assessment/${id}?tab=about`);
     };
@@ -73,6 +154,7 @@ export default function AssessmentList() {
 
     return (
         <section className="w-full flex flex-col gap-8 mt-12">
+            {/* ================= HEADER ================= */}
             <div className="flex justify-between items-end">
                 <div className="max-w-3xl">
                     <h2 className="text-[32px] font-bold text-[#235697]">Your Assessment</h2>
@@ -82,8 +164,214 @@ export default function AssessmentList() {
                 </div>
             </div>
 
+            {/* ================= FILTER BAR ================= */}
+            <div className="flex flex-col xl:flex-row gap-4 xl:items-center xl:justify-between">
+
+                {/* SEARCH */}
+                <div className="relative w-full xl:max-w-xl">
+                    <MagnifyingGlassIcon className="w-5 h-5 absolute top-1/2 -translate-y-1/2 right-5 text-[#235697]" />
+
+                    <input
+                        type="text"
+                        placeholder="Search assessment..."
+                        value={search}
+                        onChange={(e) =>
+                            setSearch(e.target.value)
+                        }
+                        className="
+                            w-full
+                            rounded-2xl
+                            border
+                            border-[#235697]/30
+                            bg-white
+                            px-5
+                            py-4
+                            pr-14
+                            text-[#235697]
+                            outline-none
+                            focus:border-[#1BA7D9]
+                            shadow-sm
+                        "
+                    />
+                </div>
+
+                {/* FILTERS */}
+                <div className="flex flex-wrap gap-4">
+
+                    {/* LEVEL */}
+                    <div className="relative">
+                        <select
+                            value={selectedLevel}
+                            onChange={(e) =>
+                                setSelectedLevel(
+                                    e.target.value
+                                )
+                            }
+                            className="
+                                appearance-none
+                                rounded-xl
+                                border
+                                border-[#235697]/30
+                                bg-white
+                                px-5
+                                py-3
+                                pr-10
+                                text-[#235697]
+                                font-semibold
+                                outline-none
+                                min-w-[170px]
+                            "
+                        >
+                            <option value="All">
+                                All Levels
+                            </option>
+
+                            <option value="Beginner">
+                                Beginner
+                            </option>
+
+                            <option value="Intermediate">
+                                Intermediate
+                            </option>
+
+                            <option value="Advanced">
+                                Advanced
+                            </option>
+
+                            <option value="Expert">
+                                Expert
+                            </option>
+                        </select>
+
+                        <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
+                    </div>
+
+                    {/* RECENTLY */}
+                    <div className="relative">
+                        <select
+                            value={sortOrder}
+                            onChange={(e) =>
+                                setSortOrder(
+                                    e.target
+                                        .value as SortOrder
+                                )
+                            }
+                            className="
+                                appearance-none
+                                rounded-xl
+                                border
+                                border-[#235697]/30
+                                bg-white
+                                px-5
+                                py-3
+                                pr-10
+                                text-[#235697]
+                                font-semibold
+                                outline-none
+                                min-w-[160px]
+                            "
+                        >
+                            <option value="desc">
+                                Recently Newest
+                            </option>
+
+                            <option value="asc">
+                                Recently Oldest
+                            </option>
+                        </select>
+
+                        <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
+                    </div>
+
+                    {/* SPECIALTY */}
+                    <div className="relative">
+                        <select
+                            value={selectedSpecialty}
+                            onChange={(e) =>
+                                setSelectedSpecialty(
+                                    e.target.value
+                                )
+                            }
+                            className="
+                                appearance-none
+                                rounded-xl
+                                border
+                                border-[#235697]/30
+                                bg-white
+                                px-5
+                                py-3
+                                pr-10
+                                text-[#235697]
+                                font-semibold
+                                outline-none
+                                min-w-[180px]
+                            "
+                        >
+                            {specialtyOptions.map(
+                                (specialty) => (
+                                    <option
+                                        key={specialty}
+                                        value={specialty}
+                                    >
+                                        {specialty}
+                                    </option>
+                                )
+                            )}
+                        </select>
+
+                        <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
+                    </div>
+
+                    {/* SORT FIELD */}
+                    <div className="relative">
+                        <select
+                            value={sortField}
+                            onChange={(e) =>
+                                setSortField(
+                                    e.target
+                                        .value as SortField
+                                )
+                            }
+                            className="
+                                appearance-none
+                                rounded-xl
+                                border
+                                border-[#235697]/30
+                                bg-white
+                                px-5
+                                py-3
+                                pr-10
+                                text-[#235697]
+                                font-semibold
+                                outline-none
+                                min-w-[170px]
+                            "
+                        >
+                            <option value="createdAt">
+                                Sort: CreatedAt
+                            </option>
+
+                            <option value="title">
+                                Sort: Title
+                            </option>
+
+                            <option value="difficultyLevel">
+                                Sort: Level
+                            </option>
+
+                            <option value="specialty">
+                                Sort: Specialty
+                            </option>
+                        </select>
+
+                        <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
+                    </div>
+                </div>
+            </div>
+
+            {/* ================= LIST ================= */}
             <div className="flex flex-col gap-6">
-                {assessments.map((item) => (
+                {filteredAssessments.map((item) => (
                     <div
                         key={item.assessmentId}
                         onClick={() => router.push(`/assessment/${item.assessmentId}?tab=about`)}
@@ -116,7 +404,7 @@ export default function AssessmentList() {
                                 <span className="font-bold text-[#235697]">Topic: </span>
                                 {item.topic || "N/A"}
                                 {item.descriptions && (
-                                    <> <br /> <span className="font-bold text-[#235697]">Desc: </span>{item.descriptions}</>
+                                    <p className="line-clamp-2"><span className="font-bold text-[#235697]">Desc: </span>{item.descriptions}</p>
                                 )}
                             </p>
 
@@ -142,8 +430,9 @@ export default function AssessmentList() {
                             </span>
                         </div>
                     </div>
-                ))}
-            </div>
-        </section>
+                ))
+                }
+            </div >
+        </section >
     );
 }

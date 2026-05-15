@@ -21,15 +21,14 @@ export default function QuestionCard({ question, selectedAnswer, onSelect, index
                     <h3 className="text-2xl font-bold text-[#235697]">
                         Question {index + 1}:
                     </h3>
-                
+
                     <button
                         type="button"
                         onClick={() => setIsFlagged(!isFlagged)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 ${
-                            isFlagged 
-                            ? " text-[#235697] shadow-sm" 
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-200 ${isFlagged
+                            ? " text-[#235697] shadow-sm"
                             : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
-                        }`}
+                            }`}
                     >
                         {isFlagged ? (
                             <FlagSolid className="w-5 h-5" />
@@ -46,37 +45,34 @@ export default function QuestionCard({ question, selectedAnswer, onSelect, index
 
             {/* Question Content */}
             <p className="text-slate-800 text-[1.1rem] mb-10 leading-relaxed font-normal">
-                {question.content}
+                {question.question}
             </p>
 
             {/* Options Section */}
             <div className="space-y-4">
-                {question.options.map((opt) => {
+                {question.questionOption.map((opt) => {
                     const isSelected = selectedAnswer === opt.id;
-                    
+
                     return (
                         <button
                             key={opt.id}
                             type="button"
                             onClick={() => onSelect(opt.id)}
-                            className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                                isSelected 
-                                ? "border-[#00B7FF]/50 bg-[#00B7FF]/20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]" 
+                            className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left ${isSelected
+                                ? "border-[#00B7FF]/50 bg-[#00B7FF]/20 shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
                                 : "border-slate-200 hover:border-slate-300 bg-white"
-                            }`}
+                                }`}
                         >
-                            <span className={`w-10 h-10 flex shrink-0 items-center justify-center rounded-lg font-bold text-lg border transition-colors ${
-                                isSelected 
-                                ? "bg-[#235697] border-[#235697] text-white" 
+                            <span className={`w-10 h-10 flex shrink-0 items-center justify-center rounded-lg font-bold text-lg border transition-colors ${isSelected
+                                ? "bg-[#235697] border-[#235697] text-white"
                                 : "bg-white border-slate-200 text-slate-800"
-                            }`}>
+                                }`}>
                                 {opt.id}
                             </span>
-                            
-                            <span className={`text-lg font-semibold transition-colors ${
-                                isSelected ? "text-[#235697]" : "text-slate-800"
-                            }`}>
-                                {opt.text || opt.content}
+
+                            <span className={`text-lg font-semibold transition-colors ${isSelected ? "text-[#235697]" : "text-slate-800"
+                                }`}>
+                                {opt.text}
                             </span>
                         </button>
                     );

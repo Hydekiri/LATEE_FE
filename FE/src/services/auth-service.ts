@@ -34,8 +34,27 @@ export const loginApi = async (email: string, password: string, accessDays: numb
         const loginResponse = await data.json() as LoginResponse;
 
         setCookie('isLoggedIn', 'true', { days: refreshDays });
-        setCookie('accessToken', loginResponse.accessToken, { days: accessDays });
-        setCookie('accessTokenExpiresAt', loginResponse.accessTokenExpiresAt, { days: accessDays });
+
+        // Debug: log server-provided expiry and parsed ISO
+        try {
+            const parsed = new Date(loginResponse.accessTokenExpiresAt);
+            console.log('[AUTH] server accessTokenExpiresAt:', loginResponse.accessTokenExpiresAt, 'parsed:', parsed.toISOString());
+
+            const msLeft = parsed.getTime() - Date.now();
+            if (msLeft > 0) {
+                // prefer max-age to avoid client/server parsing ambiguity
+                setCookie('accessToken', loginResponse.accessToken, { maxAge: Math.floor(msLeft / 1000) });
+                setCookie('accessTokenExpiresAt', loginResponse.accessTokenExpiresAt, { maxAge: Math.floor(msLeft / 1000) });
+            } else {
+                // fallback: set by explicit expires date
+                setCookie('accessToken', loginResponse.accessToken, { expires: new Date(loginResponse.accessTokenExpiresAt) });
+                setCookie('accessTokenExpiresAt', loginResponse.accessTokenExpiresAt, { expires: new Date(loginResponse.accessTokenExpiresAt) });
+            }
+        } catch (err) {
+            console.warn('[AUTH] Failed to parse accessTokenExpiresAt, setting cookie with days fallback', err);
+            setCookie('accessToken', loginResponse.accessToken, { days: refreshDays });
+            setCookie('accessTokenExpiresAt', loginResponse.accessTokenExpiresAt, { days: refreshDays });
+        }
         setCookie('refreshToken', loginResponse.refreshToken, { days: refreshDays });
         setCookie('refreshTokenExpiresAt', loginResponse.refreshTokenExpiresAt, { days: refreshDays });
         setCookie('userEmail', email, { days: refreshDays });

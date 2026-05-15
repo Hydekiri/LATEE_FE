@@ -69,7 +69,6 @@ export default function FAQ({ data }: { data: AssessmentData }) {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false);
     const [caseId] = useState(data?.assessmentId ?? 'N/A');
 
-    // Logic chỉnh sửa nội dung[cite: 8]
     const [actionId, setActionId] = useState<number | null>(null);
     const [tempValue, setTempValue] = useState<string>("");
 

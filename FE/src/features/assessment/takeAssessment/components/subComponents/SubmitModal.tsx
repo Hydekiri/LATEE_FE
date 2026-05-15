@@ -1,6 +1,8 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { getCookie } from '@/src/utils/cookies';
 import { CheckBadgeIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { removePausedAssessment } from '@/src/features/assessment/takeAssessment/utils/pauseAssessmentStorage';
 
 // Định nghĩa cấu trúc dữ liệu trả về từ Backend
 interface SubmitResponse {
@@ -20,42 +22,56 @@ interface SubmitModalProps {
     assessmentId: string;
     answers: Record<string, string>;
     durationSeconds: number;
+    autoSubmit?: boolean;
 }
 
-export const SubmitModalContent = ({ 
-    onCancel, 
-    answeredCount, 
-    totalQuestions, 
-    assessmentId, 
-    answers, 
-    durationSeconds 
+interface UserAnswerDto {
+    questionId: string;
+    selectedOptionId: string;
+}
+export const SubmitModalContent = ({
+    onCancel,
+    answeredCount,
+    totalQuestions,
+    assessmentId,
+    answers,
+    durationSeconds,
+    autoSubmit = false
 }: SubmitModalProps) => {
-    const router = useRouter(); 
+    const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const hasAutoSubmittedRef = useRef(false);
 
-    const handleSubmit = async (): Promise<void> => {
-        if (!assessmentId || assessmentId === "string") {
-            alert("ID bài đánh giá không hợp lệ. Vui lòng tải lại trang.");
+    const handleSubmit = useCallback(async (): Promise<void> => {
+        if (!assessmentId || assessmentId === 'string') {
+            alert('Invalid assessment ID.');
             return;
         }
 
+        const answerList: UserAnswerDto[] = Object.keys(answers).map((qId) => ({
+            questionId: qId,
+            selectedOptionId: answers[qId]
+        }));
+
         setIsSubmitting(true);
         try {
+            const accessToken = getCookie('accessToken');
+            const learnerId = getCookie('userId');
             const payload = {
-                assessmentId: assessmentId, 
-                userId: "EXP_ANDREW", 
+                assessmentId,
+                userId: learnerId,
                 durationSeconds: Math.floor(durationSeconds),
-                answers: Object.keys(answers).map(qId => ({
-                    questionId: qId,
-                    selectedOptionId: answers[qId]
-                }))
+                answers: answerList
             };
+
+            console.log("Payload being sent to backend:", payload);
 
             const response = await fetch(`http://localhost:5000/assessment/api/assessments/api/attempts/submit`, {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`
                 },
                 body: JSON.stringify(payload),
             });
@@ -63,29 +79,39 @@ export const SubmitModalContent = ({
             const result: SubmitResponse = await response.json();
 
             if (!response.ok) {
-                const errorMessage = result.error || result.message || `Lỗi hệ thống (${response.status})`;
+                const errorMessage = result.error || result.message || `System Error (${response.status})`;
                 throw new Error(errorMessage);
             }
-            
+
             if (result.data?.attemptId) {
+                removePausedAssessment(assessmentId);
                 router.push(`/assessment/${assessmentId}?tab=results&attemptId=${result.data.attemptId}`);
             } else {
-                throw new Error("Nộp bài thành công nhưng không nhận được mã kết quả.");
+                throw new Error("Submit succeeded but no attempt ID returned. Please check your submission or contact support.");
             }
-            
+
         } catch (error: unknown) {
             console.error("Submit Error:", error);
-            let message = "Không thể nộp bài. Vui lòng kiểm tra lại kết nối.";
-            
+            let message = "Cannot submit the assessment. Please check your connection.";
+
             if (error instanceof Error) {
                 message = error.message;
             }
-            
+
             alert(message);
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }, [assessmentId, answers, durationSeconds, router]);
+
+    useEffect(() => {
+        if (!autoSubmit || hasAutoSubmittedRef.current || isSubmitting) {
+            return;
+        }
+
+        hasAutoSubmittedRef.current = true;
+        void handleSubmit();
+    }, [autoSubmit, handleSubmit, isSubmitting]);
 
     return (
         <div className="text-center p-4">
@@ -97,9 +123,9 @@ export const SubmitModalContent = ({
                 You have completed <strong>{answeredCount}/{totalQuestions}</strong> questions.
             </p>
             <div className="flex flex-col gap-3">
-                <button 
+                <button
                     disabled={isSubmitting}
-                    onClick={handleSubmit} 
+                    onClick={handleSubmit}
                     className="w-full py-4 bg-[#235697] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all"
                 >
                     {isSubmitting ? (
@@ -111,7 +137,7 @@ export const SubmitModalContent = ({
                         "Yes, Submit Now"
                     )}
                 </button>
-                <button 
+                <button
                     disabled={isSubmitting}
                     onClick={onCancel}
                     className="w-full py-4 text-slate-400 font-bold hover:bg-slate-50 rounded-xl transition-colors"

@@ -11,7 +11,7 @@ export default async function Home() {
     }
     // COMMENT HERE IF WOULD LIKE TO PASS USER ATTRIBUTES TO LOWER COMPONENTS
     //const currentLearner = await getCurrentUser();
-
+    
     return (
         <HomePage />
     );

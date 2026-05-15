@@ -4,19 +4,40 @@ export function setCookie(
     value: string,
     options?: {
         days?: number;
+        expires?: Date;
+        maxAge?: number; // seconds
         path?: string;
     }
 ) {
-    const days = options?.days ?? 1;
     const path = options?.path ?? '/';
 
-    const maxAge = days * 24 * 60 * 60;
-    const isProd = process.env.NODE_ENV === 'production';
+    const isProd =
+        process.env.NODE_ENV === 'production';
+
+    let expiresOrMaxAge = '';
+
+    if (typeof options?.maxAge === 'number') {
+        // prefer max-age when explicitly provided (seconds)
+        expiresOrMaxAge = `max-age=${Math.floor(options!.maxAge)}`;
+    } else if (options?.expires) {
+        expiresOrMaxAge = `expires=${options.expires.toUTCString()}`;
+    } else {
+        const days = options?.days ?? 1;
+
+        const date = new Date();
+
+        date.setTime(
+            date.getTime() +
+            days * 24 * 60 * 60 * 1000
+        );
+
+        expiresOrMaxAge = `expires=${date.toUTCString()}`;
+    }
 
     const cookie = [
         `${name}=${encodeURIComponent(value)}`,
         `path=${path}`,
-        `max-age=${maxAge}`,
+        expiresOrMaxAge,
         isProd ? 'Secure' : '',
         'SameSite=Lax'
     ]

@@ -12,29 +12,29 @@
 //     clinicalCaseId?: string;
 //     moduleId?: string;
 //     courseId?: string;
-    
+
 //     title: string;
 //     topic: string;          
 //     subtopic?: string;
 //     specialty?: string;
 //     difficultyLevel: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'; 
-    
+
 //     descriptions: string;    
 //     goal: string;            
 //     img: string;             
-    
+
 //     numQuestions: number;
 //     timeLimitMinutes: number; 
 //     passingScorePercentage: number;
 //     maxAttempts: number;     
-    
+
 //     subTitle: string;        
 //     level: string | number;  
 //     timeRequired: string;   
 //     deadline: string;       
 //     releaseDate: string;    
 //     timesPracticed: number;  
-    
+
 //     author: string;
 //     authorRole: string;
 //     learningObjectives: string[]; 
@@ -62,13 +62,13 @@ export interface Expert {
 }
 
 export interface QuestionOption {
-    id: string;     
-    content?: string; 
-    text?: string;    
+    id: string;
+    text?: string;
+    isCorrect?: boolean;
 }
 
 export interface AssessmentData {
-    assessmentId: string;   
+    assessmentId: string;
     creatorId: string;
     clinicalCaseId?: string;
     courseId?: string;
@@ -77,33 +77,33 @@ export interface AssessmentData {
     topic: string;
     subTitle?: string;
     subtopic?: string;
-    difficultyLevel: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'; 
+    difficultyLevel: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
     title: string;
     descriptions: string;
     goal?: string;
     numQuestions: number;
-    timeLimitMinutes: number; 
-    timesPracticed: number; 
+    timeLimitMinutes: number;
+    timesPracticed: number;
     passingScorePercentage: number;
     maxAttempts: number;
     isActive: boolean;
     createdAt: string;
 
     img: string | File;
-    author: string;         
-    authorRole: string;     
-    learningObjectives: string[]; 
-    experts: Expert[];    
-    deadline: string; 
+    author: string;
+    authorRole: string;
+    learningObjectives: string[];
+    experts: Expert[];
+    deadline: string;
 }
 
 export interface AssessmentQuestion {
-    questionId: string;      
+    id: string;
     assessmentId: string;
     questionType: 'MultipleChoice' | 'MultipleResponse' | 'TrueFalse' | 'FillInBlank' | 'ShortAnswer';
     cognitiveLevel: 'Remember' | 'Understand' | 'Apply' | 'Analyze' | 'Evaluate' | 'Create';
-    content: string;
-    options: QuestionOption[]; 
+    question: string;
+    questionOption: QuestionOption[];
     explanation?: string;
     points: number;
 }

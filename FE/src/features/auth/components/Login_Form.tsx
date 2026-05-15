@@ -41,7 +41,7 @@ export const LoginForm = () => {
             }
 
             setCookie('isRemembered', rememberMe ? 'true' : 'false', { days: refreshDays });
-
+            console.log('Role:', data.role);
             setError('');
             if (data.role.toLowerCase() === 'expert') {
                 console.log("Redirecting to expert dashboard...");

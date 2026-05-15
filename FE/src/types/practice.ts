@@ -1,7 +1,17 @@
+// src/types/practice.ts
+
 export interface Expert {
     name: string;
     role: string;
     img: string;
+}
+
+export interface VitalSigns {
+    bp: string;
+    hr: number;
+    spo2?: string | number; 
+    rr?: number;
+    temp?: string;
 }
 
 export interface PatientData {
@@ -11,32 +21,23 @@ export interface PatientData {
     name: string;
     age: number;
     gender: string;
-    pronouns: string;
-    ethnicity: string;
-    setting: string;
+    pronouns?: string;    
+    ethnicity?: string;
+    occupation?: string;
+    setting?: string;
     level: string;
-    time: string;
-    occupation: string;
+    time: string;   
+    date: string;         
+    feedback: number;     
+    timesPracticed: number;
     description: string;
     chiefConcern: string;
-    date: string;
-    feedback: number;
-    timesPracticed: number;
-    
-    vitalSigns: {
-        bp: string;
-        hr: number;
-        spo2: number;
-        rr: number;
-        temp: string;
-    };
-    
+    vitalSigns: VitalSigns;
     instructions: {
         role: string;
         task: string;
         procedure: string[];
     };
-    
     caseRules: {
         rules: string[];
         totalTime: string;

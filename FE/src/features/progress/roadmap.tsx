@@ -236,7 +236,8 @@ export default function RoadmapPage() {
     }
 
     return (
-        <div className="w-full min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900">
+        <div className="w-full min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-50 text-slate-900 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/images/bg111.jpg')" }}>
             <div className="mx-auto max-w-[90%] px-4 py-8 sm:px-6 lg:px-8">
                 <div className="rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] overflow-hidden">
                     <RoadmapOverview title={roadmapListState.title} goal={roadmapListState.goal} progress={progress} totalDays={totalDays} latestVersion={roadmapListState.roadmap_version} numberOfSteps={roadmapListState.roadmap.length} numberOfDoneSteps={roadmapListState.roadmap.filter(item => item.status === "done").length} onCreateRoadmap={() => setShowCreateRoadmapModal(true)} />

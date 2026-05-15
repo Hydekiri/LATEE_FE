@@ -23,7 +23,7 @@ export const CaseInfo = ({ data }: { data: AssessmentData }) => {
                     <h3 className="text-2xl font-bold text-gray-800 leading-tight mb-2">{data.title}</h3>
                     <div className="space-y-1">
                         <p className="text-[#235697] font-bold text-xl">Difficulty Level: Level {data.difficultyLevel}</p>
-                        <p className="text-[#2AA8D8] font-bold text-lg">Times practiced: {data.timesPracticed}</p>
+                        <p className="hidden text-[#2AA8D8] font-bold text-lg">Times practiced: {data.timesPracticed}</p>
                     </div>
                 </div>
             </div>
