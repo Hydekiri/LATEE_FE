@@ -2,7 +2,6 @@ import { CheckBadgeIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-// Định nghĩa cấu trúc dữ liệu trả về từ Backend
 interface SubmitResponse {
     data?: {
         attemptId: string;

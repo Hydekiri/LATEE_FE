@@ -52,3 +52,8 @@ export function deleteCookie(name: string) {
         .filter(Boolean)
         .join('; ');
 }
+
+export function getLearnerId(): string {
+    const userId = getCookie('userId');
+    return userId || "USR001";
+}

@@ -1,20 +1,29 @@
 import { db } from './database';
 
 export interface ValidationNoteEntity {
-    id: string;
-    question: string;
-    reason: string;
-    suggestion: string;
-    category: string;
-    severity: string;
-    confidence: number;
+    id?: number;          
+    noteId: string;       
+    reason: string;      
+    category: string;     
+    sessionId: string;    
+    createdAt: number;    
+    suggestion?: string;
+    severity?: string;
 }
 
 export const ValidationNoteTable = {
-    async add(data: ValidationNoteEntity) {
+    async add(data: Omit<ValidationNoteEntity, 'id'>) {
         return await db.table('ValidationNotes').add(data);
     },
-
+    async getBySession(sessionId: string): Promise<ValidationNoteEntity[]> {
+        return await db.table('ValidationNotes')
+            .where('sessionId')
+            .equals(sessionId)
+            .toArray();
+    },
+    async clearBySession(sessionId: string) {
+        return await db.table('ValidationNotes').where('sessionId').equals(sessionId).delete();
+    },
     async getAll() {
         return await db.table('ValidationNotes')
             .orderBy('id')

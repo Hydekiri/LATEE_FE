@@ -34,11 +34,11 @@ export const AboutPatient = ({ data }: { data: PatientData }) => {
                         Vital Signs
                     </h3>
                     <ul className="space-y-3 text-sm">
-                        <li><span className="font-bold text-[#235697]">Blood Pressure:</span> {data.vitalSigns.bp}</li>
-                        <li><span className="font-bold text-[#235697]">Heart Rate:</span> {data.vitalSigns.hr}</li>
-                        <li><span className="font-bold text-[#235697]">Oxygen Saturation:</span> {data.vitalSigns.spo2}</li>
-                        <li><span className="font-bold text-[#235697]">Respiratory Rate:</span> {data.vitalSigns.rr}</li>
-                        <li><span className="font-bold text-[#235697]">Temperature:</span> {data.vitalSigns.temp}</li>
+                        <li><span className="font-bold text-[#235697]">Blood Pressure:</span> {data.vitalSigns.bp} mmHg</li>
+                        <li><span className="font-bold text-[#235697]">Heart Rate:</span> {data.vitalSigns.hr} bpm</li>
+                        <li><span className="font-bold text-[#235697]">Oxygen Saturation:</span> {data.vitalSigns.spo2}% SpO<sub>2</sub></li>
+                        <li><span className="font-bold text-[#235697]">Respiratory Rate:</span> {data.vitalSigns.rr} breaths/min</li>
+                        <li><span className="font-bold text-[#235697]">Temperature:</span> {data.vitalSigns.temp} °C</li>
                     </ul>
                 </div>
             </div>
@@ -98,7 +98,7 @@ export const AboutPatient = ({ data }: { data: PatientData }) => {
 
                         <div>
                             <span className="font-bold text-[#235697]">
-                                Total Time:  {data.caseRules.totalTime}
+                                Total Time:  {data.caseRules.totalTime} minutes
                             </span> 
                             <ol className="list-decimal pl-5 space-y-1 mt-1 text-gray-700">
                                 {data.caseRules.timeBreakdown.map((time, idx) => (
@@ -134,7 +134,7 @@ export const AboutPatient = ({ data }: { data: PatientData }) => {
                             key={index}
                             className="flex flex-col items-center text-center"
                         >
-                            <div className="w-24 h-24 relative rounded-full overflow-hidden mb-4 border-4 border-gray-100 shadow-md">
+                            <div className="w-24 h-24 relative rounded-full overflow-hidden mb-4 border-4 border-white shadow-md">
                                 <Image
                                     src={expert.img}
                                     alt={expert.name}

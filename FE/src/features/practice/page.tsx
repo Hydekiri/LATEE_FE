@@ -19,7 +19,7 @@ export default function PracticePageFeature() {
     useEffect(() => {
         let isMounted = true;
         
-        patientService.getVirtualPatients(1, 20)
+        patientService.getVirtualPatients(1, 9)
             .then((res) => {
                 if (isMounted) {
                     setPatients(res.items);

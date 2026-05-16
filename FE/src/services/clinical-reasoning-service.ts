@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/src/config/env';
-import { getCookie } from '../utils/cookies';
+import { getCookie } from '@/src/utils/cookies';
 
 export const ALL_DIMENSIONS = [
     'Cơ sở bằng chứng',
@@ -43,18 +43,13 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const CLINICAL_REASONING_STREAM_URL = `${API_BASE_URL}/ai-assistant/clinicalreasoning/hf`;
 
-const parseErrorDetail = async (response: Response) => {
+const parseErrorDetail = async (response: Response): Promise<string> => {
     const text = await response.text();
-
-    if (!text) {
-        return '';
-    }
+    if (!text) return '';
 
     try {
         const parsed = JSON.parse(text) as { detail?: string };
-        if (parsed.detail) {
-            return parsed.detail;
-        }
+        if (parsed.detail) return parsed.detail;
     } catch {
         return text;
     }
@@ -66,7 +61,7 @@ const requestClinicalReasoning = async (
     payload: ClinicalReasoningRequest,
     onToken?: (token: string) => void,
     onDone?: (response: ClinicalReasoningResponse) => void,
-    onError?: (message: string) => void,
+    onError?: (message: string) => void
 ): Promise<ClinicalReasoningResponse> => {
     const accessToken = getCookie('accessToken');
 
@@ -80,11 +75,13 @@ const requestClinicalReasoning = async (
         body: JSON.stringify(payload),
     });
 
-    console.log("Payload sent to clinical reasoning API:", payload);
+    console.log('[clinical-reasoning-service] Payload sent:', payload);
 
     if (!response.ok) {
         const detail = await parseErrorDetail(response);
-        throw new Error(detail || `Clinical reasoning request failed with status ${response.status}`);
+        throw new Error(
+            detail || `Clinical reasoning request failed with status ${response.status}`
+        );
     }
 
     if (!response.body) {
@@ -123,14 +120,12 @@ const requestClinicalReasoning = async (
             if (parsed.type === 'token' && parsed.content) {
                 accumulatedQuestion += parsed.content;
 
-                // chỉ stream nếu chưa có dấu hiệu JSON
                 if (
                     !accumulatedQuestion.trim().startsWith('{') &&
                     !accumulatedQuestion.includes('"dimension"')
                 ) {
                     onToken?.(parsed.content);
                 }
-
                 continue;
             }
 
@@ -138,17 +133,16 @@ const requestClinicalReasoning = async (
                 finalResponse = {
                     dimension: parsed.dimension ?? '',
                     question:
-                        parsed.question?.trim() ||
-                        accumulatedQuestion.trim(),
+                        parsed.question?.trim() || accumulatedQuestion.trim(),
                     stop: Boolean(parsed.stop),
                 };
-
                 onDone?.(finalResponse);
                 continue;
             }
 
             if (parsed.type === 'error') {
-                const errorMessage = parsed.message ?? 'Clinical reasoning stream failed.';
+                const errorMessage =
+                    parsed.message ?? 'Clinical reasoning stream failed.';
                 onError?.(errorMessage);
                 throw new Error(errorMessage);
             }
@@ -170,14 +164,16 @@ export async function fetchClinicalReasoningQuestion(
     payload: ClinicalReasoningRequest,
     onToken?: (token: string) => void,
     onDone?: (response: ClinicalReasoningResponse) => void,
-    onError?: (message: string) => void,
+    onError?: (message: string) => void
 ): Promise<ClinicalReasoningResponse> {
     for (let attempt = 0; attempt < 2; attempt += 1) {
         try {
             return await requestClinicalReasoning(payload, onToken, onDone, onError);
         } catch (error) {
             const message = error instanceof Error ? error.message : '';
-            const is503 = message.includes('503') || message.toLowerCase().includes('llm not available');
+            const is503 =
+                message.includes('503') ||
+                message.toLowerCase().includes('llm not available');
 
             if (is503 && attempt === 0) {
                 await sleep(1200);
@@ -188,5 +184,5 @@ export async function fetchClinicalReasoningQuestion(
         }
     }
 
-    throw new Error('Clinical reasoning request failed.');
+    throw new Error('Clinical reasoning request failed after retries.');
 }

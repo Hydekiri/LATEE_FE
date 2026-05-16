@@ -1,191 +1,212 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation'; // Thêm để lấy sessionId
+import { useEffect, useState, useRef, useMemo, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Header } from './Header';
 import { ReasoningSidebar } from './ReasoningSideBar';
 import { ReasoningChat } from './ReasoningChat';
 import { AiAssistantSidebar } from './AiAssistantSidebar';
 import { SubmitModal } from './Submit';
-import { ReasoningChatMessage } from '../types';
-import {
-    ClinicalReasoningChatMessageTable,
-    ClinicalReasoningChatMessageEntity,
-    ClinicalReasoningDimensionTable
-} from '@/src/hooks/dexieConfigurations/ClinicalReasoningChatMessages.table';
-import {
-    ClinicalReasoningHistoryItem,
-    fetchClinicalReasoningQuestion,
-} from '@/src/services/clinical-reasoning-service';
+import { useReasoningChat, ReasoningMessage } from '@/src/hooks/useReasoningChat';
+import { usePracticeTimer } from '@/src/hooks/usePracticeTimer';
+import { practiceSessionStore } from '@/src/stores/practiceSessionStore';
+import { getCookie } from '@/src/utils/cookies';
+import { API_BASE_URL } from '@/src/config/env';
 
-const INITIAL_REASONING_QUESTION = 'So what is your conclusion?';
-const ReasoningContent = ({ id }: { id: string }) => {
+interface ReasoningPageProps {
+    id: string;
+}
+
+interface PatientApiResponse {
+    chiefConcern?: string;
+    description?: string;
+    medicalHistory?: string;
+    symptom?: string;
+    avatarImage?: string | null;
+    argumentTime?: number;
+}
+
+const ReasoningContent = ({ id }: ReasoningPageProps) => {
+    const router = useRouter();
     const searchParams = useSearchParams();
-    const sessionId = useMemo(() =>
-        searchParams.get('sessionId') || `SESS_${id}_FALLBACK`,
-        [searchParams, id]);
 
-    const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(true);
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [chatHistory, setChatHistory] = useState<ReasoningChatMessage[]>([]);
-    const [interactionHistory, setInteractionHistory] = useState<ClinicalReasoningHistoryItem[]>([]);
-    const [currentQuestion, setCurrentQuestion] = useState<{ question: string; dimension: string } | null>(null);
-    const [isReasoningLoading, setIsReasoningLoading] = useState(false);
+    const sessionId = useMemo(
+        () => searchParams.get('sessionId') ?? `SESS_${id}_FALLBACK`,
+        [searchParams, id]
+    );
+    const vpDuration = useMemo(
+        () => parseInt(searchParams.get('vpDuration') ?? '0', 10),
+        [searchParams]
+    );
+
+    const [isAiSidebarOpen, setIsAiSidebarOpen] = useState<boolean>(true);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
+    const [patientData, setPatientData] = useState<PatientApiResponse | null>(null);
     const [reasoningError, setReasoningError] = useState<string | null>(null);
 
-    const messageIdRef = useRef(1);
-    const scrollRef = useRef<HTMLDivElement>(null);
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [chatHistory]);
+    const hasStarted = useRef<boolean>(false);
+    const lastAiMsgRef = useRef<ReasoningMessage | null>(null);
 
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                const messagesData = await ClinicalReasoningChatMessageTable.getAll();
-                if (messagesData.length > 0) {
-                    setChatHistory(
-                        messagesData.map((m) => ({
-                            id: m.id ?? 0,
-                            role: m.role,
-                            content: m.content,
-                            avatar: m.role === 'system' ? '/images/LVP1.jpeg' : '/images/doctor1.png',
-                        }))
-                    );
-                    messageIdRef.current = Math.max(...messagesData.map((m) => m.id ?? 0)) + 1;
-                } else {
-                    const firstId = await ClinicalReasoningChatMessageTable.add({
-                        role: 'system',
-                        content: INITIAL_REASONING_QUESTION,
-                        dimension: 'Opening',
-                    });
-                    setChatHistory([{
-                        id: Number(firstId),
-                        role: 'system',
-                        content: INITIAL_REASONING_QUESTION,
-                        avatar: '/images/LVP1.jpeg',
-                    }]);
-
-                    setCurrentQuestion({
-                        question: INITIAL_REASONING_QUESTION,
-                        dimension: 'Opening',
-                    });
-                }
-                const dimensionsData = await ClinicalReasoningDimensionTable.getAll();
-                setInteractionHistory(dimensionsData.map(d => ({
-                    dimension: d.dimension,
-                    question: d.question,
-                    answer: d.answer,
-                })));
-
-
-
-            } catch (err) {
-                console.error("Load Dexie Error:", err);
-            }
-        };
-        loadData();
-    }, []);
-
-    /*
-     * NEED TO CALL API TO GET PATIENT CASE
-     */
-
-    const patientCase = useMemo(() => `Clinical case for session ${sessionId}`, [sessionId]);
-    const learnerDiagnosis = useMemo(() => `Diagnosis for session ${sessionId}`, [sessionId]);
-
-    const addMessage = async (data: Omit<ClinicalReasoningChatMessageEntity, 'id'>) => {
-        const id = await ClinicalReasoningChatMessageTable.add(data);
-        const newMessage: ReasoningChatMessage = {
-            id: Number(id),
-            role: data.role,
-            content: data.content,
-            avatar: data.role === 'system' ? '/images/LVP1.jpeg' : '/images/doctor1.png',
-        };
-        setChatHistory((prev) => [...prev, newMessage]);
-        return Number(id);
-    };
-
-    const updateMessageById = async (id: number, content: string) => {
-        setChatHistory((prev) => prev.map((msg) => msg.id === id ? { ...msg, content } : msg));
-        await ClinicalReasoningChatMessageTable.update(id, { content });
-    };
-
-    const requestNextQuestion = async (historyPayload: ClinicalReasoningHistoryItem[]) => {
-        setIsReasoningLoading(true);
-        setReasoningError(null);
-
-        const streamingId = await addMessage({ role: 'system', content: '', dimension: '' });
-        let streamedQuestion = '';
-
+    const timer = usePracticeTimer({
+        autoStart: true,
+        storageKey: `reasoning_timer_${sessionId}`,
+    });
+    
+    const patchStatus = async (status: string): Promise<void> => {
+        if (!sessionId) return;
         try {
-            const response = await fetchClinicalReasoningQuestion(
+            const accessToken = getCookie('accessToken');
+            await fetch(
+                `${API_BASE_URL}/practice-session/api/practice-sessions/${sessionId}/status`,
                 {
-                    patient_case: patientCase,
-                    learner_diagnosis: learnerDiagnosis,
-                    interaction_history: historyPayload,
-                },
-                async (token) => {
-                    streamedQuestion += token;
-                    if (!streamedQuestion.trim().startsWith('{')) {
-                        await updateMessageById(streamingId, streamedQuestion);
-                    }
-                },
-                async (finalData) => {
-                    if (finalData.stop) {
-                        await updateMessageById(streamingId, 'Clinical reasoning session ended. Please submit your final diagnosis.');
-                        setCurrentQuestion(null);
-                        return;
-                    }
-                    const finalMsg = (finalData.question || streamedQuestion).trim();
-                    await updateMessageById(streamingId, finalMsg);
-                    setCurrentQuestion({ question: finalMsg, dimension: finalData.dimension });
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                    },
+                    body: JSON.stringify({ status }),
                 }
             );
-        } catch (error) {
-            setChatHistory(prev => prev.filter(m => m.id !== streamingId));
-            setReasoningError("An error occurred while fetching the next question. Please try again.");
-        } finally {
-            setIsReasoningLoading(false);
+        } catch (e) {
+            console.error('[ReasoningPage] patchStatus error:', e);
         }
     };
 
-    const handleSendMessage = async (answer: string) => {
-        if (!answer.trim() || isReasoningLoading || !currentQuestion) return;
+    useEffect(() => {
+        const fetchPatient = async () => {
+            try {
+                const accessToken = getCookie('accessToken');
+                const res = await fetch(
+                    `${API_BASE_URL}/virtual-patient/api/virtual-patients/${id}`,
+                    {
+                        headers: accessToken
+                            ? { Authorization: `Bearer ${accessToken}` }
+                            : {},
+                    }
+                );
+                if (res.ok) {
+                    const data = (await res.json()) as PatientApiResponse;
+                    setPatientData(data);
+                }
+            } catch (e) {
+                console.error('[ReasoningPage] Failed to load patient:', e);
+            }
+        };
+        void fetchPatient();
+    }, [id]);
 
-        const nextHistory = [
-            ...interactionHistory,
-            { dimension: currentQuestion.dimension, question: currentQuestion.question, answer },
-        ];
+    useEffect(() => {
+        void patchStatus('ReasoningStarted');
+    }, [sessionId]);
 
-        await addMessage({ role: 'user', content: answer, dimension: currentQuestion.dimension });
-        await ClinicalReasoningDimensionTable.add({
-            dimension: currentQuestion.dimension,
-            question: currentQuestion.question,
-            answer
-        });
-        setInteractionHistory(nextHistory);
+    const patientCase = useMemo(() => {
+        if (!patientData) return `Clinical case for session ${sessionId}`;
+        const concern = patientData.chiefConcern ?? patientData.symptom ?? 'Unknown concern';
+        const history =
+            patientData.medicalHistory ?? patientData.description ?? 'Not available';
+        return `${concern}. Medical history: ${history}`;
+    }, [patientData, sessionId]);
 
-        await requestNextQuestion(nextHistory);
+    const {
+        messages,
+        isSending,
+        isComplete,
+        sendAnswer,
+        startReasoning,
+        loadFromDexie,
+    } = useReasoningChat({ patientCase, sessionId });
+
+    useEffect(() => {
+        if (!sessionId) return;
+        void loadFromDexie();
+    }, [sessionId, loadFromDexie]);
+
+    useEffect(() => {
+        if (!patientData || hasStarted.current || !sessionId) return;
+        hasStarted.current = true;
+
+        const stored = practiceSessionStore.load();
+        const storedDiagnosis =
+            stored?.sessionId === sessionId && stored.phase === 'reasoning'
+                ? 'To be determined'
+                : 'To be determined';
+
+        void startReasoning(storedDiagnosis);
+    }, [patientData, sessionId, startReasoning]);
+
+    useEffect(() => {
+        const aiMsgs = messages.filter((m) => m.role === 'assistant');
+        if (aiMsgs.length > 0) {
+            lastAiMsgRef.current = aiMsgs[aiMsgs.length - 1];
+        }
+    }, [messages]);
+
+    const handleSendMessage = async (answer: string): Promise<void> => {
+        setReasoningError(null);
+        try {
+            await sendAnswer(answer, lastAiMsgRef.current ?? undefined);
+        } catch {
+            setReasoningError('An error occurred while processing your answer. Please try again.');
+        }
     };
+
+    const handleRetry = async (): Promise<void> => {
+        setReasoningError(null);
+        await startReasoning('To be determined');
+    };
+    const maxTimeArgument = useMemo(() => {
+        return patientData?.argumentTime ? patientData.argumentTime * 60 : 1800;
+    }, [patientData]);
+
+    const remainingSeconds = useMemo(() => {
+        return Math.max(0, maxTimeArgument - timer.elapsed);
+    }, [maxTimeArgument, timer.elapsed]);
+
+    const countdownDisplay = useMemo(() => {
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }, [remainingSeconds]);
+
+    const progressPercent = useMemo(() => {
+        return Math.max(0, (remainingSeconds / maxTimeArgument) * 100);
+    }, [remainingSeconds, maxTimeArgument]);
 
     return (
         <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans overflow-hidden">
-            <Header isAiSidebarOpen={isAiSidebarOpen} onToggleAi={() => setIsAiSidebarOpen(!isAiSidebarOpen)} />
+            <Header
+                isAiSidebarOpen={isAiSidebarOpen}
+                onToggleAi={() => setIsAiSidebarOpen((prev) => !prev)}
+                sessionId={sessionId}
+                patientId={id}
+            />
             <div className="flex flex-1 overflow-hidden">
-                <ReasoningSidebar onEndConversationClick={() => setIsConfirmModalOpen(true)} />
-                <div className="flex-1 flex flex-col overflow-auto no-scrollbar" ref={scrollRef}>
+                <ReasoningSidebar 
+                    onEndConversationClick={() => setIsConfirmModalOpen(true)} 
+                    countdownDisplay={countdownDisplay}
+                    progressPercent={progressPercent}
+                />
+
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    {/* Timer bar */}
+                    <div className="px-6 py-2 border-b border-gray-100 flex justify-between items-center text-sm text-gray-500 shrink-0">
+                        <span className="font-medium">Clinical Reasoning Phase</span>
+                        <span className="font-mono font-bold text-[#235697]">
+                            {timer.formatted}
+                        </span>
+                    </div>
+
                     <ReasoningChat
-                        history={chatHistory}
-                        isSending={isReasoningLoading}
+                        messages={messages}
+                        isSending={isSending}
+                        isComplete={isComplete}
                         errorMessage={reasoningError}
                         onSendMessage={handleSendMessage}
-                        onRetry={() => requestNextQuestion(interactionHistory)}
+                        onRetry={handleRetry}
                     />
                 </div>
-                {isAiSidebarOpen && <AiAssistantSidebar />}
+
+                {isAiSidebarOpen && <AiAssistantSidebar sessionId={sessionId} />}
             </div>
 
             <SubmitModal
@@ -193,14 +214,23 @@ const ReasoningContent = ({ id }: { id: string }) => {
                 onClose={() => setIsConfirmModalOpen(false)}
                 patientId={id}
                 sessionId={sessionId}
+                vpDuration={vpDuration}
+                timerStop={() => timer.stop()}
             />
         </div>
     );
 };
 
-export const ReasoningPage = ({ id }: { id: string }) => {
+
+export const ReasoningPage = ({ id }: ReasoningPageProps) => {
     return (
-        <Suspense fallback={<div>Loading reasoning session...</div>}>
+        <Suspense
+            fallback={
+                <div className="h-screen flex items-center justify-center bg-[#F8FAFC] text-[#235697] font-semibold">
+                    Loading reasoning session...
+                </div>
+            }
+        >
             <ReasoningContent id={id} />
         </Suspense>
     );

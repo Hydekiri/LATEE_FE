@@ -13,7 +13,8 @@ export interface PracticeSessionState {
 
 export interface ReasoningChatMessage {
     id: number;
-    role: 'user' | 'system';
+    role: 'user' | 'system' | 'assistant';
     content: string;
-    avatar: string;
+    avatar?: string;
+    dimension?: string;
 }

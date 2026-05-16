@@ -1,69 +1,61 @@
 import { db } from './database';
 
-export interface ClinicalReasoningChatMessageEntity {
-    id: number;
-    role: 'user' | 'system';
+export interface ClinicalReasoningChatMessage {
+    id?: number;
+    role: 'user' | 'assistant';
     content: string;
-    dimension: string;
+    sessionId: string;
+    createdAt: number;
+    dimension?: string;
 }
 
-export const ClinicalReasoningChatMessageTable = {
-    async add(data: Omit<ClinicalReasoningChatMessageEntity, 'id'>) {
-        return await db.table('ClinicalReasoningChatMessages').add(data);
-    },
-
-    async getAll() {
-        return await db.table('ClinicalReasoningChatMessages')
-            .orderBy('id')
-            .toArray();
-    },
-
-    async update(id: number, updates: Partial<Omit<ClinicalReasoningChatMessageEntity, 'id'>>) {
-        return await db.table('ClinicalReasoningChatMessages').update(id, updates);
-    },
-
-    async getByConversationId(conversationId: string) {
-        return await db.table('ClinicalReasoningChatMessages')
-            .where('conversationId')
-            .equals(conversationId)
-            .sortBy('id');
-    },
-
-    async getLatest(limit = 10) {
-        return await db.table('ClinicalReasoningChatMessages')
-            .orderBy('id')
-            .reverse()
-            .limit(limit)
-            .toArray();
-    },
-
-    async delete(id: number) {
-        return await db.table('ClinicalReasoningChatMessages').delete(id);
-    },
-
-    async clear() {
-        return await db.table('ClinicalReasoningChatMessages').clear();
-    },
-};
-
+export type ClinicalReasoningChatMessageEntity = ClinicalReasoningChatMessage;
 
 export interface ClinicalReasoningDimensionEntity {
-    id: number;
+    id?: number;
     dimension: string;
     question: string;
     answer: string;
 }
 
+export const ClinicalReasoningChatMessageTable = {
+    add: (msg: Omit<ClinicalReasoningChatMessage, 'id'>) =>
+        db.table('ClinicalReasoningChatMessages').add(msg),
+
+    getBySession: (sessionId: string): Promise<ClinicalReasoningChatMessage[]> =>
+        db.table('ClinicalReasoningChatMessages')
+            .where('sessionId')
+            .equals(sessionId)
+            .sortBy('createdAt') as Promise<ClinicalReasoningChatMessage[]>,
+
+    clearBySession: (sessionId: string): Promise<number> =>
+        db.table('ClinicalReasoningChatMessages')
+            .where('sessionId')
+            .equals(sessionId)
+            .delete(),
+
+    getAll: (): Promise<ClinicalReasoningChatMessage[]> =>
+        db.table('ClinicalReasoningChatMessages')
+            .orderBy('createdAt')
+            .toArray() as Promise<ClinicalReasoningChatMessage[]>,
+
+    update: (id: number, updates: Partial<Omit<ClinicalReasoningChatMessage, 'id'>>) =>
+        db.table('ClinicalReasoningChatMessages').update(id, updates),
+
+    delete: (id: number) =>
+        db.table('ClinicalReasoningChatMessages').delete(id),
+
+    clear: () =>
+        db.table('ClinicalReasoningChatMessages').clear(),
+};
+
 export const ClinicalReasoningDimensionTable = {
-    async add(data: Omit<ClinicalReasoningDimensionEntity, 'id'>) {
-        return await db.table('ClinicalReasoningDimensions').add(data);
-    },
+    add: (data: Omit<ClinicalReasoningDimensionEntity, 'id'>) =>
+        db.table('ClinicalReasoningDimensions').add(data),
 
-    async getAll() {
-        return await db.table('ClinicalReasoningDimensions').toArray();
-    },
+    getAll: (): Promise<ClinicalReasoningDimensionEntity[]> =>
+        db.table('ClinicalReasoningDimensions').toArray() as Promise<ClinicalReasoningDimensionEntity[]>,
 
-    async clear() {
-        return await db.table('ClinicalReasoningDimensions').clear();
-    },
+    clear: () =>
+        db.table('ClinicalReasoningDimensions').clear(),
 };

@@ -4,6 +4,8 @@ export interface ChatMessageEntity {
     id?: number;
     role: 'user' | 'assistant';
     content: string;
+    sessionId: string;
+    createdAt: number;
 }
 
 export const AIAssistantChatMessageTable = {
@@ -11,29 +13,28 @@ export const AIAssistantChatMessageTable = {
         return await db.table('AIAssistantChatMessages').add(data);
     },
 
-    async getAll() {
+    async getAll(): Promise<ChatMessageEntity[]> {
         return await db.table('AIAssistantChatMessages')
-            .orderBy('id')
-            .toArray();
+            .orderBy('createdAt')
+            .toArray() as ChatMessageEntity[];
     },
 
     async update(id: number, updates: Partial<Omit<ChatMessageEntity, 'id'>>) {
         return await db.table('AIAssistantChatMessages').update(id, updates);
     },
 
-    async getByConversationId(conversationId: string) {
+    async getBySession(sessionId: string): Promise<ChatMessageEntity[]> {
         return await db.table('AIAssistantChatMessages')
-            .where('conversationId')
-            .equals(conversationId)
-            .sortBy('id');
+            .where('sessionId')
+            .equals(sessionId)
+            .sortBy('createdAt') as ChatMessageEntity[];
     },
 
-    async getLatest(limit = 10) {
+    async clearBySession(sessionId: string) {
         return await db.table('AIAssistantChatMessages')
-            .orderBy('id')
-            .reverse()
-            .limit(limit)
-            .toArray();
+            .where('sessionId')
+            .equals(sessionId)
+            .delete();
     },
 
     async delete(id: number) {
