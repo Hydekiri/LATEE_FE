@@ -63,6 +63,7 @@ export const AssessmentAbout = ({ data }: AssessmentAboutProps) => {
                         <h3 className="text-3xl font-bold text-[#235697]">General Info</h3>
                     </div>
                     <button
+                        disabled={!data.isActive || (data.listAttempts?.length || data.timesPracticed || 0) >= data.maxAttempts}
                         onClick={handleJoin}
                         className="flex items-center gap-2 bg-white text-[#1BA7D9] px-6 py-3 rounded-lg font-bold hover:bg-[#1BA7D9] hover:text-white transition-all duration-300 ease-in-out shadow-md active:scale-95"
                     >

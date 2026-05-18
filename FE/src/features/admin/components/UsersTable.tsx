@@ -35,7 +35,7 @@ export default function UsersTable({
     const [users, setUsers] = useState<Array<User> | null>(null);
     const [selected, setSelected] = useState<User | null>(null);
 
-    const USERS_PER_PAGE = 10;
+    const USERS_PER_PAGE = 5;
 
     useEffect(() => {
         fetchUsers().then(async (userList) => {
@@ -93,7 +93,7 @@ export default function UsersTable({
     return (
 
         <div className="w-full lg:col-span-8">
-            <div className="lg:col-span-8 bg-white rounded-3xl p-6 shadow-sm">
+            <div className="lg:col-span-8 bg-white rounded-2xl p-6 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-bold text-[#235697]">Users</h2>
                     <button

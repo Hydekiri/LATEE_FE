@@ -8,6 +8,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 import { cookies } from "next/headers";
+import { AssessmentData } from "@/src/types/assessment";
 
 interface PageProps {
     params: Promise<{
@@ -27,10 +28,11 @@ async function getAssessmentData(id: string) {
 
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
+    const learnerId = cookieStore.get("userId")?.value;
 
     console.log('[INFO]: Fetching assessment data for id:', id);
 
-    const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}`, {
+    const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}/learner/${learnerId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -40,7 +42,11 @@ async function getAssessmentData(id: string) {
     });
 
     if (!res.ok) return null;
-    return res.json();
+
+    const data: AssessmentData = await res.json();
+    //console.log('[INFO]: Fetched assessment detail data:', data);
+
+    return data;
 }
 
 export default async function AssessmentDetailPage(props: PageProps) {

@@ -47,11 +47,11 @@ export default function EditUserModal({ user, onClose, onUpdated }: {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
-            <div className="w-full max-w-3xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] px-4 py-1">
+            <div className="w-full max-w-3xl rounded-2xl bg-white px-4 py-0 shadow-sm ring-1 ring-black/5 sm:p-8 sm:py-2">
                 <div className="mb-2 border-b border-gray-50 pb-0">
                     <h2 className="mt-1 text-lg font-bold text-[#235697]">Edit User</h2>
-                    <p className="mt-1 text-sm text-gray-400">Update user details and keep the account record in sync.</p>
+                    <p className="hidden mt-1 text-sm text-gray-400">Update user details and keep the account record in sync.</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-1 md:grid-cols-2">

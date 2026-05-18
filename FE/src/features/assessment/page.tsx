@@ -8,7 +8,7 @@ import AssessmentOverview from "@/src/features/assessment/components/AssessmentO
 import ContinueAssessment from "@/src/features/assessment/components/ContinueAssessment";
 import AssessmentList from "@/src/features/assessment/components/AssessmentList";
 
-export default function AssessmentPageFeature() {
+export default function AssessmentPageFeature({ learnerName }: { learnerName: string }) {
     return (
         <main className="w-full flex flex-col items-center bg-gray-50">
             <Home_Header page="Assessment" />
@@ -23,7 +23,7 @@ export default function AssessmentPageFeature() {
                 className="w-full py-16 flex flex-col items-center bg-cover bg-center bg-no-repeat"
             >
                 <div className="w-[90%] xl:w-[86%] flex flex-col gap-16">
-                    <AssessmentOverview />
+                    <AssessmentOverview learnerName={learnerName} />
                     <ContinueAssessment />
                     <AssessmentList />
                 </div>

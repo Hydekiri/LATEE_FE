@@ -42,7 +42,9 @@ interface AttemptDetail {
 
 interface AttemptOverview {
     attemptId: string;
+    attemptNo: number;
     score: number;
+    maxScore: number;
     isPassed: boolean;
     correctCount: number;
     duration: number;

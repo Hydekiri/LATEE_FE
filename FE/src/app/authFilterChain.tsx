@@ -20,7 +20,7 @@ export const checkIsLoggedIn = async (): Promise<boolean> => {
             const now = new Date();
             const accessTokenExpiresAt = new Date(currentUser.accessTokenExpiresAt);
             const refreshTokenExpiresAt = new Date(currentUser.refreshTokenExpiresAt);
-            if (accessTokenExpiresAt > now && refreshTokenExpiresAt > now) {
+            if (refreshTokenExpiresAt > now) {
                 return true;
             }
         }
@@ -53,7 +53,7 @@ export const checkIsLearnerLoggedIn = async (): Promise<boolean> => {
             const now = new Date();
             const accessTokenExpiresAt = new Date(currentUser.accessTokenExpiresAt);
             const refreshTokenExpiresAt = new Date(currentUser.refreshTokenExpiresAt);
-            if (accessTokenExpiresAt > now && refreshTokenExpiresAt > now) {
+            if (refreshTokenExpiresAt > now) {
                 return true;
             }
         }
@@ -71,7 +71,7 @@ export const checkIsExpertLoggedIn = async (): Promise<boolean> => {
             const now = new Date();
             const accessTokenExpiresAt = new Date(currentUser.accessTokenExpiresAt);
             const refreshTokenExpiresAt = new Date(currentUser.refreshTokenExpiresAt);
-            if (accessTokenExpiresAt > now && refreshTokenExpiresAt > now) {
+            if (refreshTokenExpiresAt > now) {
                 return true;
             }
         }
@@ -89,7 +89,7 @@ export const checkIsAdminLoggedIn = async (): Promise<boolean> => {
             const now = new Date();
             const accessTokenExpiresAt = new Date(currentUser.accessTokenExpiresAt);
             const refreshTokenExpiresAt = new Date(currentUser.refreshTokenExpiresAt);
-            if (accessTokenExpiresAt > now && refreshTokenExpiresAt > now) {
+            if (refreshTokenExpiresAt > now) {
                 return true;
             }
         }

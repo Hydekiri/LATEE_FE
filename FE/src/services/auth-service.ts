@@ -39,8 +39,9 @@ export const loginApi = async (email: string, password: string, accessDays: numb
         try {
             const parsed = new Date(loginResponse.accessTokenExpiresAt);
             console.log('[AUTH] server accessTokenExpiresAt:', loginResponse.accessTokenExpiresAt, 'parsed:', parsed.toISOString());
-
+            console.log('[AUTH] current time:', new Date().toISOString());
             const msLeft = parsed.getTime() - Date.now();
+            console.log('[AUTH] accessToken expires in ms:', msLeft);
             if (msLeft > 0) {
                 // prefer max-age to avoid client/server parsing ambiguity
                 setCookie('accessToken', loginResponse.accessToken, { maxAge: Math.floor(msLeft / 1000) });

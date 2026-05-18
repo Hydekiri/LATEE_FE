@@ -81,7 +81,7 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
         
         const token = getCookie('accessToken');
         if (!token) {
-            alert("Phiên làm việc hết hạn, vui lòng đăng nhập lại.");
+            alert("Session expired, please log in again.");
             return;
         }
 
@@ -101,7 +101,7 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
             });
 
             if (!createRes.ok) {
-                let errorMsg = "Lỗi khi tạo Assessment";
+                let errorMsg = "Error creating assessment";
                 try {
                     const errorData = await createRes.json();
                     errorMsg = errorData.message || errorMsg;
@@ -127,7 +127,7 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
 
                 if (!genRes.ok) {
                     const errorMsg = await genRes.text();
-                    throw new Error(errorMsg || "Server AI không phản hồi kịp thời (Timeout)");
+                    throw new Error(errorMsg || "AI generation failed - Timeout or server error");
                 }
 
                 const contentType = genRes.headers.get("content-type");
@@ -141,7 +141,7 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
             }
         } catch (error: unknown) {
             console.error("Submit Error:", error);
-            alert(error instanceof Error ? error.message : "Đã có lỗi không xác định xảy ra.");
+            alert(error instanceof Error ? error.message : "An undefined error occurred.");
         } finally {
             setIsLoading(false);
         }
@@ -312,7 +312,7 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
                         {isLoading ? (
                             <>
                                 <Loader2 className="animate-spin" size={16} />
-                                <span>Đang khởi tạo...</span>
+                                <span>Generating...</span>
                             </>
                         ) : "Create & Generate"}
                     </button>

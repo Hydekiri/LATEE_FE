@@ -10,59 +10,50 @@ import {
     ChevronDownIcon
 } from "@heroicons/react/24/solid";
 import { getCookie } from "@/src/utils/cookies";
+import { AssessmentData } from "@/src/types/assessment";
 
-interface AssessmentItem {
-    assessmentId: string;
-    title: string;
-    descriptions?: string;
-    topic?: string;
-    specialty?: string;
-    difficultyLevel: string;
-    timeLimitMinutes?: number;
-    numQuestions: number;
-    isActive: boolean;
-    createdAt: string;
-}
+// interface AssessmentItem {
+//     assessmentId: string;
+//     title: string;
+//     descriptions?: string;
+//     topic?: string;
+//     specialty?: string;
+//     difficultyLevel: string;
+//     timeLimitMinutes?: number;
+//     numQuestions: number;
+//     isActive: boolean;
+//     createdAt: string;
+// }
 
-type SortField =
-    | "createdAt"
-    | "title"
-    | "difficultyLevel"
-    | "specialty";
-
-type SortOrder = "asc" | "desc";
+type SortOrder = "timeAsc" | "timeDesc" | "alphaAsc" | "alphaDesc";
 
 export default function AssessmentList() {
     const router = useRouter();
-    const [assessments, setAssessments] = useState<AssessmentItem[]>([]);
+    const [assessments, setAssessments] = useState<AssessmentData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
 
     // ================= FILTER STATES =================
     const [search, setSearch] = useState("");
     const [selectedLevel, setSelectedLevel] = useState("All");
     const [selectedSpecialty, setSelectedSpecialty] = useState("All specialties");
-    const [sortField, setSortField] = useState<SortField>("createdAt");
-    const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
+    const [sortOrder, setSortOrder] = useState<SortOrder>("timeAsc");
 
     const fetchAssessments = useCallback(async () => {
         try {
             const accessToken = getCookie("accessToken");
+            const learnerId = getCookie("userId");
 
-            const res = await fetch("http://localhost:5000/assessment/api/assessments/all", {
+            const res = await fetch(`http://localhost:5000/assessment/api/assessments/learner/${learnerId}`, {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`
                 }
             });
             if (!res.ok) throw new Error("Failed to fetch assessments");
 
-            const data: AssessmentItem[] = await res.json();
+            const data: AssessmentData[] = await res.json();
 
-            // const sorted = data
-            //     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            //     .slice(0, 3);
-            // setAssessments(sorted);
             setAssessments(data);
-            console.log("Fetched assessments:", data);
+            //console.log("Fetched assessments:", data);
         } catch (err) {
             console.error("Error:", err);
         } finally {
@@ -85,6 +76,32 @@ export default function AssessmentList() {
         };
     }, [fetchAssessments]);
 
+    // ================= HANDLE JOIN =================
+
+    const handleJoin = async (assessment: AssessmentData) => {
+        try {
+            const maxAttempts = assessment.maxAttempts || 3;
+            const timesPracticed = assessment.timesPracticed || assessment.listAttempts ? assessment.listAttempts.length : 0;
+
+            if (!assessment.isActive) {
+                alert("This assessment is no longer active. You cannot join this assessment.");
+                return;
+            }
+
+            if (timesPracticed >= maxAttempts) {
+                alert("You have reached the maximum number of attempts. You cannot join this assessment.");
+                return;
+            }
+
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert("Cannot verify attempts right now. Please try again.");
+            return;
+        }
+
+        router.push(`/assessment/${assessment.assessmentId}/take`);
+    };
+
     // ================= SPECIALTY OPTIONS =================
     const specialtyOptions = useMemo(() => {
         const specialties = assessments.map((a) => a.specialty).filter(Boolean);
@@ -102,7 +119,6 @@ export default function AssessmentList() {
 
             filtered = filtered.filter((item) => {
                 return (
-                    item.assessmentId?.toLowerCase().includes(keyword) ||
                     item.title?.toLowerCase().includes(keyword) ||
                     item.descriptions?.toLowerCase().includes(keyword) ||
                     item.topic?.toLowerCase().includes(keyword)
@@ -126,25 +142,23 @@ export default function AssessmentList() {
 
         // ---------- SORT ----------
         filtered.sort((a, b) => {
-            let compareValue = 0;
+            const compareByTitle = String(a.title).toLowerCase()
+                .localeCompare(String(b.title).toLowerCase());
+            const compareByTime = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
 
-            // TIME FIELD
-            if (sortField === "createdAt") {
-                compareValue = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            if (sortOrder === "timeAsc") {
+                return compareByTime;
             }
 
-            // STRING FIELD
-            else {
-                compareValue = String(a[sortField]).toLowerCase()
-                    .localeCompare(String(b[sortField])
-                        .toLowerCase());
+            if (sortOrder === "timeDesc") {
+                return -compareByTime;
             }
 
-            return sortOrder === "asc" ? compareValue : -compareValue;
+            return sortOrder === "alphaAsc" ? compareByTitle : -compareByTitle;
         });
 
         return filtered;
-    }, [assessments, search, selectedLevel, selectedSpecialty, sortField, sortOrder]);
+    }, [assessments, search, selectedLevel, selectedSpecialty, sortOrder]);
 
     const goToDetail = (id: string) => {
         router.push(`/assessment/${id}?tab=about`);
@@ -168,7 +182,7 @@ export default function AssessmentList() {
             <div className="flex flex-col xl:flex-row gap-4 xl:items-center xl:justify-between">
 
                 {/* SEARCH */}
-                <div className="relative w-full xl:max-w-xl">
+                <div className="relative w-full xl:max-w-xl xl:flex-1">
                     <MagnifyingGlassIcon className="w-5 h-5 absolute top-1/2 -translate-y-1/2 right-5 text-[#235697]" />
 
                     <input
@@ -180,14 +194,15 @@ export default function AssessmentList() {
                         }
                         className="
                             w-full
-                            rounded-2xl
-                            border
+                            rounded-xl
+                            border-2
                             border-[#235697]/30
                             bg-white
                             px-5
-                            py-4
+                            py-3
                             pr-14
                             text-[#235697]
+                            font-semibold
                             outline-none
                             focus:border-[#1BA7D9]
                             shadow-sm
@@ -196,10 +211,24 @@ export default function AssessmentList() {
                 </div>
 
                 {/* FILTERS */}
-                <div className="flex flex-wrap gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full xl:w-auto xl:min-w-[720px]">
 
                     {/* LEVEL */}
-                    <div className="relative">
+                    <div className="relative w-full transparent">
+                        <div
+                            className="
+                                disabled
+                                transparent
+                                bg-white
+                                bg-transparent
+                                text-transparent
+                            "
+                        >
+                        </div>
+                    </div>
+
+                    {/* LEVEL */}
+                    <div className="relative w-full">
                         <select
                             value={selectedLevel}
                             onChange={(e) =>
@@ -210,7 +239,7 @@ export default function AssessmentList() {
                             className="
                                 appearance-none
                                 rounded-xl
-                                border
+                                border-2
                                 border-[#235697]/30
                                 bg-white
                                 px-5
@@ -219,7 +248,9 @@ export default function AssessmentList() {
                                 text-[#235697]
                                 font-semibold
                                 outline-none
-                                min-w-[170px]
+                                w-full
+                                min-w-0
+                                whitespace-nowrap
                             "
                         >
                             <option value="All">
@@ -246,45 +277,8 @@ export default function AssessmentList() {
                         <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
                     </div>
 
-                    {/* RECENTLY */}
-                    <div className="relative">
-                        <select
-                            value={sortOrder}
-                            onChange={(e) =>
-                                setSortOrder(
-                                    e.target
-                                        .value as SortOrder
-                                )
-                            }
-                            className="
-                                appearance-none
-                                rounded-xl
-                                border
-                                border-[#235697]/30
-                                bg-white
-                                px-5
-                                py-3
-                                pr-10
-                                text-[#235697]
-                                font-semibold
-                                outline-none
-                                min-w-[160px]
-                            "
-                        >
-                            <option value="desc">
-                                Recently Newest
-                            </option>
-
-                            <option value="asc">
-                                Recently Oldest
-                            </option>
-                        </select>
-
-                        <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
-                    </div>
-
                     {/* SPECIALTY */}
-                    <div className="relative">
+                    <div className="relative w-full">
                         <select
                             value={selectedSpecialty}
                             onChange={(e) =>
@@ -295,7 +289,7 @@ export default function AssessmentList() {
                             className="
                                 appearance-none
                                 rounded-xl
-                                border
+                                border-2
                                 border-[#235697]/30
                                 bg-white
                                 px-5
@@ -304,38 +298,36 @@ export default function AssessmentList() {
                                 text-[#235697]
                                 font-semibold
                                 outline-none
-                                min-w-[180px]
+                                w-full
+                                min-w-0
+                                whitespace-nowrap
                             "
                         >
-                            {specialtyOptions.map(
-                                (specialty) => (
-                                    <option
-                                        key={specialty}
-                                        value={specialty}
-                                    >
-                                        {specialty}
-                                    </option>
-                                )
-                            )}
+                            <option value="All specialties">All specialties</option>
+                            {assessments.map((x, index) => (
+                                <option
+                                    key={`${x.specialty}-${index}`}
+                                    value={x.specialty}
+                                >
+                                    {x.specialty}
+                                </option>
+                            ))}
                         </select>
 
                         <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
                     </div>
 
                     {/* SORT FIELD */}
-                    <div className="relative">
+                    <div className="relative w-full">
                         <select
-                            value={sortField}
+                            value={sortOrder}
                             onChange={(e) =>
-                                setSortField(
-                                    e.target
-                                        .value as SortField
-                                )
+                                setSortOrder(e.target.value as SortOrder)
                             }
                             className="
                                 appearance-none
                                 rounded-xl
-                                border
+                                border-2
                                 border-[#235697]/30
                                 bg-white
                                 px-5
@@ -344,23 +336,26 @@ export default function AssessmentList() {
                                 text-[#235697]
                                 font-semibold
                                 outline-none
-                                min-w-[170px]
+                                w-full
+                                min-w-0
+                                whitespace-nowrap
                             "
                         >
-                            <option value="createdAt">
-                                Sort: CreatedAt
+
+                            <option value="timeAsc">
+                                Sort: Time Asc
                             </option>
 
-                            <option value="title">
-                                Sort: Title
+                            <option value="timeDesc">
+                                Sort: Time Desc
                             </option>
 
-                            <option value="difficultyLevel">
-                                Sort: Level
+                            <option value="alphaAsc">
+                                Sort: Alpha Asc
                             </option>
 
-                            <option value="specialty">
-                                Sort: Specialty
+                            <option value="alphaDesc">
+                                Sort: Alpha Desc
                             </option>
                         </select>
 
@@ -371,9 +366,9 @@ export default function AssessmentList() {
 
             {/* ================= LIST ================= */}
             <div className="flex flex-col gap-6">
-                {filteredAssessments.map((item) => (
+                {filteredAssessments.map((item, index) => (
                     <div
-                        key={item.assessmentId}
+                        key={`${item.assessmentId}-${index}`}
                         onClick={() => router.push(`/assessment/${item.assessmentId}?tab=about`)}
                         className="group flex flex-col lg:flex-row items-stretch bg-[#F0F8FF] rounded-[18px] border border-[#235697]/10 p-5 gap-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
                     >
@@ -394,19 +389,37 @@ export default function AssessmentList() {
                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#235697]/10 rounded-lg text-[10px] font-bold text-[#235697]">
                                     <ChartBarIcon className="w-3.5 h-3.5" /> {item.difficultyLevel}
                                 </span>
+                                {/* <span className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#235697]/10 rounded-lg text-[10px] font-bold text-[#235697]">
+                                    {item.listAttempts ? (item.listAttempts.filter(a => a.isPassed).length > 0 ? "Passed" : "Not Passed Yet") : "Not Attempted"}
+                                </span> */}
+                                {item.listAttempts && item.listAttempts.filter(a => a.isPassed).length > 0 ?
+                                    (
+                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#235697]/10 rounded-lg text-[10px] font-bold text-green-400">
+                                            Passed
+                                        </span>
+                                    )
+                                    :
+                                    (
+                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#235697]/10 rounded-lg text-[10px] font-bold text-red-400">
+                                            Not Passed Yet
+                                        </span>
+                                    )}
                             </div>
 
                             <h3 className="text-[20px] font-bold text-[#235697] leading-tight mb-1 group-hover:text-[#1BA7D9] truncate">
                                 {item.title}
                             </h3>
 
-                            <p className="text-[13px] text-[#0E2A46] opacity-90 mb-4">
+                            <div className="text-[13px] text-[#0E2A46] opacity-90 mb-4">
                                 <span className="font-bold text-[#235697]">Topic: </span>
                                 {item.topic || "N/A"}
                                 {item.descriptions && (
-                                    <p className="line-clamp-2"><span className="font-bold text-[#235697]">Desc: </span>{item.descriptions}</p>
+                                    <p className="line-clamp-2"><span className="font-bold text-[#235697]">Description: </span>{item.descriptions}</p>
                                 )}
-                            </p>
+                                <span className="font-bold text-[#235697]">Attempts: </span> {item.listAttempts ? item.listAttempts.length : 0} / {item.maxAttempts}
+                                <p></p>
+                                <span className="font-bold text-[#235697]">Highest Score: </span> {item.listAttempts && item.listAttempts.length > 0 ? Math.max(...item.listAttempts.map(a => a.score)) : 0} / {item.maxScore}
+                            </div>
 
                             <div className="mt-auto">
                                 <span className="text-[12px] font-bold text-[#235697]">
@@ -415,7 +428,17 @@ export default function AssessmentList() {
                             </div>
                         </div>
 
-                        <div className="shrink-0 flex flex-col justify-between items-end pl-4 py-1">
+                        <div className="shrink-0 flex flex-col justify-between pl-4 py-1">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleJoin(item);
+                                }}
+                                className="flex items-center gap-2 bg-[#69bfba] text-white px-7 py-3 rounded-xl font-bold text-sm hover:bg-[#3b7874] transition-all shadow-md active:scale-95"
+                            >
+                                Start Now
+                            </button>
+
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -423,8 +446,9 @@ export default function AssessmentList() {
                                 }}
                                 className="flex items-center gap-2 bg-[#1BA7D9] text-white px-7 py-3 rounded-xl font-bold text-sm hover:bg-[#235697] transition-all shadow-md active:scale-95"
                             >
-                                Start Now →
+                                View Details
                             </button>
+
                             <span className="text-[11px] text-gray-500">
                                 {new Date(item.createdAt).toLocaleDateString()}
                             </span>

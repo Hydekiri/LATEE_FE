@@ -64,7 +64,7 @@ export default function ContinueAssessment() {
                 date: new Date(item.pausedAt).toLocaleDateString(),
                 feedback: String(answeredCount).padStart(2, "0"),
                 level: item.difficultyLevel || "Intermediate",
-                time: `${Math.max(item.timeLeft, 0)} sec left`,
+                time: `${Math.max(item.timeLeft, 0) / 60} mins`,
                 progress,
                 lastAttempt: formatLastPaused(item.pausedAt),
                 img: item.image || FALLBACK_IMAGE
@@ -112,8 +112,8 @@ export default function ContinueAssessment() {
 
                             {/* Row 1: ID & Badges */}
                             <div className="flex items-center justify-between mb-3">
-                                <span className="text-[#235697] font-lato-bold text-[16px] xl:text-[18px]">{item.id}</span>
-                                <div className="flex items-center gap-2 text-[11px] xl:text-[12px] font-lato-r text-gray-600">
+                                <span className="text-[#235697] font-lato-bold text-[16px] xl:text-[16px]">{item.title}</span>
+                                <div className="flex items-center gap-2 text-[11px] xl:text-[16px] font-lato-r text-gray-600">
                                     <div className="flex items-center gap-1">
                                         <ChartBarIcon className="w-3.5 h-3.5 text-[#235697]" />
                                         <span>{item.level}</span>
@@ -121,7 +121,7 @@ export default function ContinueAssessment() {
                                     <div className="w-px h-3 bg-gray-300"></div>
                                     <div className="flex items-center gap-1">
                                         <ClockIcon className="w-3.5 h-3.5 text-[#235697]" />
-                                        <span>{item.time}</span>
+                                        <span className="text-[10px]">{item.time}</span>
                                     </div>
                                 </div>
                             </div>

@@ -1,60 +1,5 @@
 // // src/types/assessment.ts
 
-// export interface Expert {
-//     name: string;
-//     role: string;
-//     img: string;
-// }
-
-// export interface AssessmentData {
-//     assessmentId: string;    
-//     creatorId: string;
-//     clinicalCaseId?: string;
-//     moduleId?: string;
-//     courseId?: string;
-
-//     title: string;
-//     topic: string;          
-//     subtopic?: string;
-//     specialty?: string;
-//     difficultyLevel: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'; 
-
-//     descriptions: string;    
-//     goal: string;            
-//     img: string;             
-
-//     numQuestions: number;
-//     timeLimitMinutes: number; 
-//     passingScorePercentage: number;
-//     maxAttempts: number;     
-
-//     subTitle: string;        
-//     level: string | number;  
-//     timeRequired: string;   
-//     deadline: string;       
-//     releaseDate: string;    
-//     timesPracticed: number;  
-
-//     author: string;
-//     authorRole: string;
-//     learningObjectives: string[]; 
-//     experts: Expert[];
-// }
-// export interface AssessmentQuestion {
-//     questionId: string;
-//     assessmentId: string;
-//     questionType: 'MultipleChoice' | 'MultipleResponse' | 'TrueFalse' | 'FillInBlank' | 'ShortAnswer';
-//     cognitiveLevel: string;
-//     content: string;
-//     options: string; 
-//     explanation?: string;
-//     points: number;
-// }
-
-// export interface AssessmentFullDetails extends AssessmentData {
-//     questions: AssessmentQuestion[];
-// }
-
 export interface Expert {
     name: string;
     role: string;
@@ -67,15 +12,21 @@ export interface QuestionOption {
     isCorrect?: boolean;
 }
 
+export interface AttemptItem {
+    attemptId: string;
+    learnerId: string;
+    attemptNo: number;
+    duration: number; // in seconds
+    score: number;
+    isPassed: boolean;
+}
+
 export interface AssessmentData {
     assessmentId: string;
     creatorId: string;
-    clinicalCaseId?: string;
-    courseId?: string;
     moduleId?: string;
     specialty?: string;
     topic: string;
-    subTitle?: string;
     subtopic?: string;
     difficultyLevel: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
     title: string;
@@ -84,10 +35,14 @@ export interface AssessmentData {
     numQuestions: number;
     timeLimitMinutes: number;
     timesPracticed: number;
+    maxScore: number;
     passingScorePercentage: number;
     maxAttempts: number;
     isActive: boolean;
     createdAt: string;
+    listAttempts: AttemptItem[];
+
+    questions: AssessmentQuestion[];
 
     img: string | File;
     author: string;

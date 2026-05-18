@@ -11,7 +11,7 @@ import FAQ from "@/src/features/assessment/components/subComponents/tabs/FAQ";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export default function AssessmentDetail({ data }: { data: AssessmentData }) {
-    const router = useRouter();
+    const router = useRouter()
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const activeTab = searchParams.get('tab') || 'about';
