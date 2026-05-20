@@ -312,7 +312,7 @@ export default function CreateUserModal({
                                     onChange={(e) =>
                                         setForm({
                                             ...form,
-                                            gender: e.target.value,
+                                            gender: e.target.value as User["gender"],
                                         })
                                     }
                                     className="

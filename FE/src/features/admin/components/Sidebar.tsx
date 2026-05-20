@@ -29,7 +29,7 @@ const menuItems = [
     { name: "User Management", href: "/admin/users", outline: VPIcon, solid: VPSolid },
     { name: "Notifications", href: "/admin/notifications", outline: VPIcon, solid: VPSolid },
     { name: "Issues & Feedback", href: "/admin/issues-feedbacks", outline: FeedbackIcon, solid: FeedbackSolid },
-    { name: "Profile", href: "/expert/profile", outline: VPIcon, solid: VPSolid },
+    { name: "Profile", href: "/admin/profile", outline: VPIcon, solid: VPSolid },
 ];
 interface SidebarProps {
     isOpen: boolean;

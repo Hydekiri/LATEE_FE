@@ -5,13 +5,25 @@ export interface User {
   password?: string;
   phone?: string;
   birthday: string;
-  gender?: string;
+  gender?: "Male" | "Female";
   address?: string;
   role: "Learner" | "Expert" | "Admin";
   status: "active" | "inactive";
   avatar_url?: string;
   createdAt: string;
   updatedAt: string;
+
+  profile?: ExpertProfile;
+}
+
+export interface ExpertProfile {
+  eid: string;
+  ssn: string;
+  bio_quote: string;
+  education_detail: string;
+  title_position: string;
+  expertise_skill: string;
+  social_link: string;
 }
 
 export interface UserUpdate {
@@ -38,4 +50,12 @@ export interface CreateUserRequest {
   address: string | null,
   status: string,
   role: string
+}
+
+export interface AdminDashboardStats {
+  increase_user: number;
+  total_learners: number;
+  total_experts: number;
+  total_admins: number;
+  total_active_users: number;
 }
