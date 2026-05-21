@@ -6,6 +6,15 @@ const getDeterministicRandom = (id: string, min: number, max: number): number =>
     const index = Math.abs(hash) % (max - min + 1);
     return min + index;
 };
+export function resolvePatientAvatar(img: string, id: string, age: number, gender: string): string {
+    if (img && img.startsWith('http') && !img.includes('VP7.jpeg') && !img.includes('example.com')) {
+        return img;
+    }
+    if (img && img.startsWith('/images') && !img.includes('VP7.jpeg')) {
+        return img;
+    }
+    return getAvatarByAge(id, age, gender);
+}
 
 export const getAvatarByAge = (id: string, age: number, gender: string = "FEMALE"): string => {
     const g = gender.toUpperCase();

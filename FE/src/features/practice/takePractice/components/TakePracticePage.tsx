@@ -12,7 +12,7 @@ import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
 import { PatientData } from '@/src/types/practice';
 import { getPatientById } from '@/src/services/patient-servvice'; 
-import { getAvatarByAge } from '@/src/utils/patient-assets'; // Import hàm sinh ảnh tĩnh lâm sàng
+import { getAvatarByAge, resolvePatientAvatar } from '@/src/utils/patient-assets';
 
 interface TakePracticePageProps {
     params: { id: string };
@@ -112,23 +112,9 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         void fetchPatientDetails();
     }, [params.id]);
 
-    // TÍNH TOÁN ẢNH ĐỒNG BỘ SIDEBAR: Bảo đảm giống hệt logic xử lý trong useVpChat
-    const synchronizedAvatar = useMemo(() => {
+    const resolvedAvatar = useMemo(() => {
         if (!currentPatient) return '/images/VirtualPatient/VP5.jpeg';
-
-        if (currentPatient.img && currentPatient.img.startsWith('http') && !currentPatient.img.includes("VP7.jpeg")) {
-            return currentPatient.img;
-        }
-        
-        if (currentPatient.img && currentPatient.img.startsWith('/images') && !currentPatient.img.includes("VP7.jpeg")) {
-            return currentPatient.img;
-        }
-        
-        const safeId = currentPatient.id || "default";
-        const safeAge = currentPatient.age ?? 30;
-        const safeGender = currentPatient.gender ?? "Unknown";
-
-        return getAvatarByAge(String(safeId), safeAge, safeGender);
+        return resolvePatientAvatar(currentPatient.img, currentPatient.id, currentPatient.age, currentPatient.gender);
     }, [currentPatient]);
 
     const patchStatus = async (sid: string, status: string): Promise<void> => {
@@ -249,18 +235,17 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
             />
             
             <div className="flex flex-1 overflow-hidden">
-                {/* ĐÃ ĐỒNG BỘ: Truyền avatar Url đã được chuẩn hóa lâm sàng xuống Sidebar */}
                 <PatientSidebar 
                     id={params.id} 
                     sessionId={sessionId} 
                     timerFormatted={timer.formatted} 
                     elapsed={timer.elapsed} 
                     maxTime={currentPatient.time ? (parseInt(currentPatient.time) * 60) : 1800} 
-                    avatarUrl={synchronizedAvatar} 
+                    avatarUrl={resolvedAvatar}
                 />
                 
                 <ChatArea
-                    patientData={currentPatient}
+                    patientData={{ ...currentPatient, img: resolvedAvatar }}
                     sessionId={sessionId}
                     vpElapsed={timer.elapsed}
                     onProceedToReasoning={() => void handleProceedToReasoning()}

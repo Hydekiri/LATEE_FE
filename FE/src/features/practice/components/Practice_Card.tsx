@@ -12,8 +12,7 @@ import {
     ArrowRightIcon
 } from "@heroicons/react/24/solid";
 import { useMemo, useState } from "react";
-import { getAvatarByAge } from "@/src/utils/patient-assets";
-
+import { getAvatarByAge, resolvePatientAvatar } from "@/src/utils/patient-assets";
 interface PatientCardProps {
     item: PatientData;
 }
@@ -24,10 +23,7 @@ export default function PatientCard({ item }: PatientCardProps) {
 
     const displayImage = useMemo(() => {
         if (imgSrc) return imgSrc;
-        if (item.img && item.img.startsWith('http') && !item.img.includes("VP7.jpeg")) {
-            return item.img;
-        }
-        return getAvatarByAge(item.id, item.age, item.gender);
+        return resolvePatientAvatar(item.img, item.id, item.age, item.gender);
     }, [item.id, item.age, item.gender, item.img, imgSrc]);
 
     const introductionText = useMemo(() => {
@@ -53,6 +49,7 @@ export default function PatientCard({ item }: PatientCardProps) {
                     // width={736}
                     // height={736}
                     fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
                     className="w-full h-full object-cover object-[0%_30%] transition-transform duration-700 ease-out group-hover:scale-105"
                     onError={() => setImgSrc(getAvatarByAge(item.id, item.age, item.gender))}
                 />

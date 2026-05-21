@@ -174,7 +174,6 @@ export const ChatArea = ({
                 setNotesState={setNotesState}
             />
 
-            {/* Vùng nhập liệu: shrink-0 cố định kích thước, luôn nằm gọn ở đáy */}
             <div className="p-6 pt-0 bg-white shrink-0">
                 <form
                     onSubmit={handleSend}

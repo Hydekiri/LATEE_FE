@@ -4,10 +4,9 @@ import { useState, useCallback, useRef, useMemo } from 'react';
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
 import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
-import { getAvatarByAge } from "@/src/utils/patient-assets"; 
 import { PatientData } from '@/src/types/practice'; 
 import { ValidateQuestion } from '@/src/services/validate-question-service';
-
+import { getAvatarByAge, resolvePatientAvatar } from "@/src/utils/patient-assets";
 export interface VpChatMessage {
     id: number;
     role: 'user' | 'patient';
@@ -42,24 +41,27 @@ interface FlexiblePatientData extends Partial<PatientData> {
 
 export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOptions) {
     const flexiblePatient = patientData as FlexiblePatientData;
+    const patientAvatar = useMemo(
+        () => resolvePatientAvatar(patientData.img, patientData.id, patientData.age, patientData.gender),
+        [patientData.id, patientData.age, patientData.gender, patientData.img]
+    );
+    // const patientAvatar= useMemo(() => {
+    //     if (!flexiblePatient) return '/images/VirtualPatient/VP5.jpeg'; 
 
-    const displayImage = useMemo(() => {
-        if (!flexiblePatient) return '/images/VirtualPatient/VP5.jpeg'; 
+    //     if (flexiblePatient.img && flexiblePatient.img.startsWith('http') && !flexiblePatient.img.includes("VP7.jpeg")) {
+    //         return flexiblePatient.img;
+    //     }
 
-        if (flexiblePatient.img && flexiblePatient.img.startsWith('http') && !flexiblePatient.img.includes("VP7.jpeg")) {
-            return flexiblePatient.img;
-        }
-
-        if (flexiblePatient.img && flexiblePatient.img.startsWith('/images') && !flexiblePatient.img.includes("VP7.jpeg")) {
-            return flexiblePatient.img;
-        }
+    //     if (flexiblePatient.img && flexiblePatient.img.startsWith('/images') && !flexiblePatient.img.includes("VP7.jpeg")) {
+    //         return flexiblePatient.img;
+    //     }
         
-        const safeId = flexiblePatient.id || flexiblePatient.patientId || "default";
-        const safeAge = flexiblePatient.age ?? 30;
-        const safeGender = flexiblePatient.gender ?? "Unknown";
+    //     const safeId = flexiblePatient.id || flexiblePatient.patientId || "default";
+    //     const safeAge = flexiblePatient.age ?? 30;
+    //     const safeGender = flexiblePatient.gender ?? "Unknown";
 
-        return getAvatarByAge(String(safeId), safeAge, safeGender);
-    }, [flexiblePatient?.id, flexiblePatient?.patientId, flexiblePatient?.age, flexiblePatient?.gender, flexiblePatient?.img]);
+    //     return getAvatarByAge(String(safeId), safeAge, safeGender);
+    // }, [flexiblePatient?.id, flexiblePatient?.patientId, flexiblePatient?.age, flexiblePatient?.gender, flexiblePatient?.img]);
 
     const [messages, setMessages] = useState<Omit<VpChatMessage, 'avatar'>[]>([
         {
@@ -72,9 +74,9 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
     const synchronizedMessages = useMemo<VpChatMessage[]>(() => {
         return messages.map((m) => ({
             ...m,
-            avatar: m.role === 'patient' ? displayImage : '/images/doctor1.png',
+            avatar: m.role === 'patient' ? patientAvatar: '/images/doctor1.png',
         }));
-    }, [messages, displayImage]);
+    }, [messages, patientAvatar]);
     
     const [isSending, setIsSending] = useState<boolean>(false);
     const [isValidating, setIsValidating] = useState<boolean>(false);
@@ -86,7 +88,6 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
             isSendingRef.current = true;
             setIsSending(true);
 
-            // Sửa lỗi trùng key bằng chuỗi số an toàn hơn
             const userMsgId = Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`);
             const userMsg = {
                 id: userMsgId,
@@ -224,7 +225,7 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                 setIsSending(false);
             }
         },
-        [synchronizedMessages, sessionId, onWarning, flexiblePatient.id, flexiblePatient.patientId, displayImage]
+        [synchronizedMessages, sessionId, onWarning, flexiblePatient.id, flexiblePatient.patientId, patientAvatar]
     );
 
     return { messages: synchronizedMessages, isSending, isValidating, sendMessage };

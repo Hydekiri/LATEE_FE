@@ -45,7 +45,6 @@ export const PatientSidebar = ({
         router.push(`/practice/${id}/reasoning?sessionId=${sessionId}`);
     };
 
-    // Xác định ảnh hiển thị: Ưu tiên ảnh động từ prop, nếu không có mới dùng ảnh fallback
     const displayAvatar = avatarUrl || '/images/VirtualPatient/VP5.jpeg';
 
     return (
@@ -55,12 +54,12 @@ export const PatientSidebar = ({
                 <div className="mb-4">
                     <div className="w-full aspect-square rounded-xl overflow-hidden border-2 border-gray-100 shadow-sm relative">
                         <Image
-                            src={displayAvatar} // CẬP NHẬT TẠI ĐÂY: Thay đường dẫn cứng bằng biến động
+                            src={displayAvatar}
                             fill
+                            sizes="288px"
                             alt="Patient Avatar"
                             className="object-cover"
                             priority
-                            unoptimized={displayAvatar.startsWith('http') || displayAvatar.startsWith('/images/')}
                         />
                     </div>
                 </div>

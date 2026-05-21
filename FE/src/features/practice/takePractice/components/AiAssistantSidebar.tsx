@@ -36,7 +36,6 @@ export const AiAssistantSidebar = ({ sessionId }: AiAssistantSidebarProps) => {
         scrollToBottom();
     }, [messages]);
 
-    // Logic nạp dữ liệu cũ giữ nguyên
     useEffect(() => {
         if (!sessionId) return;
 

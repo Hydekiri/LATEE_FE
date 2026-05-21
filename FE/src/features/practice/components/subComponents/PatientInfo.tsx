@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { PatientData } from '@/src/types/practice';
 import { useMemo, useState, useEffect } from 'react';
-import { getAvatarByAge } from "@/src/utils/patient-assets";
+import { getAvatarByAge, resolvePatientAvatar } from "@/src/utils/patient-assets";
 import { getLearnerId } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
 import { getCookie } from '@/src/utils/cookies';
@@ -32,10 +32,7 @@ export const PatientInfo = ({ data }: { data: PatientData }) => {
 
     const displayImage = useMemo(() => {
         if (imgSrc) return imgSrc;
-        if (data.img && data.img.startsWith('http') && !data.img.includes("VP7.jpeg")) {
-            return data.img;
-        }
-        return getAvatarByAge(data.id, data.age, data.gender);
+        return resolvePatientAvatar(data.img, data.id, data.age, data.gender);
     }, [data.id, data.age, data.gender, data.img, imgSrc]);
 
     const introductionText = useMemo(() => {
