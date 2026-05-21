@@ -158,7 +158,7 @@ export const WarningPanel = ({
                 <div
                     className={`transition-all duration-500 overflow-hidden border-x border-[#972323] border-[1.5px] ${
                         isPanelExpanded
-                            ? 'max-h-[600px] overflow-y-auto'
+                            ? 'max-h-150 overflow-y-auto'
                             : 'max-h-0 border-t-0'
                     }`}
                 >

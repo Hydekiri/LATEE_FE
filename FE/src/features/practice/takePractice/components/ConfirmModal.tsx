@@ -35,8 +35,8 @@ export const ConfirmModal = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-3xl p-8 w-[500px] shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="bg-white rounded-3xl p-8 w-125 shadow-2xl animate-in fade-in zoom-in duration-200">
                 <h2 className="text-3xl font-bold text-[#0E2A46] text-center mb-4 font-sans">Confirm</h2>
                 <p className="text-xl text-gray-600 text-center mb-10 leading-relaxed font-sans">
                     Are you sure you want to end this conversation?
