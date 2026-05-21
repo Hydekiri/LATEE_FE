@@ -168,9 +168,9 @@ export const AiAssistantSidebar = ({ sessionId }: AiAssistantSidebarProps) => {
                         </div>
                     ) : (
                         <AiMessageBlock key={i} noteId={m.id} message={m.content}>
-                            <div className="text-xs leading-relaxed text-gray-800 bg-white rounded-xl p-4 border border-blue-50 shadow-sm">
+                            {/* <div className="text-xs leading-relaxed text-gray-800 bg-white rounded-xl p-4 border border-blue-50 shadow-sm">
                                 {m.content}
-                            </div>
+                            </div> */}
                         </AiMessageBlock>
                     )
                 ))}
