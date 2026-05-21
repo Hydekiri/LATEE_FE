@@ -1,45 +1,42 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Header } from './Header';
 import { PatientSidebar } from './PatientSidebar';
 import { ChatArea } from './ChatArea';
 import { AiAssistantSidebar } from './AiAssistantSidebar';
+import { ExitConfirmModal } from './ExitConfirmModal';
 import { usePracticeTimer } from '@/src/hooks/usePracticeTimer';
 import { usePracticeSession } from '@/src/hooks/usePracticeSession';
+import { useExitProtection } from '@/src/hooks/useExitProtection';
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
 import { PatientData } from '@/src/types/practice';
-import { getPatientById } from '@/src/services/patient-servvice'; 
-import { getAvatarByAge, resolvePatientAvatar } from '@/src/utils/patient-assets';
+import { getPatientById } from '@/src/services/patient-servvice';
+import { resolvePatientAvatar } from '@/src/utils/patient-assets';
+import { practiceSessionService } from '@/src/services/practice-session-service';
 
 interface TakePracticePageProps {
-    params: { id: string };
-}
-
-interface ActiveSessionResponse {
-    sessionId: string;
-    status: string;
-    startTime: string;
-    patientId: string;
+    readonly params: { id: string };
 }
 
 interface RawPatientApiResponse {
-    patientId: string;
-    caseId: string;
-    name: string;
-    age: number;
-    gender: string;
-    avatarImage: string | null;
-    level: string;
-    timeSetting: number;
-    createdAt: string;
-    medicalHistory: string;
-    chiefConcern: string;
-    vitalSigns: { bp: string; hr: number; temp?: number; spo2?: string; rr?: number };
-    instructions: { role: string; task: string; tone: string; procedure: string[] } | null;
-    learningObjectives: string[];
+    readonly patientId: string;
+    readonly caseId: string;
+    readonly name: string;
+    readonly age: number;
+    readonly gender: string;
+    readonly avatarImage: string | null;
+    readonly level: string;
+    readonly timeSetting: number;
+    readonly argumentTime?: number;
+    readonly createdAt: string;
+    readonly medicalHistory: string;
+    readonly chiefConcern: string;
+    readonly vitalSigns: { bp: string; hr: number; temp?: number; spo2?: string | number; rr?: number };
+    readonly instructions: { role: string; task: string; tone: string; procedure: string[] } | null;
+    readonly learningObjectives: string[];
 }
 
 export const TakePracticePage = ({ params }: TakePracticePageProps) => {
@@ -48,31 +45,52 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
     const sessionIdFromQuery = searchParams.get('sessionId') ?? '';
 
     const hasInitialized = useRef<boolean>(false);
+    // Sử dụng trực tiếp query string để khởi tạo trạng thái ban đầu, triệt tiêu việc set lại state trùng lặp
     const [sessionId, setSessionId] = useState<string>(sessionIdFromQuery);
     const [currentPatient, setCurrentPatient] = useState<PatientData | null>(null);
     const [isAiSidebarOpen, setIsAiSidebarOpen] = useState<boolean>(true);
+    const [isExitModalOpen, setIsExitModalOpen] = useState<boolean>(false);
+    const [isExiting, setIsExiting] = useState<boolean>(false);
 
     const { initSession } = usePracticeSession(params.id);
+    
+    // Khóa cứng storageKey theo VP ID để không bị biến đổi tham chiếu
     const timer = usePracticeTimer({
         autoStart: false,
-        storageKey: `vp_timer_${sessionIdFromQuery || params.id}`,
+        storageKey: `vp_timer_${params.id}`,
     });
 
+    useExitProtection({
+        enabled: !isExiting,
+        onExitAttempt: () => setIsExitModalOpen(true),
+    });
+
+    // 1. Tải thông tin bệnh án từ API hệ thống
     useEffect(() => {
+        let cancelled = false;
         const fetchPatientDetails = async () => {
             try {
                 const data = await getPatientById(params.id);
-                setCurrentPatient(data);
-            } catch (error) {
-                console.error("Error fetching patient via service, trying direct fallback:", error);
+                if (!cancelled) setCurrentPatient(data);
+            } catch {
                 try {
                     const accessToken = getCookie('accessToken');
-                    const res = await fetch(`${API_BASE_URL}/virtual-patient/api/virtual-patients/${params.id}`, {
-                        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
-                    });
-                    if (res.ok) {
+                    const res = await fetch(
+                        `${API_BASE_URL}/virtual-patient/api/virtual-patients/${params.id}`,
+                        { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {} }
+                    );
+                    if (res.ok && !cancelled) {
                         const rawData = (await res.json()) as RawPatientApiResponse;
-                        const mockMappedData: PatientData = {
+                        
+                        const safeVitalSigns = {
+                            bp: rawData.vitalSigns?.bp || 'N/A',
+                            hr: rawData.vitalSigns?.hr || 0,
+                            spo2: rawData.vitalSigns?.spo2 || 'N/A',
+                            rr: rawData.vitalSigns?.rr || 0,
+                            temp: rawData.vitalSigns?.temp || 'N/A'
+                        };
+
+                        setCurrentPatient({
                             id: rawData.patientId,
                             caseId: rawData.caseId,
                             name: rawData.name,
@@ -85,134 +103,135 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
                             img: rawData.avatarImage || '/images/VP7.jpeg',
                             level: rawData.level,
                             time: `${rawData.timeSetting || 30} min`,
-                            date: new Date(rawData.createdAt).toLocaleDateString(),
+                            timeSetting: rawData.timeSetting || 30,
+                            argumentTime: rawData.argumentTime || 15,
+                            date: rawData.createdAt ? new Date(rawData.createdAt).toLocaleDateString() : 'N/A',
                             feedback: 0,
                             timesPracticed: 0,
                             description: rawData.medicalHistory || '',
                             chiefConcern: rawData.chiefConcern || '',
-                            vitalSigns: rawData.vitalSigns,
-                            instructions: rawData.instructions ?? {
-                                role: 'Medical Learner',
-                                task: 'Take history',
-                                tone: 'Professional',
-                                procedure: []
+                            vitalSigns: safeVitalSigns,
+                            instructions: {
+                                role: rawData.instructions?.role || 'Medical Learner',
+                                task: rawData.instructions?.task || 'Take a focused clinical history.',
+                                tone: rawData.instructions?.tone || 'Professional',
+                                procedure: rawData.instructions?.procedure || [],
                             },
                             caseRules: { rules: [], totalTime: '45 min', timeBreakdown: [] },
                             learningObjectives: rawData.learningObjectives || [],
-                            experts: []
-                        };
-                        setCurrentPatient(mockMappedData);
+                            experts: [],
+                        });
                     }
                 } catch (fallbackErr) {
-                    console.error("Direct fallback fetch failed too:", fallbackErr);
+                    console.error('Fallback patient fetch failed:', fallbackErr);
                 }
             }
         };
-
         void fetchPatientDetails();
+        return () => {
+            cancelled = true;
+        };
     }, [params.id]);
 
     const resolvedAvatar = useMemo(() => {
         if (!currentPatient) return '/images/VirtualPatient/VP5.jpeg';
-        return resolvePatientAvatar(currentPatient.img, currentPatient.id, currentPatient.age, currentPatient.gender);
+        return resolvePatientAvatar(
+            currentPatient.img,
+            currentPatient.id,
+            currentPatient.age,
+            currentPatient.gender
+        );
     }, [currentPatient]);
 
-    const patchStatus = async (sid: string, status: string): Promise<void> => {
-        try {
-            const accessToken = getCookie('accessToken');
-            await fetch(
-                `${API_BASE_URL}/practice-session/api/practice-sessions/${sid}/status`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-                    },
-                    body: JSON.stringify({ status }),
-                }
-            );
-        } catch (e) {
-            console.error('[TakePracticePage] patchStatus error:', e);
-        }
-    };
-
+    // SỬA CHÍ MẠNG: Dùng Ref để lưu các hàm của timer, đảm bảo dependencies useEffect không bị trigger lại khi đếm giây
+    const timerRef = useRef(timer);
     useEffect(() => {
-        if (hasInitialized.current || !sessionIdFromQuery) return;
+        timerRef.current = timer;
+    }, [timer]);
+
+    const resumeTimer = useCallback(() => {
+        timerRef.current.resume();
+    }, []);
+
+    const stopTimer = useCallback(() => {
+        return timerRef.current.stop();
+    }, []);
+
+    // 2. Thiết lập cấu hình Session Tuần Tự Duy Nhất 
+    useEffect(() => {
+        if (hasInitialized.current) return;
         hasInitialized.current = true;
 
-        const setup = async () => {
-            await Promise.resolve();
-            initSession(sessionIdFromQuery, 'EPA_STANDARD_V1');
-            timer.resume();
-            setSessionId(sessionIdFromQuery);
-        };
-        void setup();
-    }, [sessionIdFromQuery, initSession, timer]);
-
-    useEffect(() => {
-        if (sessionIdFromQuery || hasInitialized.current) return;
-        hasInitialized.current = true;
-
-        const recoverOrCreate = async () => {
-            const accessToken = getCookie('accessToken');
-            const learnerId = getCookie('userId') || 'USR001';
-            const authHeader: Record<string, string> = accessToken
-                ? { Authorization: `Bearer ${accessToken}` }
-                : {};
-
-            try {
-                const activeRes = await fetch(
-                    `${API_BASE_URL}/practice-session/api/practice-sessions/active?learnerId=${learnerId}&patientId=${params.id}`,
-                    { headers: authHeader }
-                );
-                if (activeRes.ok) {
-                    const active = (await activeRes.json()) as ActiveSessionResponse;
-                    if (active.sessionId && active.status !== 'Completed') {
-                        initSession(active.sessionId, 'EPA_STANDARD_V1');
-                        timer.resume();
-                        setSessionId(active.sessionId);
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.error('[TakePracticePage] Active session recovery failed:', e);
+        const setupSession = async () => {
+            // Trường hợp A: URL đã mang sẵn sessionId truyền sang 
+            if (sessionIdFromQuery) {
+                initSession(sessionIdFromQuery, 'EPA_STANDARD_V1');
+                resumeTimer();
+                // CHỈ set lại state khi thực sự có sự thay đổi giá trị để chống lag nghẽn Input
+                setSessionId((prev) => prev !== sessionIdFromQuery ? sessionIdFromQuery : prev);
+                return;
             }
 
-            const newId = `SESS_${params.id}_${Date.now()}`;
+            // Trường hợp B: Khôi phục phiên hoặc tạo mới ngầm
+            const learnerId = getCookie('userId') || 'USR001';
             try {
-                await fetch(`${API_BASE_URL}/practice-session/api/practice-sessions`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', ...authHeader },
-                    body: JSON.stringify({
-                        id: newId,
-                        learnerId,
-                        patientId: params.id,
-                        moduleId: 'EPA_STANDARD_V1',
-                        discussionType: 'Message Type',
-                        guidelinesId: null,
-                        status: 'Practicing',
-                    }),
+                const active = await practiceSessionService.getActive(learnerId, params.id);
+                if (active?.sessionId && active.status !== 'Completed') {
+                    initSession(active.sessionId, 'EPA_STANDARD_V1');
+                    resumeTimer();
+                    setSessionId((prev) => prev !== active.sessionId ? active.sessionId : prev);
+                    return;
+                }
+
+                const newId = `SESS_${params.id}_${Date.now()}`;
+                await practiceSessionService.create({
+                    id: newId,
+                    learnerId,
+                    patientId: params.id,
+                    moduleId: 'EPA_STANDARD_V1',
+                    discussionType: 'Message Type',
+                    guidelinesId: null,
+                    status: 'Practicing',
                 });
                 initSession(newId, 'EPA_STANDARD_V1');
-                timer.resume();
+                resumeTimer();
                 setSessionId(newId);
             } catch (error) {
-                console.error('[TakePracticePage] Fallback session creation failed:', error);
+                console.error('[TakePracticePage] Session orchestration failed:', error);
                 router.push(`/practice/${params.id}`);
             }
         };
 
-        void recoverOrCreate();
-    }, [params.id, sessionIdFromQuery, initSession, timer, router]);
+        void setupSession();
+    }, [params.id, sessionIdFromQuery, initSession, resumeTimer, router]);
 
-    const handleProceedToReasoning = async () => {
-        const vpDuration = timer.stop();
+    const handleProceedToReasoning = async (): Promise<void> => {
+        const vpDuration = stopTimer();
         if (sessionId) {
-            await patchStatus(sessionId, 'VpCompleted'); 
+            await practiceSessionService.patchStatus(sessionId, 'VpCompleted');
         }
         router.push(
             `/practice/${params.id}/reasoning?sessionId=${sessionId}&vpDuration=${vpDuration}`
         );
+    };
+
+    const handleConfirmExit = async (): Promise<void> => {
+        setIsExiting(true);
+        try {
+            stopTimer();
+        } catch (timerErr) {
+            console.error('[TakePracticePage] Failed to stop timer:', timerErr);
+        }
+
+        if (sessionId) {
+            try {
+                await practiceSessionService.patchStatus(sessionId, 'Abandoned');
+            } catch (apiErr) {
+                console.warn('[TakePracticePage] Backend session sync skipped or failed (404/500):', apiErr);
+            }
+        }
+        setIsExiting(false);
+        router.push('/practice');
     };
 
     if (!currentPatient) {
@@ -225,34 +244,44 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         );
     }
 
+    const parsedMaxTime = currentPatient.timeSetting ? currentPatient.timeSetting * 60 : 1800;
+
     return (
         <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans overflow-hidden">
             <Header
                 isAiSidebarOpen={isAiSidebarOpen}
                 onToggleAi={() => setIsAiSidebarOpen((prev) => !prev)}
+                onRequestExit={() => setIsExitModalOpen(true)}
                 sessionId={sessionId}
                 patientId={params.id}
             />
-            
+
             <div className="flex flex-1 overflow-hidden">
-                <PatientSidebar 
-                    id={params.id} 
-                    sessionId={sessionId} 
-                    timerFormatted={timer.formatted} 
-                    elapsed={timer.elapsed} 
-                    maxTime={currentPatient.time ? (parseInt(currentPatient.time) * 60) : 1800} 
+                <PatientSidebar
+                    id={params.id}
+                    sessionId={sessionId}
+                    timerFormatted={timer.formatted}
+                    elapsed={timer.elapsed}
+                    maxTime={parsedMaxTime}
                     avatarUrl={resolvedAvatar}
                 />
-                
+
                 <ChatArea
                     patientData={{ ...currentPatient, img: resolvedAvatar }}
                     sessionId={sessionId}
                     vpElapsed={timer.elapsed}
                     onProceedToReasoning={() => void handleProceedToReasoning()}
                 />
-                
+
                 {isAiSidebarOpen && <AiAssistantSidebar sessionId={sessionId} />}
             </div>
+
+            <ExitConfirmModal
+                isOpen={isExitModalOpen}
+                isProcessing={isExiting}
+                onConfirm={handleConfirmExit}
+                onCancel={() => setIsExitModalOpen(false)}
+            />
         </div>
     );
 };

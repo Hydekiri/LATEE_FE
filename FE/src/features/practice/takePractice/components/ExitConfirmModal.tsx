@@ -26,15 +26,24 @@ export function ExitConfirmModal({
     }, [isOpen, isProcessing, onCancel]);
 
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = '';
-        return () => { document.body.style.overflow = ''; };
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
     }, [isOpen]);
 
     if (!isOpen) return null;
 
+    const handleConfirmClick = () => {
+        void onConfirm();
+    };
+
     return (
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -77,10 +86,10 @@ export function ExitConfirmModal({
                     )}
                 </div>
 
-                {/* Warning callout */}
+                {/* Warning */}
                 <div className="mx-6 mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4">
                     <p className="text-amber-700 text-xs font-semibold leading-relaxed">
-                        ⚠️ Leaving mid-session will mark this attempt as{' '}
+                        Leaving mid-session will mark this attempt as{' '}
                         <span className="font-bold">Abandoned</span>. This still counts
                         toward your maximum attempts.
                     </p>
@@ -91,14 +100,19 @@ export function ExitConfirmModal({
                     <button
                         onClick={onCancel}
                         disabled={isProcessing}
-                        className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 py-3 border border-gray-200 text-gray-700 rounded-xl
+                        font-semibold text-sm hover:bg-gray-50 transition-all
+                        disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Stay in Session
                     </button>
                     <button
-                        onClick={() => void onConfirm()}
+                        onClick={handleConfirmClick}
                         disabled={isProcessing}
-                        className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
+                        className="flex-1 py-3 bg-red-600 text-white rounded-xl font-bold text-sm
+                        hover:bg-red-700 transition-all disabled:opacity-60
+                        disabled:cursor-not-allowed flex items-center justify-center
+                        gap-2 shadow-md"
                     >
                         {isProcessing ? (
                             <>

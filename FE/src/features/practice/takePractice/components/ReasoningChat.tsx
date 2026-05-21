@@ -1,17 +1,17 @@
 'use client';
 
+import { useRef, useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { Send } from 'lucide-react';
-import { useState } from 'react';
 import { ReasoningMessage } from '@/src/hooks/useReasoningChat';
 
 interface ReasoningChatProps {
-    messages: ReasoningMessage[];
-    isSending: boolean;
-    isComplete: boolean;
-    errorMessage?: string | null;
-    onSendMessage: (message: string) => Promise<void>;
-    onRetry?: () => Promise<void>;
+    readonly messages: ReasoningMessage[];
+    readonly isSending: boolean;
+    readonly isComplete: boolean;
+    readonly errorMessage?: string | null;
+    readonly onSendMessage: (message: string) => Promise<void>;
+    readonly onRetry?: () => Promise<void>;
 }
 
 export const ReasoningChat = ({
@@ -23,23 +23,37 @@ export const ReasoningChat = ({
     onRetry,
 }: ReasoningChatProps) => {
     const [inputMessage, setInputMessage] = useState<string>('');
+    const [isSendingLocal, setIsSendingLocal] = useState<boolean>(false);
+    const bottomRef = useRef<HTMLDivElement>(null);
 
-    const handleSend = async () => {
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
+    const handleSend = useCallback(async () => {
         const trimmed = inputMessage.trim();
-        if (!trimmed || isSending) return;
+        if (!trimmed || isSending || isSendingLocal || isComplete) return;
+
+        setIsSendingLocal(true);
         setInputMessage('');
-        await onSendMessage(trimmed);
-    };
+        try {
+            await onSendMessage(trimmed);
+        } finally {
+            setIsSendingLocal(false);
+        }
+    }, [inputMessage, isSending, isSendingLocal, isComplete, onSendMessage]);
+
+    const isDisabled = isSending || isSendingLocal || isComplete;
 
     return (
-        <main className="flex-1 flex flex-col bg-white relative transition-all duration-300">
-            <div className="flex-1 overflow-y-auto p-8 space-y-6">
+        <main className="flex-1 flex flex-col h-full min-h-0 bg-white relative transition-all duration-300 overflow-hidden">
+            {/* Messages area */}
+            <div className="flex-1 overflow-y-auto p-8 space-y-6 scroll-smooth">
                 {messages.map((chat) => (
                     <div
                         key={chat.id}
-                        className={`flex gap-4 ${
-                            chat.role === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
+                        className={`flex gap-4 ${chat.role === 'user' ? 'justify-end' : 'justify-start'
+                            }`}
                     >
                         {chat.role === 'assistant' && (
                             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
@@ -53,11 +67,10 @@ export const ReasoningChat = ({
                             </div>
                         )}
                         <div
-                            className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
-                                chat.role === 'user'
+                            className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${chat.role === 'user'
                                     ? 'bg-[#D1EFF9] text-gray-800 rounded-tr-none'
                                     : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'
-                            }`}
+                                }`}
                         >
                             {chat.dimension && (
                                 <span className="text-xs font-bold text-[#1BA7D9] block mb-1 uppercase">
@@ -82,9 +95,9 @@ export const ReasoningChat = ({
                     </div>
                 ))}
 
-                {isSending && (
+                {(isSending || isSendingLocal) && (
                     <div className="text-sm text-gray-500 pl-14 animate-pulse">
-                        Creating new question...
+                        Generating next question...
                     </div>
                 )}
 
@@ -101,16 +114,21 @@ export const ReasoningChat = ({
                             <button
                                 onClick={() => void onRetry()}
                                 disabled={isSending}
-                                className="px-3 py-1.5 rounded-md border border-red-200 bg-white text-red-700 text-xs font-medium hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="px-3 py-1.5 rounded-md border border-red-200 bg-white text-red-700
+                            text-xs font-medium hover:bg-red-50 disabled:opacity-60
+                            disabled:cursor-not-allowed"
                             >
                                 Try again
                             </button>
                         )}
                     </div>
                 )}
+
+                <div ref={bottomRef} />
             </div>
 
-            <div className="p-6 pt-0 bg-white">
+            {/* Input */}
+            <div className="p-6 pt-0 bg-white shrink-0">
                 <div className="relative group">
                     <input
                         type="text"
@@ -122,18 +140,23 @@ export const ReasoningChat = ({
                                 void handleSend();
                             }
                         }}
-                        disabled={isSending || isComplete}
+                        disabled={isDisabled}
                         placeholder={
                             isComplete
                                 ? 'Reasoning complete — submit your diagnosis'
                                 : 'Type your reasoning here...'
                         }
-                        className="w-full pl-5 pr-14 py-4 border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 rounded-xl disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="w-full pl-5 pr-14 py-4 border-[#235697] border-[1.5px]
+                        focus:outline-none focus:border-[#235697] text-sm shadow-sm
+                        transition-all duration-300 rounded-xl
+                        disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
                     <button
                         onClick={() => void handleSend()}
-                        disabled={isSending || !inputMessage.trim() || isComplete}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#235697] p-2 hover:bg-gray-50 rounded-lg transition-colors disabled:text-gray-400 disabled:hover:bg-transparent"
+                        disabled={isDisabled || !inputMessage.trim()}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#235697] p-2
+                        hover:bg-gray-50 rounded-lg transition-colors
+                        disabled:text-gray-400 disabled:hover:bg-transparent"
                     >
                         <Send className="w-6 h-6 rotate-[-15deg] group-hover:rotate-0 transition-transform" />
                     </button>

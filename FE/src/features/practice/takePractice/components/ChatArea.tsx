@@ -11,9 +11,9 @@ import { ConfirmModal } from './ConfirmModal';
 import type { NoteChatState } from '@/src/features/practice/takePractice/types/note';
 
 interface ChatMsgProps {
-    role: 'user' | 'patient';
-    message: string;
-    avatar: string;
+    readonly role: 'user' | 'patient';
+    readonly message: string;
+    readonly avatar: string;
 }
 
 const ChatBubble = ({ role, message, avatar }: ChatMsgProps) => (
@@ -54,26 +54,31 @@ const ChatBubble = ({ role, message, avatar }: ChatMsgProps) => (
 );
 
 interface ChatAreaProps {
-    patientData: PatientData;
-    sessionId: string;
-    vpElapsed: number;
-    onProceedToReasoning: () => void;
+    readonly patientData: PatientData;
+    readonly sessionId: string;
+    readonly vpElapsed: number;
+    readonly onProceedToReasoning: () => void;
 }
 
 export const ChatArea = ({
     patientData,
     sessionId,
-    vpElapsed,
     onProceedToReasoning,
 }: ChatAreaProps) => {
     const [input, setInput] = useState<string>('');
     const bottomRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const [isPanelExpanded, setIsPanelExpanded] = useState<boolean>(false);
     const [noteID, setNoteID] = useState<string>('');
     const [notesState, setNotesState] = useState<Record<string, NoteChatState>>({});
-
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
+
+    // Dùng Ref để cô lập sessionId, chặn đứng việc tạo lại hàm handleWarning gây loop
+    const sessionIdRef = useRef<string>(sessionId);
+    useEffect(() => {
+        sessionIdRef.current = sessionId;
+    }, [sessionId]);
 
     const handleWarning = useCallback(
         (warning: {
@@ -84,6 +89,7 @@ export const ChatArea = ({
             category: string;
         }) => {
             const id = warning.noteId;
+            const currentSessionId = sessionIdRef.current;
 
             setNotesState((prev) => ({
                 ...prev,
@@ -109,13 +115,13 @@ export const ChatArea = ({
                 noteId: id,
                 reason: warning.reason,
                 category: warning.category,
-                sessionId: sessionId,
+                sessionId: currentSessionId,
                 createdAt: Date.now(),
                 suggestion: warning.suggestion,
                 severity: warning.severity,
             }).catch(console.error);
         },
-        [sessionId]
+        [] // Luôn để trống để đảm bảo reference hàm ổn định tuyệt đối
     );
 
     const { messages, isSending, isValidating, sendMessage } = useVpChat({
@@ -124,9 +130,19 @@ export const ChatArea = ({
         onWarning: handleWarning,
     });
 
+    // Cuộn trang thông minh: Chỉ tự động cuộn khi độ dài mảng tin nhắn tăng lên thực tế
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
+        if (messages.length > 0) {
+            bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+        }
+    }, [messages.length]);
+
+    // Tự động focus con trỏ chuột vào ô nhập liệu khi trạng thái rảnh
+    useEffect(() => {
+        if (!isSending && !isValidating) {
+            inputRef.current?.focus();
+        }
+    }, [isSending, isValidating]);
 
     const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -138,12 +154,13 @@ export const ChatArea = ({
 
     const handleFinalConfirm = (diagnosis?: string) => {
         setIsConfirmModalOpen(false);
-        console.log('Saved Diagnosis Data:', diagnosis); 
-        onProceedToReasoning(); 
+        console.log('Saved Diagnosis Data:', diagnosis);
+        onProceedToReasoning();
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full min-h-0 bg-white relative transition-all duration-300 overflow-hidden">
+        <div className="flex-1 flex flex-col h-full min-h-0 bg-white relative transition-all duration-300 overflow-hidden z-10">
+            {/* Vùng hiển thị tin nhắn */}
             <div className="flex-1 overflow-y-auto p-8 space-y-6 scroll-smooth">
                 {messages.map((msg) => (
                     <ChatBubble
@@ -156,51 +173,50 @@ export const ChatArea = ({
                 {(isSending || isValidating) && (
                     <div className="flex items-center gap-2 text-gray-400 text-xs pl-14">
                         <span className="animate-pulse italic">
-                            {isValidating
-                                ? 'Checking medical accuracy...'
-                                : 'Patient is typing...'}
+                            {isValidating ? 'Checking medical accuracy...' : 'Patient is typing...'}
                         </span>
                     </div>
                 )}
                 <div ref={bottomRef} />
             </div>
 
-            <WarningPanel
-                isPanelExpanded={isPanelExpanded}
-                setIsPanelExpanded={setIsPanelExpanded}
-                noteID={noteID}
-                setNoteID={setNoteID}
-                notesState={notesState}
-                setNotesState={setNotesState}
-            />
+            {/* Warning Panel cảnh báo y khoa lâm sàng */}
+            <div className="relative z-20">
+                <WarningPanel
+                    isPanelExpanded={isPanelExpanded}
+                    setIsPanelExpanded={setIsPanelExpanded}
+                    noteID={noteID}
+                    setNoteID={setNoteID}
+                    notesState={notesState}
+                    setNotesState={setNotesState}
+                />
+            </div>
 
-            <div className="p-6 pt-0 bg-white shrink-0">
-                <form
-                    onSubmit={handleSend}
-                    className="relative group"
-                >
+            {/* Form nhập liệu Input Chat */}
+            <div className="p-6 pt-0 bg-white shrink-0 relative z-30">
+                <form onSubmit={handleSend} className="relative group">
                     <input
+                        ref={inputRef}
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        placeholder={
-                            isSending
-                                ? 'Waiting for response...'
-                                : 'Ask the patient about symptoms, history...'
-                        }
+                        placeholder={isSending ? 'Waiting for response...' : 'Ask the patient about symptoms, history...'}
                         disabled={isSending}
-                        className={`w-full pl-5 pr-14 py-4 border border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 ${isPanelExpanded ? ' rounded-b-xl' : 'rounded-tr-xl rounded-br-xl rounded-bl-xl'} ${isSending ? 'bg-gray-50' : 'bg-white'}`}
+                        className={`w-full pl-5 pr-14 py-4 border border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 select-text pointer-events-auto ${
+                            isPanelExpanded ? 'rounded-b-xl' : 'rounded-tr-xl rounded-br-xl rounded-bl-xl'
+                        } ${isSending ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-800'}`}
                     />
                     <button
                         type="submit"
                         disabled={isSending || !input.trim()}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#235697] p-2 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-[#235697] p-2 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-30 z-40"
                     >
                         <Send className="w-5 h-5 rotate-[-15deg] group-hover:rotate-0 transition-transform" />
                     </button>
                 </form>
             </div>
 
+            {/* Modal chẩn đoán xác nhận chuyển pha */}
             <ConfirmModal
                 isOpen={isConfirmModalOpen}
                 onClose={() => setIsConfirmModalOpen(false)}
