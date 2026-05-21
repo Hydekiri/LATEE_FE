@@ -4,7 +4,6 @@ import { CheckBadgeIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { removePausedAssessment } from '@/src/features/assessment/takeAssessment/utils/pauseAssessmentStorage';
 
-// Định nghĩa cấu trúc dữ liệu trả về từ Backend
 interface SubmitResponse {
     data?: {
         attemptId: string;

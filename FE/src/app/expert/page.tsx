@@ -15,7 +15,6 @@ export default async function ExpertDashboardPage() {
         redirect('/login');
     }
 
-    // COMMENT HERE IF WOULD LIKE TO PASS ATTRIBUTES TO LOWER COMPONENTS
     // const currentUser = await getCurrentUser();
 
     return <ExpertDashboardFeature />;

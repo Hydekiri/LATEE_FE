@@ -2,23 +2,50 @@
 
 import Image from 'next/image';
 import { Clock, Folder, Sparkles } from 'lucide-react';
-import { ConfirmModal } from "@/src/features/practice/takePractice/components/ConfirmModal";
+import { ConfirmModal } from '@/src/features/practice/takePractice/components/ConfirmModal';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
-// Cập nhật Interface để nhận sessionId
 interface PatientSidebarProps {
     id: string;
     sessionId: string;
+    timerFormatted: string; 
+    elapsed: number;       
+    maxTime: number;        
+    avatarUrl?: string; // Thêm prop nhận đường dẫn ảnh động từ trang cha
 }
 
-export const PatientSidebar = ({ id, sessionId }: PatientSidebarProps) => {
+export const PatientSidebar = ({ 
+    id, 
+    sessionId, 
+    timerFormatted, 
+    elapsed, 
+    maxTime,
+    avatarUrl 
+}: PatientSidebarProps) => {
     const router = useRouter();
-    const [isShowConfirmModal, setIsShowConfirmModal] = useState(false);
+    const [isShowConfirmModal, setIsShowConfirmModal] = useState<boolean>(false);
+    
+    const remainingSeconds = useMemo(() => {
+        return Math.max(0, maxTime - elapsed);
+    }, [maxTime, elapsed]);
 
-    const onEndConversationClick = () => {
+    const countdownDisplay = useMemo(() => {
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }, [remainingSeconds]);
+
+    const progressPercent = useMemo(() => {
+        return Math.max(0, (remainingSeconds / maxTime) * 100);
+    }, [remainingSeconds, maxTime]);
+
+    const onEndConversationConfirm = () => {
+        setIsShowConfirmModal(false);
         router.push(`/practice/${id}/reasoning?sessionId=${sessionId}`);
-    }
+    };
+
+    const displayAvatar = avatarUrl || '/images/VirtualPatient/VP5.jpeg';
 
     return (
         <aside className="w-72 bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
@@ -26,12 +53,13 @@ export const PatientSidebar = ({ id, sessionId }: PatientSidebarProps) => {
                 {/* Avatar Section */}
                 <div className="mb-4">
                     <div className="w-full aspect-square rounded-xl overflow-hidden border-2 border-gray-100 shadow-sm relative">
-                        <Image 
-                            src="/images/LVP1.jpeg" 
-                            fill 
-                            alt="Patient Avatar" 
-                            className="object-cover" 
-                            priority 
+                        <Image
+                            src={displayAvatar}
+                            fill
+                            sizes="288px"
+                            alt="Patient Avatar"
+                            className="object-cover"
+                            priority
                         />
                     </div>
                 </div>
@@ -44,20 +72,23 @@ export const PatientSidebar = ({ id, sessionId }: PatientSidebarProps) => {
                     </div>
                 </div>
 
-                {/* Time Remaining Card */}
                 <div className="bg-[#F8FAFC] border border-gray-200 rounded-lg p-3 mb-6">
                     <div className="flex justify-between items-center text-xs text-gray-500 mb-1">
                         <span>Time Remaining</span>
                         <Clock className="w-3 h-3" />
                     </div>
-                    <div className="text-2xl font-bold text-[#235697] mb-2 font-mono">29:48</div>
+                    <div className="text-2xl font-bold text-[#235697] mb-2 font-mono tabular-nums">
+                        {countdownDisplay}
+                    </div>
                     <div className="relative w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                            className="absolute left-0 top-0 h-full bg-[#235697] transition-all duration-500" 
-                            style={{ width: '90%' }}
+                        <div
+                            className="absolute left-0 top-0 h-full bg-[#235697] transition-all duration-500"
+                            style={{ width: `${progressPercent}%` }}
                         ></div>
                     </div>
-                    <div className="text-right text-[10px] text-gray-400 mt-1">90%</div>
+                    <div className="text-right text-[10px] text-gray-400 mt-1">
+                        {Math.round(progressPercent)}%
+                    </div>
                 </div>
 
                 {/* Intervention Section */}
@@ -66,10 +97,9 @@ export const PatientSidebar = ({ id, sessionId }: PatientSidebarProps) => {
                     <div className="space-y-4">
                         <div>
                             <div className="flex items-center gap-2 text-[#235697] font-semibold text-sm cursor-pointer mb-2 group">
-                                <Folder className="w-4 h-4 group-hover:fill-[#235697]/10" /> 
+                                <Folder className="w-4 h-4 group-hover:fill-[#235697]/10" />
                                 <span className="group-hover:underline">Order Interventions</span>
                             </div>
-                            {/* Child Items */}
                         </div>
                     </div>
                 </div>
@@ -85,13 +115,12 @@ export const PatientSidebar = ({ id, sessionId }: PatientSidebarProps) => {
                 </button>
             </div>
 
-            {/* Modals */}
             <ConfirmModal
                 isOpen={isShowConfirmModal}
                 onClose={() => setIsShowConfirmModal(false)}
-                onConfirm={onEndConversationClick}
+                onConfirm={onEndConversationConfirm}
+                requireDiagnosis={false}
             />
-
         </aside>
     );
 };

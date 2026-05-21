@@ -24,16 +24,10 @@ export const LoginForm = () => {
             return;
         }
 
-        /*
-         * Solve authentication here 
-         */
         try {
             const accessDays = 1;
             const refreshDays = rememberMe ? 30 : 1;
             const data = await loginApi(email, password, accessDays, refreshDays);
-
-            //Update logic to check the status of the User
-            // If status is "inactive", show error message "Your account is inactive. Please contact admin for support."
 
             if (data.role.toLowerCase() !== selectedRole) {
                 setError('You have selected the wrong role. Please choose the correct role and try again.');
@@ -41,7 +35,7 @@ export const LoginForm = () => {
             }
 
             setCookie('isRemembered', rememberMe ? 'true' : 'false', { days: refreshDays });
-            console.log('Role:', data.role);
+
             setError('');
             if (data.role.toLowerCase() === 'expert') {
                 console.log("Redirecting to expert dashboard...");

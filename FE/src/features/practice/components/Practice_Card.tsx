@@ -11,13 +11,31 @@ import {
     ChatBubbleLeftRightIcon,
     ArrowRightIcon
 } from "@heroicons/react/24/solid";
-
+import { useMemo, useState } from "react";
+import { getAvatarByAge, resolvePatientAvatar } from "@/src/utils/patient-assets";
 interface PatientCardProps {
     item: PatientData;
 }
 
 export default function PatientCard({ item }: PatientCardProps) {
     const router = useRouter();
+    const [imgSrc, setImgSrc] = useState<string | null>(null);
+
+    const displayImage = useMemo(() => {
+        if (imgSrc) return imgSrc;
+        return resolvePatientAvatar(item.img, item.id, item.age, item.gender);
+    }, [item.id, item.age, item.gender, item.img, imgSrc]);
+
+    const introductionText = useMemo(() => {
+        const age = item.age || "N/A";
+        const gender = (item.gender || "patient").toLowerCase();
+        const occupation = (item.occupation && item.occupation !== "N/A") 
+            ? item.occupation.toLowerCase() 
+            : "patient";
+        const setting = item.setting?.toLowerCase() || "clinic";
+
+        return `A ${age}-year-old ${gender} ${occupation} comes to the ${setting} for evaluation of a recent health concern.`;
+    }, [item.age, item.gender, item.occupation, item.setting]);
 
     return (
         /* --- LỚP 1: BASE CONTAINER --- */
@@ -26,18 +44,20 @@ export default function PatientCard({ item }: PatientCardProps) {
             {/* --- LỚP 2: IMAGE LAYER --- */}
             <div className="absolute top-0 left-0 w-full h-[50%] bg-gray-50 overflow-hidden">
                 <Image
-                    src={item.img}
+                    src={displayImage}
                     alt={item.id}
+                    // width={736}
+                    // height={736}
                     fill
-                    className="w-full h-full object-cover object-[0%_50%] transition-transform duration-700 ease-out group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="w-full h-full object-cover object-[0%_30%] transition-transform duration-700 ease-out group-hover:scale-105"
+                    onError={() => setImgSrc(getAvatarByAge(item.id, item.age, item.gender))}
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/10 via-transparent to-transparent"></div>
             </div>
 
             {/* --- LỚP 3: CONTENT LAYER --- */}
             <div className="absolute bottom-0 left-0 w-full h-[60%] bg-white rounded-t-[10px] px-5 py-5 xl:px-6 xl:py-6 flex flex-col justify-between shadow-[0_-8px_20px_rgba(0,0,0,0.04)]">
-                
-                {/* --- PHẦN THÔNG TIN TRÊN --- */}
                 <div className="flex flex-col gap-2 xl:gap-3">
                     
                     {/* ID & Badges */}
@@ -69,18 +89,14 @@ export default function PatientCard({ item }: PatientCardProps) {
                         </div>
                     </div>
 
-                    {/* Introduction */}
                     <div>
-                        <p className="text-[#235697] font-lato-bold text-sm xl:text-base mb-px">
-                            Introduction
-                        </p>
-                        <p className="text-[#0E2A46] font-lato-r text-[13px] xl:text-sm leading-relaxed line-clamp-2 truncate">
-                            {item.description}
+                        <p className="text-[#0E2A46] font-lato-r text-[13px] xl:text-sm leading-relaxed line-clamp-2 italic">
+                            &quot;{introductionText}&quot;
                         </p>
                     </div>
                 </div>
 
-                {/* --- PHẦN CHÂN  --- */}
+                {/* --- PHẦN CHÂN (Chief Concern & Action) --- */}
                 <div className="text-sm">
                     <p className="text-[#235697] font-lato-bold text-sm xl:text-base mb-px">
                         Chief concern

@@ -1,14 +1,14 @@
-export interface NoteChatMessage {
-    role: 'assistant' | 'user' | 'doctor' | 'patient';
-    content: string;
+export interface QuestionValidationResponseState {
+    reason: string;
+    suggestion: string;
+    severity: string;
+    category: string;
+    confidence: number | null;
 }
 
-export interface QuestionValidationResponse {
-    reason: string | "No reason provided";
-    suggestion: string | "No suggestion provided";
-    severity: string | "No severity provided";
-    category: string | "No category provided";
-    confidence: number | null;
+export interface NoteChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
 }
 
 export interface NoteChatState {
@@ -16,6 +16,6 @@ export interface NoteChatState {
     isOpen: boolean;
     showChat: boolean;
     messages: NoteChatMessage[];
-    interactionHistory: NoteChatMessage[]; 
-    questionValidationResponse: QuestionValidationResponse;
+    interactionHistory: { role: string; content: string }[];
+    questionValidationResponse: QuestionValidationResponseState | null;
 }

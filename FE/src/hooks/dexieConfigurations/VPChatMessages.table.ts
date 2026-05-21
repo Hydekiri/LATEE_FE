@@ -1,9 +1,10 @@
 import { db } from './database';
-
 export interface ChatMessageEntity {
     id?: number;
-    role: 'user' | 'patient';
+    role: 'user' | 'patient' | 'assistant';
     content: string;
+    sessionId: string; 
+    createdAt: number;
 }
 
 export const VPChatMessageTable = {
@@ -34,6 +35,16 @@ export const VPChatMessageTable = {
             .reverse()
             .limit(limit)
             .toArray();
+    },
+    async getBySession(sessionId: string): Promise<ChatMessageEntity[]> {
+        return await db.table('VPChatMessages')
+            .where('sessionId')
+            .equals(sessionId)
+            .sortBy('createdAt');
+    },
+
+    async clearBySession(sessionId: string) {
+        return await db.table('VPChatMessages').where('sessionId').equals(sessionId).delete();
     },
 
     async delete(id: number) {
