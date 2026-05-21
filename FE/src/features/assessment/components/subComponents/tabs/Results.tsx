@@ -276,7 +276,7 @@ function ResultsContent({ data }: { data: AssessmentData }) {
                     <ul className="space-y-1 text-md">
                         <li>
                             <span className="font-bold text-[#235697]">Final Score:</span>
-                            <span className="text-[#0E2A46] ml-1">{Math.round(selectedAttemptOverview.score)} / 100</span>
+                            <span className="text-[#0E2A46] ml-1">{Math.round(selectedAttemptOverview.score)} / {data.maxScore}</span>
                         </li>
 
                         <li className="flex items-center gap-1">
@@ -352,6 +352,7 @@ function ResultsContent({ data }: { data: AssessmentData }) {
 }
 
 export default function Results({ data }: { data: AssessmentData }) {
+    console.log("Rendering Results component with data:", data);
     return (
         <Suspense fallback={<div className="p-20 text-center text-slate-400"><Loader2 className="animate-spin mx-auto mb-2" /> Loading Results...</div>}>
             <ResultsContent data={data} />

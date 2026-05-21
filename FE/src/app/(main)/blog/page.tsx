@@ -1,5 +1,5 @@
 import BlogFeature from "@/src/features/blog/page";
-import { checkIsLearnerLoggedIn } from "../../authFilterChain";
+import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 import { redirect } from "next/navigation";
 
 export default async function BlogPage() {
