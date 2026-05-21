@@ -13,7 +13,6 @@ export const AdminLoginForm = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [selectedRole, setSelectedRole] = useState<'learner' | 'expert'>('learner');
     const [rememberMe, setRememberMe] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +27,7 @@ export const AdminLoginForm = () => {
          * Solve authentication here 
          */
         try {
-            const data = await loginApi(email, password);
+            const data = await loginApi(email, password, 1, 30);
 
             if (data.role.toLowerCase() !== "admin") {
                 setError('You do not have permission to access this page');
@@ -52,7 +51,7 @@ export const AdminLoginForm = () => {
             router.push('/admin/dashboard');
 
         } catch (err) {
-            setError('Wrong email or password');
+            setError('Wrong email or password' + (err instanceof Error ? `: ${err.message}` : ''));
         }
     };
 

@@ -3,17 +3,22 @@ import { API_BASE_URL } from "@/src/config/env";
 import { getCookie } from "@/src/utils/cookies";
 
 export async function fetchUsers(): Promise<User[]> {
-    const accessToken = getCookie("accessToken");
+    try {
+        const accessToken = getCookie("accessToken");
 
-    const res = await fetch(`${API_BASE_URL}/user/api/users`, {
-        method: "GET",
-        headers: {
-            'Content-Type': 'application/json',
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
-        },
-    });
-    if (!res.ok) throw new Error("Failed to fetch users");
-    return res.json();
+        const res = await fetch(`${API_BASE_URL}/user/api/users`, {
+            method: "GET",
+            headers: {
+                'Content-Type': 'application/json',
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+            },
+        });
+        if (!res.ok) throw new Error("Failed to fetch users");
+        return res.json();
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        throw error;
+    }
 }
 
 export async function getUserById(userId: string) {

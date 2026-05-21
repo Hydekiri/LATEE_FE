@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AssessmentQuestion } from "@/src/types/assessment";
+import { AssessmentQuestion, QuestionOption } from "@/src/types/assessment";
 import { FlagIcon as FlagOutline } from "@heroicons/react/24/outline";
 import { FlagIcon as FlagSolid } from "@heroicons/react/24/solid";
 
@@ -12,6 +12,8 @@ interface QuestionCardProps {
 
 export default function QuestionCard({ question, selectedAnswer, onSelect, index }: QuestionCardProps) {
     const [isFlagged, setIsFlagged] = useState(false);
+
+    console.log("Rendering QuestionCard with question:", question);
 
     return (
         <div id={`question-${index}`} className="bg-white rounded-xl border border-slate-200 p-8 shadow-sm animate-fadeIn">
@@ -50,7 +52,7 @@ export default function QuestionCard({ question, selectedAnswer, onSelect, index
 
             {/* Options Section */}
             <div className="space-y-4">
-                {question.questionOption.map((opt) => {
+                {question.questionOption.map((opt: QuestionOption) => {
                     const isSelected = selectedAnswer === opt.id;
 
                     return (
