@@ -68,7 +68,7 @@ export default function CreateUserModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4">
-            <div className="w-full max-w-3xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-8">
+            <div className="w-full max-w-3xl rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5 sm:p-8">
                 {/* Header */}
                 <div className="mb-6 border-b border-gray-50 pb-0">
                     <h2 className="mt-1 text-lg font-bold text-[#235697]">
@@ -312,7 +312,7 @@ export default function CreateUserModal({
                                     onChange={(e) =>
                                         setForm({
                                             ...form,
-                                            gender: e.target.value,
+                                            gender: e.target.value as User["gender"],
                                         })
                                     }
                                     className="

@@ -1,6 +1,6 @@
 import AssessmentPageFeature from "@/src/features/assessment/page";
 import { Metadata } from "next";
-import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
+import { checkIsLearnerLoggedIn, getCurrentUser } from "@/src/app/authFilterChain";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
@@ -16,6 +16,9 @@ export default async function AssessmentPage() {
         redirect('/login');
     }
 
+    const currentUser = await getCurrentUser();
+    const learnerName = currentUser?.username || "Learner";
+
     console.log('[INFO]: Learner is logged in, rendering AssessmentPage');
-    return <AssessmentPageFeature />;
+    return <AssessmentPageFeature learnerName={learnerName} />;
 }

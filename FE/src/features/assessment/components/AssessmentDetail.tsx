@@ -11,7 +11,7 @@ import FAQ from "@/src/features/assessment/components/subComponents/tabs/FAQ";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export default function AssessmentDetail({ data }: { data: AssessmentData }) {
-    const router = useRouter();
+    const router = useRouter()
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const activeTab = searchParams.get('tab') || 'about';
@@ -33,8 +33,8 @@ export default function AssessmentDetail({ data }: { data: AssessmentData }) {
             case 'about': return <AssessmentAbout data={data} />;
             case 'experts': return <Experts />;
             case 'insights': return <Evaluation />;
-            case 'results': return <Results />;
-            case 'faq': return <FAQ data={data} />; 
+            case 'results': return <Results data={data} />;
+            case 'faq': return <FAQ data={data} />;
             default: return <AssessmentAbout data={data} />;
         }
     };
@@ -48,14 +48,12 @@ export default function AssessmentDetail({ data }: { data: AssessmentData }) {
                             <button
                                 key={tab.slug}
                                 onClick={() => handleTabChange(tab.slug)}
-                                className={`pb-4 flex-1 text-base font-bold transition-all relative whitespace-nowrap ${
-                                    activeTab === tab.slug ? 'text-[#235697]' : 'text-gray-400 hover:text-gray-600'
-                                }`}
+                                className={`pb-4 flex-1 text-base font-bold transition-all relative whitespace-nowrap ${activeTab === tab.slug ? 'text-[#235697]' : 'text-gray-400 hover:text-gray-600'
+                                    }`}
                             >
                                 {tab.name}
-                                <span className={`absolute bottom-0 left-0 w-full h-1 rounded-full transition-all duration-300 ${
-                                        activeTab === tab.slug ? 'bg-[#235697] opacity-100' : 'bg-transparent opacity-0'
-                                }`} />
+                                <span className={`absolute bottom-0 left-0 w-full h-1 rounded-full transition-all duration-300 ${activeTab === tab.slug ? 'bg-[#235697] opacity-100' : 'bg-transparent opacity-0'
+                                    }`} />
                             </button>
                         ))}
                     </div>
@@ -71,7 +69,7 @@ export default function AssessmentDetail({ data }: { data: AssessmentData }) {
                         </div>
                     </div>
                     <div className="lg:col-span-4">
-                        <CaseOverview data={data} /> 
+                        <CaseOverview data={data} />
                     </div>
                 </div>
             </div>

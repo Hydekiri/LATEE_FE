@@ -35,12 +35,12 @@ export default function UsersTable({
     const [users, setUsers] = useState<Array<User> | null>(null);
     const [selected, setSelected] = useState<User | null>(null);
 
-    const USERS_PER_PAGE = 10;
+    const USERS_PER_PAGE = 5;
 
     useEffect(() => {
         fetchUsers().then(async (userList) => {
             if (userList && Array.isArray(userList)) {
-                console.log("Fetched users:", userList);
+                //console.log("Fetched users:", userList);
                 /// use map and filter to append the users to the state
                 setUsers(userList);
             }
@@ -93,7 +93,7 @@ export default function UsersTable({
     return (
 
         <div className="w-full lg:col-span-8">
-            <div className="lg:col-span-8 bg-white rounded-3xl p-6 shadow-sm">
+            <div className="lg:col-span-8 bg-white rounded-2xl p-6 shadow-sm">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-lg font-bold text-[#235697]">Users</h2>
                     <button
@@ -115,7 +115,7 @@ export default function UsersTable({
 
                         <tbody className="divide-y divide-gray-50">
                             {paginatedUsers?.map((u) => (
-                                <tr key={u.userId} className="hover:bg-slate-50 transition-colors">
+                                <tr key={u.userId} onClick={() => setSelected(u)} className="hover:bg-slate-50 transition-colors cursor-pointer">
                                     <td className="py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-lg" >
@@ -148,7 +148,7 @@ export default function UsersTable({
                                         <div className="flex items-center justify-center gap-2">
                                             {/* Edit */}
                                             <button
-                                                onClick={() => setSelected(u)}
+                                                onClick={(e) => { e.stopPropagation(); setSelected(u); }}
                                                 className="
                                                     rounded-xl
                                                     border border-[#1BA7D9]/20
@@ -167,7 +167,8 @@ export default function UsersTable({
 
                                             {/* Delete */}
                                             <button
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
                                                     // handle delete here
                                                     console.log("Delete user:", u.userId);
                                                 }}
@@ -274,7 +275,7 @@ export default function UsersTable({
                 </div>
 
                 {/* Popup */}
-                {selected && (console.log("Selected user:", selected), true) && (
+                {selected && (
                     <EditUserModal
                         user={selected}
                         onClose={() => setSelected(null)}

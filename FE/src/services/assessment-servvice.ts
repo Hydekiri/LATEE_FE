@@ -1,18 +1,6 @@
-import { MOCK_ASSESSMENTS } from "@/src/data/assessmentData";
 import { AssessmentData, AssessmentFullDetails } from "@/src/types/assessment";
 import { ApiClient } from "@/src/utils/api-client";
 import { AssessmentAttempt } from "@/src/types/assessment";
-
-export const getAssessmentById = async (id: string): Promise<AssessmentData | undefined> => {
-    if (!id) return undefined;
-
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    const cleanId = id.trim(); 
-    const assessment = MOCK_ASSESSMENTS.find((a) => a.assessmentId === cleanId);
-
-    return assessment;
-};
 
 export const createAssessment = async (payload: Partial<AssessmentData>): Promise<AssessmentData> => {
     const res = await ApiClient.post('/assessments', payload);

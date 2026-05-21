@@ -1,29 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { AssessmentFullDetails } from "@/src/types/assessment";
 import QuestionCard from "@/src/features/assessment/takeAssessment/components/QuestionCard";
 import SidebarOverview from "@/src/features/assessment/takeAssessment/components/SidebarOverview";
 import AssessmentNavbar from "@/src/components/layout/AssessmentNavbar";
+import {
+    getPausedAssessmentById,
+    savePausedAssessment
+} from "@/src/features/assessment/takeAssessment/utils/pauseAssessmentStorage";
 
 interface Props {
     assessmentData: AssessmentFullDetails;
 }
 
 export default function TakeAssessmentFeature({ assessmentData }: Props) {
-    const [currentPage, setCurrentPage] = useState<number>(0);
-    const [answers, setAnswers] = useState<Record<string, string>>({});
-    const [activeQuestionIdx, setActiveQuestionIdx] = useState<number>(0);
-    
-    const LIMIT_TIME = (assessmentData.timeLimitMinutes || 20) * 60;
-    const [timeLeft, setTimeLeft] = useState<number>(LIMIT_TIME);
-
-    const durationSeconds = LIMIT_TIME - timeLeft;
-
-    const QUESTIONS_PER_PAGE = 3;
+    const router = useRouter();
     const questions = assessmentData.questions || [];
     const totalQuestions = questions.length;
+    const QUESTIONS_PER_PAGE = 3;
+
+    const LIMIT_TIME = (assessmentData.timeLimitMinutes || 20) * 60;
+    const pausedAssessment = useMemo(
+        () => getPausedAssessmentById(assessmentData.assessmentId),
+        [assessmentData.assessmentId]
+    );
+
+    const initialQuestionIdx = Math.min(
+        Math.max(pausedAssessment?.currentQuestionIdx || 0, 0),
+        Math.max(totalQuestions - 1, 0)
+    );
+
+    const [currentPage, setCurrentPage] = useState<number>(() => Math.floor(initialQuestionIdx / QUESTIONS_PER_PAGE));
+    const [answers, setAnswers] = useState<Record<string, string>>(() => pausedAssessment?.answers || {});
+    const [activeQuestionIdx, setActiveQuestionIdx] = useState<number>(initialQuestionIdx);
+
+    const [timeLeft, setTimeLeft] = useState<number>(() => Math.max(pausedAssessment?.timeLeft || LIMIT_TIME, 0));
+
+    const durationSeconds = LIMIT_TIME - timeLeft;
     const totalPages = Math.ceil(totalQuestions / QUESTIONS_PER_PAGE);
 
     useEffect(() => {
@@ -35,15 +51,16 @@ export default function TakeAssessmentFeature({ assessmentData }: Props) {
     }, [timeLeft]);
 
     const handleSelect = (questionId: string, choiceId: string, globalIdx: number) => {
-        setAnswers((prev) => ({ 
-            ...prev, 
-            [questionId]: choiceId 
+        setAnswers((prev) => ({
+            ...prev,
+            [questionId]: choiceId
         }));
         setActiveQuestionIdx(globalIdx);
     };
 
     const startIndex = currentPage * QUESTIONS_PER_PAGE;
     const currentQuestions = questions.slice(startIndex, startIndex + QUESTIONS_PER_PAGE);
+    //console.log("Current Questions:", currentQuestions);
 
     const onJumpToQuestion = (idx: number) => {
         setActiveQuestionIdx(idx);
@@ -54,11 +71,29 @@ export default function TakeAssessmentFeature({ assessmentData }: Props) {
             if (element) {
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        }, 150); 
+        }, 150);
     };
 
     const answeredCount = Object.keys(answers).length;
     const progress = totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0;
+
+    const handlePauseAssessment = () => {
+        savePausedAssessment({
+            assessmentId: assessmentData.assessmentId,
+            title: assessmentData.title,
+            difficultyLevel: assessmentData.difficultyLevel,
+            timeLimitMinutes: assessmentData.timeLimitMinutes,
+            totalQuestions,
+            currentQuestionIdx: activeQuestionIdx,
+            timeLeft,
+            durationSeconds,
+            answers,
+            pausedAt: new Date().toISOString(),
+            image: typeof assessmentData.img === "string" ? assessmentData.img : undefined
+        });
+
+        router.push("/assessment");
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
@@ -87,25 +122,25 @@ export default function TakeAssessmentFeature({ assessmentData }: Props) {
                         <div className="flex flex-col gap-8">
                             {currentQuestions.map((q, idx) => (
                                 <QuestionCard
-                                    key={q.questionId}
+                                    key={q.id}
                                     index={startIndex + idx}
                                     question={q}
-                                    selectedAnswer={answers[q.questionId]}
-                                    onSelect={(choiceId) => handleSelect(q.questionId, choiceId, startIndex + idx)}
+                                    selectedAnswer={answers[q.id]}
+                                    onSelect={(choiceId) => handleSelect(q.id, choiceId, startIndex + idx)}
                                 />
                             ))}
                         </div>
 
                         <div className="flex justify-between mt-12 mb-20 items-center border-t pt-8">
-                            <button 
-                                disabled={currentPage === 0} 
+                            <button
+                                disabled={currentPage === 0}
                                 onClick={() => setCurrentPage(p => p - 1)}
                                 className="flex items-center gap-2 py-2 px-4 text-[#235697] font-bold disabled:opacity-20"
                             >
                                 <ChevronLeft /> Previous
                             </button>
-                            <button 
-                                disabled={currentPage === totalPages - 1} 
+                            <button
+                                disabled={currentPage === totalPages - 1}
                                 onClick={() => setCurrentPage(p => p + 1)}
                                 className="flex items-center gap-2 py-2 px-4 text-[#235697] font-bold disabled:opacity-20"
                             >
@@ -119,11 +154,12 @@ export default function TakeAssessmentFeature({ assessmentData }: Props) {
                     timeLeft={timeLeft}
                     durationSeconds={durationSeconds}
                     totalQuestions={totalQuestions}
-                    currentIdx={activeQuestionIdx} 
+                    currentIdx={activeQuestionIdx}
                     answers={answers}
-                    questionIds={questions.map((q) => q.questionId)}
+                    questionIds={questions.map((q) => q.id)}
                     onJumpToQuestion={onJumpToQuestion}
-                    assessmentId={assessmentData.assessmentId} 
+                    assessmentId={assessmentData.assessmentId}
+                    onPause={handlePauseAssessment}
                 />
             </div>
         </div>

@@ -5,9 +5,10 @@ import Footer from "@/src/components/layout/Footer";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { cookies } from "next/headers"; // Nhập để lấy cookies từ server
-import { checkIsLoggedInAndRedirectToLogin } from "@/src/app/authFilterChain";
+import { notFound, redirect } from "next/navigation";
+import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
+import { cookies } from "next/headers";
+import { AssessmentData } from "@/src/types/assessment";
 
 interface PageProps {
     params: Promise<{
@@ -16,28 +17,45 @@ interface PageProps {
 }
 
 async function getAssessmentData(id: string) {
+    const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
 
-    await checkIsLoggedInAndRedirectToLogin();
+    if (!isLearnerLoggedIn) {
+        console.log("Learner has not been logged in. Redirect to login page....");
+        redirect('/login');
+    }
+
+    console.log('[INFO]: Learner is logged in, fetching assessment data for id:', id);
 
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
+    const learnerId = cookieStore.get("userId")?.value;
 
     console.log('[INFO]: Fetching assessment data for id:', id);
 
-    const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}`, {
+    const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}/learner/${learnerId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}` 
+            "Authorization": `Bearer ${token}`
         },
         cache: 'no-store'
     });
 
     if (!res.ok) return null;
-    return res.json();
+
+    const data: AssessmentData = await res.json();
+    //console.log('[INFO]: Fetched assessment detail data:', data);
+
+    return data;
 }
 
 export default async function AssessmentDetailPage(props: PageProps) {
+    const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
+
+    if (!isLearnerLoggedIn) {
+        console.log("Learner has not been logged in. Redirect to login page....");
+        redirect('/login');
+    }
     const params = await props.params;
     const assessmentId = params.id;
 
@@ -54,7 +72,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
             <HeroSection
                 image="/images/bgLearner2.jpg"
                 title="Lavender Teeducation"
-                content="Phát triển tư duy phản biện và nâng cao kỹ năng chẩn đoán thông qua các mô phỏng lâm sàng thực tế!"
+                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
             />
 
             <div className="relative w-full py-16">
@@ -64,7 +82,7 @@ export default async function AssessmentDetailPage(props: PageProps) {
                         alt="Background"
                         fill
                         className="object-cover"
-                        priority 
+                        priority
                     />
                     <div className="absolute inset-0 bg-white/10" />
                 </div>

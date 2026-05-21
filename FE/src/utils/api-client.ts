@@ -2,10 +2,10 @@
 import axios from 'axios';
 import { API_BASE_URL } from '@/src/config/env';
 import { env } from "@/src/config/env";
-import { getCookie } from "cookies-next"; 
+import { getCookie } from "@/src/utils/cookies";
 
 export const ApiClient = axios.create({
-    baseURL: API_BASE_URL || 'http://localhost:5000', 
+    baseURL: API_BASE_URL || 'http://localhost:5000',
     headers: {
         'Content-Type': 'application/json',
         'accept': '*/*',
@@ -37,7 +37,7 @@ ApiClient.interceptors.response.use(
 export const apiClient = {
     async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
         const token = getCookie('accessToken');
-        
+
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
             ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
@@ -60,9 +60,9 @@ export const apiClient = {
 
     get: <T>(url: string) => apiClient.fetch<T>(url, { method: 'GET' }),
 
-    post: <T, B = unknown>(url: string, body: B) => 
-        apiClient.fetch<T>(url, { 
-            method: 'POST', 
-            body: JSON.stringify(body) 
+    post: <T, B = unknown>(url: string, body: B) =>
+        apiClient.fetch<T>(url, {
+            method: 'POST',
+            body: JSON.stringify(body)
         }),
 };
