@@ -1,7 +1,13 @@
 import { apiClient } from '@/src/utils/api-client';
-import { PatientData, Expert, VitalSigns, PatientInstructions, CaseRules } from '@/src/types/practice';
+import {
+    PatientData,
+    Expert,
+    VitalSigns,
+    PatientInstructions,
+    CaseRules,
+    AttemptCountData,
+} from '@/src/types/practice';
 import { PaginatedResponse } from '@/src/types/api';
-
 
 interface RawExpert {
     expertId?: string;
@@ -48,6 +54,21 @@ interface PatientApiResponse {
     symptom?: string;
 }
 
+interface PaginatedRawResponse {
+    items: PatientApiResponse[];
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+}
+
+export interface PatientQueryOptions {
+    readonly search?: string;
+    readonly level?: string;
+    readonly gender?: string;
+    readonly occupation?: string;
+    readonly sortBy?: string;
+}
 
 function mapRawToPatientData(item: PatientApiResponse): PatientData {
     const timeSetting = item.timeSetting || 30;
@@ -58,19 +79,18 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
         task: 'Take a focused clinical history from this patient.',
         tone: 'Professional',
         procedure: [
-        'Introduce yourself',
-        'Take a focused history',
-        'Identify key findings',
-        'Formulate a differential diagnosis',
+            'Introduce yourself',
+            'Take a focused history',
+            'Identify key findings',
+            'Formulate a differential diagnosis',
         ],
     };
 
-    if (!instructions.procedure) {
-        instructions.procedure = [];
-    }
-    if (!instructions.task) {
-        instructions.task = 'Take a focused clinical history from this patient.';
-    }
+    const safeInstructions: PatientInstructions = {
+        ...instructions,
+        procedure: instructions.procedure ?? [],
+        task: instructions.task || 'Take a focused clinical history from this patient.',
+    };
 
     const experts: Expert[] = (item.experts ?? []).map((e: RawExpert) => ({
         expertId: e.expertId,
@@ -79,7 +99,9 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
         img: e.avatarUrl ?? e.img ?? '/images/doctor1.png',
         bio: e.bioQuote,
         education: e.educationDetail,
-        skills: e.expertiseSkill ? e.expertiseSkill.split(',').map((s) => s.trim()) : [],
+        skills: e.expertiseSkill
+            ? e.expertiseSkill.split(',').map((s) => s.trim())
+            : [],
         phone: e.phone,
         email: e.email,
         location: e.location,
@@ -104,43 +126,62 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
         description: item.medicalHistory || '',
         chiefConcern: item.chiefConcern || '',
         vitalSigns: item.vitalSigns ?? { bp: 'N/A', hr: 0 },
-        instructions,
+        instructions: safeInstructions,
         caseRules: {
-        rules: item.caseRule?.rules ?? [],
-        totalTime: item.caseRule?.totalTime ?? `${timeSetting + argumentTime} min`,
-        timeBreakdown: item.caseRule?.timeBreakdown ?? [
-            `${timeSetting} minutes for patient interaction`,
-            `${argumentTime} minutes for explanation and reasoning`,
-        ],
+            rules: item.caseRule?.rules ?? [],
+            totalTime:
+                item.caseRule?.totalTime ?? `${timeSetting + argumentTime} min`,
+            timeBreakdown: item.caseRule?.timeBreakdown ?? [
+                `${timeSetting} minutes for patient interaction`,
+                `${argumentTime} minutes for explanation and reasoning`,
+            ],
         },
         learningObjectives: item.learningObjectives ?? [],
         experts,
     };
 }
 
-
 export const patientService = {
     async getVirtualPatients(
         page = 1,
-        pageSize = 9
+        pageSize = 9,
+        options: PatientQueryOptions = {}
     ): Promise<PaginatedResponse<PatientData>> {
-        const response = await apiClient.get<PaginatedResponse<PatientApiResponse>>(
-        `/virtual-patient/api/virtual-patients?page=${page}&pageSize=${pageSize}`
+        const q = new URLSearchParams();
+        q.set('page', String(page));
+        q.set('pageSize', String(pageSize));
+        if (options.gender) q.set('gender', options.gender);
+        if (options.level) q.set('level', options.level);
+        if (options.search) q.set('search', options.search);
+        if (options.occupation) q.set('occupation', options.occupation);
+        if (options.sortBy) q.set('sortBy', options.sortBy);
+
+        const response = await apiClient.get<PaginatedRawResponse>(
+            `/virtual-patient/api/virtual-patients?${q.toString()}`
         );
+
         return {
-        ...response,
-        items: response.items.map(mapRawToPatientData),
+            ...response,
+            items: response.items.map(mapRawToPatientData),
         };
     },
 
     async getVirtualPatientById(id: string): Promise<PatientData> {
         const item = await apiClient.get<PatientApiResponse>(
-        `/virtual-patient/api/virtual-patients/${id}`
+            `/virtual-patient/api/virtual-patients/${id}`
         );
         return mapRawToPatientData(item);
     },
-};
 
+    async getAttemptCount(
+        learnerId: string,
+        patientId: string
+    ): Promise<AttemptCountData> {
+        return apiClient.get<AttemptCountData>(
+            `/practice-session/api/practice-sessions/attempt-count?learnerId=${encodeURIComponent(learnerId)}&patientId=${encodeURIComponent(patientId)}`
+        );
+    },
+};
 
 export async function getPatientById(id: string): Promise<PatientData> {
     return patientService.getVirtualPatientById(id);

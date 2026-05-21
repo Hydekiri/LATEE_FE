@@ -1,12 +1,12 @@
-// src/hooks/useVpChat.ts
 'use client';
-import { useState, useCallback, useRef, useMemo } from 'react'; 
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react'; 
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
 import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
 import { PatientData } from '@/src/types/practice'; 
 import { ValidateQuestion } from '@/src/services/validate-question-service';
-import { getAvatarByAge, resolvePatientAvatar } from "@/src/utils/patient-assets";
+import { resolvePatientAvatar } from "@/src/utils/patient-assets";
+
 export interface VpChatMessage {
     id: number;
     role: 'user' | 'patient';
@@ -41,27 +41,11 @@ interface FlexiblePatientData extends Partial<PatientData> {
 
 export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOptions) {
     const flexiblePatient = patientData as FlexiblePatientData;
+    
     const patientAvatar = useMemo(
         () => resolvePatientAvatar(patientData.img, patientData.id, patientData.age, patientData.gender),
         [patientData.id, patientData.age, patientData.gender, patientData.img]
     );
-    // const patientAvatar= useMemo(() => {
-    //     if (!flexiblePatient) return '/images/VirtualPatient/VP5.jpeg'; 
-
-    //     if (flexiblePatient.img && flexiblePatient.img.startsWith('http') && !flexiblePatient.img.includes("VP7.jpeg")) {
-    //         return flexiblePatient.img;
-    //     }
-
-    //     if (flexiblePatient.img && flexiblePatient.img.startsWith('/images') && !flexiblePatient.img.includes("VP7.jpeg")) {
-    //         return flexiblePatient.img;
-    //     }
-        
-    //     const safeId = flexiblePatient.id || flexiblePatient.patientId || "default";
-    //     const safeAge = flexiblePatient.age ?? 30;
-    //     const safeGender = flexiblePatient.gender ?? "Unknown";
-
-    //     return getAvatarByAge(String(safeId), safeAge, safeGender);
-    // }, [flexiblePatient?.id, flexiblePatient?.patientId, flexiblePatient?.age, flexiblePatient?.gender, flexiblePatient?.img]);
 
     const [messages, setMessages] = useState<Omit<VpChatMessage, 'avatar'>[]>([
         {
@@ -71,16 +55,27 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
         },
     ]);
 
+    const messagesRef = useRef<Omit<VpChatMessage, 'avatar'>[]>(messages);
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
+
     const synchronizedMessages = useMemo<VpChatMessage[]>(() => {
         return messages.map((m) => ({
             ...m,
-            avatar: m.role === 'patient' ? patientAvatar: '/images/doctor1.png',
+            avatar: m.role === 'patient' ? patientAvatar : '/images/doctor1.png',
         }));
     }, [messages, patientAvatar]);
     
     const [isSending, setIsSending] = useState<boolean>(false);
     const [isValidating, setIsValidating] = useState<boolean>(false);
     const isSendingRef = useRef<boolean>(false);
+
+    // Dùng Ref giữ callback onWarning luôn có reference ổn định
+    const onWarningRef = useRef(onWarning);
+    useEffect(() => {
+        onWarningRef.current = onWarning;
+    }, [onWarning]);
     
     const sendMessage = useCallback(
         async (text: string) => {
@@ -103,11 +98,13 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                 createdAt: Date.now(),
             }).catch(console.error);
 
-            const chatHistoryForAi = synchronizedMessages.map((m) => ({
+            // Tạo chat history an toàn từ Ref tĩnh không gây loop render
+            const chatHistoryForAi = messagesRef.current.map((m) => ({
                 role: m.role === 'user' ? 'doctor' as const : 'patient' as const,
                 content: m.message,
             }));
 
+            // Chạy Validation ngầm song song
             void (async () => {
                 try {
                     setIsValidating(true);
@@ -117,10 +114,9 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                         conversation_context: chatHistoryForAi,
                     });
                     
-                    if (!validation.isValid && onWarning) {
-                        // Sửa lỗi trùng key cho Note ID
+                    if (!validation.isValid && onWarningRef.current) {
                         const generatedNoteId = `NOTE_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-                        onWarning({
+                        onWarningRef.current({
                             noteId: generatedNoteId,
                             reason: validation.reason,
                             suggestion: validation.suggestion,
@@ -155,7 +151,6 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
 
                 if (!streamRes.ok) throw new Error(`VP API error: ${streamRes.status}`);
 
-                // Sửa lỗi trùng key cho stream message id
                 const streamMsgId = Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`);
                 const streamMsg = {
                     id: streamMsgId,
@@ -182,14 +177,11 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
 
                             try {
                                 const parsed = JSON.parse(rawData) as StreamData;
-                                
                                 if (parsed.type === 'token' && parsed.content) {
                                     accumulatedReply += parsed.content;
                                     setMessages((prev) =>
                                         prev.map((m) =>
-                                            m.id === streamMsgId
-                                                ? { ...m, message: accumulatedReply }
-                                                : m
+                                            m.id === streamMsgId ? { ...m, message: accumulatedReply } : m
                                         )
                                     );
                                 } else if (parsed.type === 'done') {
@@ -214,18 +206,17 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
             } catch (error) {
                 console.error('[useVpChat] Stream Chat Error:', error);
                 const errId = Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`);
-                const errMsg = {
+                setMessages((prev) => [...prev, {
                     id: errId,
                     role: 'patient' as const,
                     message: 'I am having trouble responding.',
-                };
-                setMessages((prev) => [...prev, errMsg]);
+                }]);
             } finally {
                 isSendingRef.current = false;
                 setIsSending(false);
             }
         },
-        [synchronizedMessages, sessionId, onWarning, flexiblePatient.id, flexiblePatient.patientId, patientAvatar]
+        [sessionId, flexiblePatient.id, flexiblePatient.patientId, patientAvatar]
     );
 
     return { messages: synchronizedMessages, isSending, isValidating, sendMessage };

@@ -9,17 +9,16 @@ import {
 } from '@/src/services/aiAssistant-service';
 import {
     AIAssistantChatMessageTable,
-    ChatMessageEntity,
 } from '@/src/hooks/dexieConfigurations/AIAssistantChatMessages.table';
 
 interface Message {
-    id?: number;
-    role: 'user' | 'assistant';
-    content: string;
+    readonly id?: number;
+    readonly role: 'user' | 'assistant';
+    readonly content: string;
 }
 
 interface AiAssistantSidebarProps {
-    sessionId: string;
+    readonly sessionId: string;
 }
 
 export const AiAssistantSidebar = ({ sessionId }: AiAssistantSidebarProps) => {
@@ -28,111 +27,115 @@ export const AiAssistantSidebar = ({ sessionId }: AiAssistantSidebarProps) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Khởi tạo Ref lưu vết tin nhắn phục vụ API History mà không phụ thuộc State liên tục
+    const messagesRef = useRef<Message[]>([]);
+    useEffect(() => {
+        messagesRef.current = messages;
+    }, [messages]);
+
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
     };
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages]);
+    }, [messages.length]);
 
+    // Nạp tin nhắn cũ từ cache Dexie lúc khởi chạy
     useEffect(() => {
         if (!sessionId) return;
+        let cancelled = false;
 
         const loadMessages = async () => {
             try {
                 const cached = await AIAssistantChatMessageTable.getBySession(sessionId);
-                setMessages(
-                    cached.map((m) => ({
-                        id: m.id,
-                        role: m.role,
-                        content: m.content,
-                    }))
-                );
+                if (!cancelled) {
+                    setMessages(
+                        cached.map((m) => ({
+                            id: m.id,
+                            role: m.role as 'user' | 'assistant',
+                            content: m.content,
+                        }))
+                    );
+                }
             } catch (error) {
                 console.error('[AiAssistantSidebar] Failed to load messages:', error);
             }
         };
 
         void loadMessages();
+        return () => {
+            cancelled = true;
+        };
     }, [sessionId]);
 
-    const addMessage = async (
-        message: Omit<ChatMessageEntity, 'id'>
-    ): Promise<Message | null> => {
-        try {
-            const id = await AIAssistantChatMessageTable.add(message);
-            const newMessage: Message = {
-                id: Number(id),
-                role: message.role,
-                content: message.content,
-            };
-            setMessages((prev) => [...prev, newMessage]);
-            return newMessage;
-        } catch (error) {
-            console.error('[AiAssistantSidebar] Failed to save message:', error);
-            return null;
-        }
-    };
-
-    const updateAssistantMessage = async (id: number, content: string): Promise<void> => {
-        setMessages((prev) =>
-            prev.map((msg) => (msg.id === id ? { ...msg, content } : msg))
-        );
-        await AIAssistantChatMessageTable.update(id, { content });
-    };
-
-    // Logic fetch stream cũ giữ nguyên hoàn toàn
     const fetchAiResponse = async (question: string): Promise<void> => {
-        if (!question.trim()) return;
+        if (!question.trim() || isLoading) return;
         setIsLoading(true);
+        setAiInput('');
+
+        const userTimestamp = Date.now();
+        const initialUserMsg: Message = { role: 'user', content: question };
+        const initialAssistantMsg: Message = { role: 'assistant', content: '...' };
+
+        // 1. Đẩy nhanh hiển thị UI trước để Learner thấy phản hồi tức thì
+        setMessages((prev) => [...prev, initialUserMsg, initialAssistantMsg]);
 
         try {
-            await addMessage({
-                role: 'user',
-                content: question,
-                sessionId,
-                createdAt: Date.now(),
-            });
-
-            const assistantMessage = await addMessage({
-                role: 'assistant',
-                content: '',
-                sessionId,
-                createdAt: Date.now(),
-            });
-
-            let streamedText = '';
-
-            const historyForApi: AiAssistantHistoryMessage[] = messages.map((m) => ({
-                role: m.role === 'user' ? 'user' : 'assistant',
+            // Đóng gói lịch sử hội thoại chuẩn chỉnh gửi lên API
+            const historyForApi: AiAssistantHistoryMessage[] = messagesRef.current.map((m) => ({
+                role: m.role,
                 content: m.content,
             }));
 
+            let currentStreamedText = '';
+
+            // 2. Kích hoạt API stream phản hồi từ AI Assistant
             await fetchAiAssistantResponse(
                 question,
                 historyForApi,
-                async (token: string) => {
-                    streamedText += token;
-                    if (assistantMessage?.id !== undefined) {
-                        await updateAssistantMessage(assistantMessage.id, streamedText);
-                    }
+                (token: string) => {
+                    currentStreamedText += token;
+                    // Chỉ cập nhật text trực tiếp lên UI (Tốc độ cao, không lặp)
+                    setMessages((prev) => {
+                        const next = [...prev];
+                        if (next.length > 0) {
+                            next[next.length - 1] = { role: 'assistant', content: currentStreamedText };
+                        }
+                        return next;
+                    });
                 },
                 async () => {
+                    // Kịch bản Xong (Stream hoàn tất) -> Tiến hành ghi đồng bộ 1 phát duy nhất vào IndexedDB
                     setIsLoading(false);
+                    try {
+                        await AIAssistantChatMessageTable.add({
+                            role: 'user',
+                            content: question,
+                            sessionId,
+                            createdAt: userTimestamp,
+                        });
+                        await AIAssistantChatMessageTable.add({
+                            role: 'assistant',
+                            content: currentStreamedText,
+                            sessionId,
+                            createdAt: Date.now(),
+                        });
+                    } catch (dbErr) {
+                        console.error('[Dexie Cache Failure]', dbErr);
+                    }
                 },
                 async (errorMessage: string) => {
-                    if (assistantMessage?.id !== undefined) {
-                        await updateAssistantMessage(
-                            assistantMessage.id,
-                            `Error: ${errorMessage}`
-                        );
-                    }
+                    setMessages((prev) => {
+                        const next = [...prev];
+                        if (next.length > 0) {
+                            next[next.length - 1] = { role: 'assistant', content: `Error: ${errorMessage}` };
+                        }
+                        return next;
+                    });
                     setIsLoading(false);
                 }
             );
-
-            setAiInput('');
         } catch (err) {
             console.error('[AiAssistantSidebar] fetchAiResponse error:', err);
             setIsLoading(false);
@@ -153,7 +156,6 @@ export const AiAssistantSidebar = ({ sessionId }: AiAssistantSidebarProps) => {
                     </div>
                 </div>
 
-                {/* Render ALL Messages (Sử dụng đúng CSS Template mới) */}
                 {messages.map((m, i) => (
                     m.role === 'user' ? (
                         <div key={i} className="flex gap-3 justify-end">
@@ -166,7 +168,9 @@ export const AiAssistantSidebar = ({ sessionId }: AiAssistantSidebarProps) => {
                         </div>
                     ) : (
                         <AiMessageBlock key={i} noteId={m.id} message={m.content}>
-                            <p></p>
+                            <div className="text-xs leading-relaxed text-gray-800 bg-white rounded-xl p-4 border border-blue-50 shadow-sm">
+                                {m.content}
+                            </div>
                         </AiMessageBlock>
                     )
                 ))}
@@ -188,7 +192,7 @@ export const AiAssistantSidebar = ({ sessionId }: AiAssistantSidebarProps) => {
                                 void fetchAiResponse(aiInput);
                             }
                         }}
-                        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#235697] disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className="flex-1 px-3 py-2 rounded-lg border border-gray-300 text-xs focus:outline-none focus:border-[#235697] disabled:bg-gray-100 disabled:cursor-not-allowed bg-white text-gray-800"
                     />
                     <button
                         className="bg-[#235697] text-white p-2 rounded-lg hover:bg-[#1d4880] transition disabled:bg-gray-300 disabled:cursor-not-allowed"

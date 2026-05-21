@@ -2,44 +2,46 @@
 
 import { useEffect, useRef } from 'react';
 
-export interface UseExitProtectionOptions {
+interface UseExitProtectionOptions {
     readonly enabled: boolean;
-    readonly message?: string;
-    readonly onBeforeExit?: () => Promise<void> | void;
+    readonly onExitAttempt?: () => void;
 }
 
 export function useExitProtection({
     enabled,
-    message = 'Are you sure you want to stop this clinical practice session?',
-    onBeforeExit,
+    onExitAttempt,
 }: UseExitProtectionOptions): void {
-    const onBeforeExitRef = useRef(onBeforeExit);
+    const onExitAttemptRef = useRef(onExitAttempt);
+    const enabledRef = useRef(enabled);
 
     useEffect(() => {
-        onBeforeExitRef.current = onBeforeExit;
-    }, [onBeforeExit]);
+        onExitAttemptRef.current = onExitAttempt;
+        enabledRef.current = enabled;
+    }, [onExitAttempt, enabled]);
 
     useEffect(() => {
-        if (!enabled) return;
-
-        const handleBeforeUnload = (e: BeforeUnloadEvent): string => {
-            e.preventDefault();
-            return message;
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-    }, [enabled, message]);
-
-    useEffect(() => {
-        if (!enabled) return;
-
-        const handlePopState = (): void => {
-            window.history.pushState(null, '', window.location.href);
-        };
-
         window.history.pushState(null, '', window.location.href);
+
+        const handlePopState = () => {
+            if (!enabledRef.current) return;
+
+            window.history.pushState(null, '', window.location.href);
+
+            onExitAttemptRef.current?.();
+        };
+
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (enabledRef.current) {
+                e.preventDefault();
+            }
+        };
+
         window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, [enabled]);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []); 
 }

@@ -1,3 +1,5 @@
+// src/features/practice/takePractice/components/ReasoningPage.tsx
+
 'use client';
 
 import { useEffect, useState, useRef, useMemo, Suspense } from 'react';
@@ -12,6 +14,9 @@ import { usePracticeTimer } from '@/src/hooks/usePracticeTimer';
 import { practiceSessionStore } from '@/src/stores/practiceSessionStore';
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
+import { useExitProtection } from '@/src/hooks/useExitProtection';
+import { practiceSessionService } from '@/src/services/practice-session-service';
+import { ExitConfirmModal } from "@/src/features/practice/takePractice/components/ExitConfirmModal";
 
 interface ReasoningPageProps {
     id: string;
@@ -43,48 +48,47 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
     const [patientData, setPatientData] = useState<PatientApiResponse | null>(null);
     const [reasoningError, setReasoningError] = useState<string | null>(null);
+    const [isExitModalOpen, setIsExitModalOpen] = useState<boolean>(false);
+    const [isExiting, setIsExiting] = useState<boolean>(false);
 
     const hasStarted = useRef<boolean>(false);
+    const hasPatchedStatus = useRef<boolean>(false);
     const lastAiMsgRef = useRef<ReasoningMessage | null>(null);
+
+    useExitProtection({
+        enabled: !isExiting,
+        onExitAttempt: () => setIsExitModalOpen(true),
+    });
 
     const timer = usePracticeTimer({
         autoStart: true,
         storageKey: `reasoning_timer_${sessionId}`,
     });
-    
-    const patchStatus = async (status: string): Promise<void> => {
-        if (!sessionId) return;
+
+    const patchStatusOnce = async (status: string): Promise<void> => {
+        if (!sessionId || hasPatchedStatus.current) return;
+        hasPatchedStatus.current = true;
         try {
-            const accessToken = getCookie('accessToken');
-            await fetch(
-                `${API_BASE_URL}/practice-session/api/practice-sessions/${sessionId}/status`,
-                {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-                    },
-                    body: JSON.stringify({ status }),
-                }
+            await practiceSessionService.patchStatus(
+                sessionId,
+                status as Parameters<typeof practiceSessionService.patchStatus>[1]
             );
         } catch (e) {
             console.error('[ReasoningPage] patchStatus error:', e);
+            hasPatchedStatus.current = false; 
         }
     };
 
     useEffect(() => {
+        let cancelled = false;
         const fetchPatient = async () => {
             try {
                 const accessToken = getCookie('accessToken');
                 const res = await fetch(
                     `${API_BASE_URL}/virtual-patient/api/virtual-patients/${id}`,
-                    {
-                        headers: accessToken
-                            ? { Authorization: `Bearer ${accessToken}` }
-                            : {},
-                    }
+                    { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {} }
                 );
-                if (res.ok) {
+                if (res.ok && !cancelled) {
                     const data = (await res.json()) as PatientApiResponse;
                     setPatientData(data);
                 }
@@ -93,10 +97,13 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
             }
         };
         void fetchPatient();
+        return () => {
+            cancelled = true;
+        };
     }, [id]);
 
     useEffect(() => {
-        void patchStatus('ReasoningStarted');
+        void patchStatusOnce('ReasoningStarted');
     }, [sessionId]);
 
     const patientCase = useMemo(() => {
@@ -107,14 +114,8 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
         return `${concern}. Medical history: ${history}`;
     }, [patientData, sessionId]);
 
-    const {
-        messages,
-        isSending,
-        isComplete,
-        sendAnswer,
-        startReasoning,
-        loadFromDexie,
-    } = useReasoningChat({ patientCase, sessionId });
+    const { messages, isSending, isComplete, sendAnswer, startReasoning, loadFromDexie } =
+        useReasoningChat({ patientCase, sessionId });
 
     useEffect(() => {
         if (!sessionId) return;
@@ -146,21 +147,39 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
         try {
             await sendAnswer(answer, lastAiMsgRef.current ?? undefined);
         } catch {
-            setReasoningError('An error occurred while processing your answer. Please try again.');
+            setReasoningError(
+                'An error occurred while processing your answer. Please try again.'
+            );
         }
     };
 
     const handleRetry = async (): Promise<void> => {
         setReasoningError(null);
+        hasStarted.current = false;
         await startReasoning('To be determined');
     };
-    const maxTimeArgument = useMemo(() => {
-        return patientData?.argumentTime ? patientData.argumentTime * 60 : 1800;
-    }, [patientData]);
 
-    const remainingSeconds = useMemo(() => {
-        return Math.max(0, maxTimeArgument - timer.elapsed);
-    }, [maxTimeArgument, timer.elapsed]);
+    const handleConfirmExit = async (): Promise<void> => {
+        setIsExiting(true);
+        try {
+            timer.stop();
+            await practiceSessionService.patchStatus(sessionId, 'Abandoned');
+            router.push(`/practice/${id}`);
+        } catch (err) {
+            console.error('[ReasoningPage] Exit error:', err);
+            setIsExiting(false);
+        }
+    };
+
+    const maxTimeArgument = useMemo(
+        () => (patientData?.argumentTime ? patientData.argumentTime * 60 : 1800),
+        [patientData]
+    );
+
+    const remainingSeconds = useMemo(
+        () => Math.max(0, maxTimeArgument - timer.elapsed),
+        [maxTimeArgument, timer.elapsed]
+    );
 
     const countdownDisplay = useMemo(() => {
         const minutes = Math.floor(remainingSeconds / 60);
@@ -168,27 +187,28 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }, [remainingSeconds]);
 
-    const progressPercent = useMemo(() => {
-        return Math.max(0, (remainingSeconds / maxTimeArgument) * 100);
-    }, [remainingSeconds, maxTimeArgument]);
+    const progressPercent = useMemo(
+        () => Math.max(0, (remainingSeconds / maxTimeArgument) * 100),
+        [remainingSeconds, maxTimeArgument]
+    );
 
     return (
         <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans overflow-hidden">
             <Header
                 isAiSidebarOpen={isAiSidebarOpen}
                 onToggleAi={() => setIsAiSidebarOpen((prev) => !prev)}
+                onRequestExit={() => setIsExitModalOpen(true)}
                 sessionId={sessionId}
                 patientId={id}
             />
             <div className="flex flex-1 overflow-hidden">
-                <ReasoningSidebar 
-                    onEndConversationClick={() => setIsConfirmModalOpen(true)} 
+                <ReasoningSidebar
+                    onEndConversationClick={() => setIsConfirmModalOpen(true)}
                     countdownDisplay={countdownDisplay}
                     progressPercent={progressPercent}
                 />
 
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    {/* Timer bar */}
                     <div className="px-6 py-2 border-b border-gray-100 flex justify-between items-center text-sm text-gray-500 shrink-0">
                         <span className="font-medium">Clinical Reasoning Phase</span>
                         <span className="font-mono font-bold text-[#235697]">
@@ -217,10 +237,16 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
                 vpDuration={vpDuration}
                 timerStop={() => timer.stop()}
             />
+
+            <ExitConfirmModal
+                isOpen={isExitModalOpen}
+                isProcessing={isExiting}
+                onConfirm={handleConfirmExit}
+                onCancel={() => setIsExitModalOpen(false)}
+            />
         </div>
     );
 };
-
 
 export const ReasoningPage = ({ id }: ReasoningPageProps) => {
     return (
