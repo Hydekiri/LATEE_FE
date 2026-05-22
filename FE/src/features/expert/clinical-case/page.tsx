@@ -1,190 +1,173 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Search, Plus, FileText, User, Activity, ClipboardList, Layers, ChevronDown, ChevronUp } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Search, Plus, Filter, Download, Eye, Trash2 } from "lucide-react";
 
-// Định nghĩa Interface khớp chính xác 100% với cấu trúc bảng `clinical_case` trong SQL
 interface ClinicalCaseEntity {
-    caseId: string;        // case_id VARCHAR(50) PRIMARY KEY
-    title: string;         // title TEXT NOT NULL
-    description: string;   // description TEXT
-    type: string;          // type TEXT (E.g., "APPENDICITIS", "ABDOMINAL_PAIN")
-    status: string;        // status VARCHAR(50)
-    pe: string;            // pe TEXT (Physical Examination)
-    symptom: string;       // symptom TEXT
-    medicalhistory: string;// medicalhistory TEXT
-    createdBy: string;     // created_by VARCHAR(50) NOT NULL (Expert ID)
-    eccid: string;         // eccid VARCHAR(50) NOT NULL (Evaluation Clinical Criteria ID)
-    createdAt: string;     // created_at TIMESTAMP
-    updatedAt: string;     // updated_at TIMESTAMP
+    caseId: string;        
+    title: string;         
+    description: string;   
+    type: string;          
+    status: string;        
+    pe: string;            
+    symptom: string;       
+    medicalhistory: string;
+    createdBy: string;     
+    eccid: string;         
+    createdAt: string;     
+    updatedAt: string;     
 }
 
 const INITIAL_CLINICAL_CASES: ClinicalCaseEntity[] = [
     {
-        caseId: "CAS-27892518",
+        caseId: "27892518",
         title: "Acute Appendicitis Presentation",
-        description: "Classic presentation of acute appendicitis with progressive localized distress.",
+        description: "A patient came to the hospital for evaluation of abdominal symptoms, and was subsequently diagnosed with appendicitis",
         type: "APPENDICITIS",
-        status: "Published",
-        pe: "Abdominal examination reveals localized tenderness in the right lower quadrant (McBurney's point). Guarding is present, rebound tenderness is highly positive. Bowel sounds are diminished.",
-        symptom: "Right lower quadrant abdominal pain, anorexia, low-grade fever, and mild episodes of vomiting.",
-        medicalhistory: "History of intermittent gastroesophageal reflux disease (GERD) and seasonal allergies. No prior abdominal surgeries.",
-        createdBy: "EXP-001",
-        eccid: "ECC-STANDARD-V2",
+        status: "active",
+        pe: "Admission Vitals: Temp: 98 HR: 112 Resp: 16 O2Sat: 97% General: No acute distress; alert and fully oriented Abdomen: Soft, non-distended, acutely tender to palpation in the right lower quadrant; (+) rebound.",
+        symptom: "Patient presents with complaint of right lower quadrant/flank abdominal pain since this morning.",
+        medicalhistory: "Past Medical History: Asthma, HT, neuropathy in bilateral legs and arm for multiple years, GERD.",
+        createdBy: "USR-EXP-001",
+        eccid: "CRIT-001",
         createdAt: "2026-05-15T09:00:00Z",
         updatedAt: "2026-05-15T09:12:00Z"
     },
     {
-        caseId: "CAS-27892519",
-        title: "Right lower quadrant pain case",
-        description: "Differential diagnosis challenge isolating early stage appendicitis exceptions.",
-        type: "ABDOMINAL_PAIN",
-        status: "Draft",
-        pe: "Mild tenderness across the lower abdominal quadrant. No severe rebound rigidity mapped.",
-        symptom: "Vague periumbilical pain shifting toward the lower right side over a 12-hour window.",
-        medicalhistory: "No significant history of major co-morbidities.",
-        createdBy: "EXP-001",
-        eccid: "ECC-CRITERIA-V1",
+        caseId: "21807759",
+        title: "Acute Appendicitis Operational Differential",
+        description: "A patient came to the hospital for evaluation of abdominal symptoms, and was subsequently diagnosed with acute appendicitis",
+        type: "ACUTE APPENDICITIS",
+        status: "active",
+        pe: "Guarding on the right side of the abdomen and some mild right lower quadrant tenderness.",
+        symptom: "History of prostate cancer presents with a 2 day history of abdominal pain which began with a periumbilical burning sensation.",
+        medicalhistory: "Past Medical History: PMH: Prostate Cancer.",
+        createdBy: "USR-EXP-001",
+        eccid: "CRIT-001",
         createdAt: "2026-05-16T10:00:00Z",
         updatedAt: "2026-05-16T10:30:00Z"
     }
 ];
 
 export default function ClinicalCaseFeature() {
+    const router = useRouter();
     const [cases] = useState<ClinicalCaseEntity[]>(INITIAL_CLINICAL_CASES);
     const [searchQuery, setSearchQuery] = useState("");
-    const [expandedCaseId, setExpandedCaseId] = useState<string | null>(null);
 
-    // Xử lý bộ lọc tìm kiếm theo thuộc tính case_id hoặc title
     const filteredCases = useMemo(() => {
         return cases.filter(c => 
             c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-            c.caseId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            c.caseId.includes(searchQuery) ||
             c.type.toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [cases, searchQuery]);
 
-    const toggleRowExpansion = (id: string) => {
-        setExpandedCaseId(prev => (prev === id ? null : id));
+    // HIỆU CHỈNH: Thêm dấu gạch ngang cho đúng với URL vật lý của Next.js app/expert/clinical-case/[id]
+    const handleNavigateToDetail = (id: string) => {
+        router.push(`/expert/clinical-case/${id}`);
     };
 
     return (
-        <section className="p-6 space-y-6 text-xs font-medium text-slate-700">
-            {/* Header Module Title & Context */}
-            <div className="bg-white rounded-xl p-5 shadow-sm">
-                <h1 className="text-xl font-bold text-slate-800 tracking-tight">Clinical Knowledge Scenarios (clinical_case)</h1>
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 mt-1">
+        <section className="p-6 space-y-6 font-inter text-sm text-[#4F6F94]">
+            <div className="bg-[#FFFFFF] border border-[#DDE7F0] rounded-xl p-5 shadow-sm">
+                <h1 className="text-xl font-bold text-[#173B67] tracking-tight">Clinical Scenarios Manifest</h1>
+                <div className="flex items-center gap-1.5 text-xs text-[#7F96AD] font-medium mt-1">
                     <span>Dashboard</span>
-                    <span className="text-gray-300">/</span>
+                    <span className="text-[#DDE7F0]">/</span>
                     <span className="text-[#235697] font-bold">Clinical Cases Management</span>
                 </div>
             </div>
 
-            {/* List Control Block */}
-            <div className="bg-white rounded-xl p-6 shadow-md space-y-5">
-                <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-                    <div className="relative w-full sm:max-w-md">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="bg-[#FFFFFF] border border-[#DDE7F0] rounded-xl p-6 shadow-md space-y-5">
+                <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+                    <div className="relative w-full md:max-w-md">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7F96AD] w-4 h-4" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Filter by case_id, title, or pathology type..."
-                            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2 pl-10 pr-4 text-xs text-slate-800 outline-none focus:border-[#1BA7D9] transition-all"
+                            placeholder="Filter data rows by exact case_id token or description..."
+                            className="w-full bg-[#F7FAFC] border border-[#DDE7F0] rounded-[10px] py-2 pl-10 pr-4 text-xs text-[#173B67] placeholder:text-[#7F96AD] outline-none focus:border-[#1BA7D9] focus:bg-[#FFFFFF] transition-all"
                         />
                     </div>
-                    <button className="flex items-center gap-2 bg-[#1BA7D9] text-white px-4 py-2 rounded-lg font-bold text-xs shadow-sm hover:bg-[#235697] transition-all whitespace-nowrap">
-                        <Plus size={14} strokeWidth={2.5} /> Instantiate Case Schema
-                    </button>
+                    
+                    <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+                        <button className="flex items-center gap-1.5 border border-[#DDE7F0] text-[#4F6F94] px-3 py-2 rounded-[10px] text-xs font-semibold hover:bg-[#EDF6FB] transition-all">
+                            <Filter size={14} /> Filter
+                        </button>
+                        <button className="flex items-center gap-1.5 border border-[#DDE7F0] text-[#4F6F94] px-3 py-2 rounded-[10px] text-xs font-semibold hover:bg-[#EDF6FB] transition-all">
+                            <Download size={14} /> Export
+                        </button>
+                        <button className="flex items-center gap-1.5 bg-[#1BA7D9] hover:bg-[#1487AE] text-white px-3 py-2 rounded-[10px] text-xs font-bold shadow-sm transition-all">
+                            Instantiate New Case Block <Plus size={14} strokeWidth={2.5} />
+                        </button>
+                    </div>
                 </div>
 
-                {/* Main Relational Table */}
                 <div className="overflow-x-auto no-scrollbar">
-                    <div className="w-full min-w-[850px] space-y-3">
-                        {/* Table Header Row Representation */}
-                        <div className="grid grid-cols-12 px-4 text-slate-400 font-extrabold text-[10px] uppercase tracking-wider">
-                            <div className="col-span-2">Case Identifier</div>
-                            <div className="col-span-4">Schema Title</div>
-                            <div className="col-span-2">Pathology Core (type)</div>
-                            <div className="col-span-2">Criteria Bound (eccid)</div>
-                            <div className="col-span-1">Status</div>
-                            <div className="col-span-1 text-center">Inspect</div>
-                        </div>
-
-                        {/* Table Body Iteration Rows */}
-                        {filteredCases.map((c) => {
-                            const isExpanded = expandedCaseId === c.caseId;
-                            return (
-                                <div key={c.caseId} className="bg-white border border-gray-100 rounded-xl shadow-xs hover:border-blue-100 transition-all flex flex-col">
-                                    {/* Row Summary Segment */}
-                                    <div 
-                                        onClick={() => toggleRowExpansion(c.caseId)}
-                                        className="grid grid-cols-12 px-4 py-3.5 items-center cursor-pointer select-none"
-                                    >
-                                        <div className="col-span-2 font-mono font-bold text-[#235697]">{c.caseId}</div>
-                                        <div className="col-span-4 pr-4">
-                                            <div className="font-bold text-slate-800 truncate" title={c.title}>{c.title}</div>
-                                            <div className="text-[10px] text-gray-400 mt-0.5 font-normal truncate">{c.description}</div>
-                                        </div>
-                                        <div className="col-span-2 font-mono font-bold text-slate-500">{c.type}</div>
-                                        <div className="col-span-2 font-mono text-slate-600 font-semibold">{c.eccid}</div>
-                                        <div className="col-span-1">
-                                            <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider ${
-                                                c.status === "Published" ? "bg-green-50 text-green-600 border border-green-100" : "bg-gray-100 text-gray-400"
-                                            }`}>
-                                                {c.status}
+                    <table className="w-full border-separate border-spacing-y-2 text-left text-xs min-w-[850px]">
+                        <thead>
+                            <tr className="text-[#7F96AD] font-extrabold text-[11px] tracking-wider uppercase">
+                                <th className="pb-1 pl-4 w-[120px]">Case ID</th>
+                                <th className="pb-1">Descriptor Title</th>
+                                <th className="pb-1">Pathology Core (type)</th>
+                                <th className="pb-1">Criteria Bound (eccid)</th>
+                                <th className="pb-1">Lifecycle State</th>
+                                <th className="pb-1 text-center pr-4 w-[120px]">Execution Workspace</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-[#173B67] font-semibold">
+                            {filteredCases.map((c) => (
+                                <tr 
+                                    key={c.caseId} 
+                                    className="bg-white border border-[#DDE7F0] rounded-xl shadow-xs hover:shadow-sm hover:border-[#1BA7D9]/30 transition-all group"
+                                >
+                                    <td className="py-3.5 pl-4 rounded-l-xl border-y border-l border-[#DDE7F0] bg-white font-mono font-bold text-[#235697]">
+                                        {c.caseId}
+                                    </td>
+                                    <td className="py-3.5 border-y border-[#DDE7F0] bg-white pr-4">
+                                        <div className="flex flex-col max-w-[280px]">
+                                            <span 
+                                                onClick={() => handleNavigateToDetail(c.caseId)}
+                                                className="font-bold text-[#173B67] hover:text-[#1BA7D9] hover:underline cursor-pointer truncate" 
+                                                title={c.title}
+                                            >
+                                                {c.title}
                                             </span>
+                                            <span className="text-[10px] text-[#7F96AD] font-normal truncate mt-0.5">{c.description}</span>
                                         </div>
-                                        <div className="col-span-1 flex justify-center text-slate-400">
-                                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                    </td>
+                                    <td className="py-3.5 border-y border-[#DDE7F0] bg-white font-mono text-[#4F6F94]">
+                                        {c.type}
+                                    </td>
+                                    <td className="py-3.5 border-y border-[#DDE7F0] bg-white font-mono text-slate-500">
+                                        {c.eccid}
+                                    </td>
+                                    <td className="py-3.5 border-y border-[#DDE7F0] bg-white">
+                                        <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-green-50 text-green-600 border border-green-100">
+                                            {c.status}
+                                        </span>
+                                    </td>
+                                    <td className="py-3.5 rounded-r-xl border-y border-r border-[#DDE7F0] bg-white text-center pr-4">
+                                        <div className="flex items-center justify-center gap-1.5 text-[#7F96AD]">
+                                            <button 
+                                                onClick={() => handleNavigateToDetail(c.caseId)}
+                                                className="p-1 hover:text-[#235697] hover:bg-[#EDF6FB] rounded transition-all flex items-center gap-1 font-bold text-xs"
+                                                title="Inspect Schema Workspace"
+                                            >
+                                                <Eye size={14} /> <span className="text-[11px] text-[#1BA7D9]">Manage</span>
+                                            </button>
+                                            <div className="w-px h-3 bg-[#DDE7F0]" />
+                                            <button className="p-1 hover:text-rose-500 hover:bg-rose-50 rounded transition-all" title="Purge Record">
+                                                <Trash2 size={14} />
+                                            </button>
                                         </div>
-                                    </div>
-
-                                    {/* Expanded Operational Workspace Pane (Báo cáo đầy đủ mọi Attribute trong bảng) */}
-                                    {isExpanded && (
-                                        <div className="px-5 pb-5 pt-2 border-t border-gray-50 bg-slate-50/50 rounded-b-xl space-y-4 animate-in fade-in slide-in-from-top-1 duration-150">
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[11px] font-semibold text-slate-500">
-                                                <div className="flex items-center gap-1.5 bg-white p-2 rounded-lg border border-gray-100">
-                                                    <User size={14} className="text-gray-400" />
-                                                    Created By: <strong className="text-slate-800 font-mono font-bold ml-1">{c.createdBy}</strong>
-                                                </div>
-                                                <div className="flex items-center gap-1.5 bg-white p-2 rounded-lg border border-gray-100">
-                                                    <ClipboardList size={14} className="text-gray-400" />
-                                                    Created Time: <strong className="text-slate-700 ml-1">{c.createdAt}</strong>
-                                                </div>
-                                                <div className="flex items-center gap-1.5 bg-white p-2 rounded-lg border border-gray-100">
-                                                    <Layers size={14} className="text-gray-400" />
-                                                    Last Mutated: <strong className="text-slate-700 ml-1">{c.updatedAt}</strong>
-                                                </div>
-                                            </div>
-
-                                            {/* Trường dữ liệu TEXT đặc thù cấu trúc y khoa */}
-                                            <div className="space-y-3.5">
-                                                <div>
-                                                    <span className="text-gray-400 font-bold block uppercase tracking-wide text-[10px] mb-1">Symptom Log (symptom)</span>
-                                                    <p className="p-3 bg-white border border-gray-100 rounded-lg text-slate-800 leading-relaxed font-medium">{c.symptom}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-gray-400 font-bold block uppercase tracking-wide text-[10px] mb-1">Physical Examination (pe)</span>
-                                                    <p className="p-3 bg-white border border-gray-100 rounded-lg text-slate-800 leading-relaxed font-medium">{c.pe}</p>
-                                                </div>
-                                                <div>
-                                                    <span className="text-gray-400 font-bold block uppercase tracking-wide text-[10px] mb-1">Medical History Matrix (medicalhistory)</span>
-                                                    <p className="p-3 bg-white border border-gray-100 rounded-lg text-slate-800 leading-relaxed font-medium">{c.medicalhistory}</p>
-                                                </div>
-                                            </div>
-
-                                            {/* Nút trigger chỉnh sửa biểu mẫu */}
-                                            <div className="pt-3 border-t border-dashed border-gray-200 flex justify-end gap-2">
-                                                <button className="px-3 py-1.5 bg-white border border-gray-200 text-slate-600 rounded-lg font-bold hover:bg-gray-50 transition-all">Cancel</button>
-                                                <button className="px-4 py-1.5 bg-[#235697] text-white font-extrabold rounded-lg hover:bg-[#1BA7D9] transition-all shadow-2xs">Modify Case Schema</button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </section>

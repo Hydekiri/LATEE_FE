@@ -38,6 +38,14 @@ export class PracticeDatabase extends Dexie {
             ClinicalReasoningChatMessages: '++id, sessionId, role, createdAt',
             ClinicalReasoningDimensions: '++id, dimension, question, answer',
         });
+
+        this.version(4).stores({
+            VPChatMessages: '++id, sessionId, role, createdAt',
+            ValidationNotes: '++id, sessionId, category, createdAt',
+            AIAssistantChatMessages: '++id, sessionId, role, createdAt',
+            ClinicalReasoningChatMessages: '++id, sessionId, role, createdAt',
+            ClinicalReasoningDimensions: '++id, sessionId, dimension, question, answer',
+        });
     }
 }
 

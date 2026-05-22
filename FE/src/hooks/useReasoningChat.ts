@@ -6,7 +6,10 @@ import {
     ClinicalReasoningHistoryItem,
     ClinicalReasoningResponse,
 } from '@/src/services/clinical-reasoning-service';
-import { ClinicalReasoningChatMessageTable, ClinicalReasoningDimensionTable } from '@/src/hooks/dexieConfigurations/ClinicalReasoningChatMessages.table';
+import {
+    ClinicalReasoningChatMessageTable,
+    ClinicalReasoningDimensionTable,
+} from '@/src/hooks/dexieConfigurations/ClinicalReasoningChatMessages.table';
 
 export interface ReasoningMessage {
     id: number;
@@ -60,7 +63,7 @@ export function useReasoningChat({ patientCase, sessionId }: UseReasoningChatOpt
                 }));
                 setMessages(mapped);
 
-                const dims = await ClinicalReasoningDimensionTable.getAll();
+                const dims = await ClinicalReasoningDimensionTable.getBySession(sessionId);
                 interactionHistory.current = dims.map((d) => ({
                     dimension: d.dimension,
                     question: d.question,
@@ -78,7 +81,6 @@ export function useReasoningChat({ patientCase, sessionId }: UseReasoningChatOpt
             currentDiagnosis: string,
             onFinal: (response: ClinicalReasoningResponse) => void
         ): Promise<void> => {
-            // Sửa đổi để tránh trùng Key React
             const placeholderId = Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`);
             setMessages((prev) => [
                 ...prev,
@@ -113,11 +115,7 @@ export function useReasoningChat({ patientCase, sessionId }: UseReasoningChatOpt
                         setMessages((prev) =>
                             prev.map((m) =>
                                 m.id === placeholderId
-                                    ? {
-                                        ...m,
-                                        content: finalContent,
-                                        dimension: finalData.dimension,
-                                    }
+                                    ? { ...m, content: finalContent, dimension: finalData.dimension }
                                     : m
                             )
                         );
@@ -181,7 +179,6 @@ export function useReasoningChat({ patientCase, sessionId }: UseReasoningChatOpt
             isSendingRef.current = true;
             setIsSending(true);
 
-            // Sửa đổi để tránh trùng Key React
             const userMsgId = Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`);
             setMessages((prev) => [
                 ...prev,
@@ -201,6 +198,8 @@ export function useReasoningChat({ patientCase, sessionId }: UseReasoningChatOpt
                     dimension: historyEntry.dimension,
                     question: historyEntry.question,
                     answer: historyEntry.answer,
+                    sessionId,      
+                    createdAt: Date.now(), 
                 }).catch(console.error);
             }
 
@@ -219,7 +218,7 @@ export function useReasoningChat({ patientCase, sessionId }: UseReasoningChatOpt
                 setIsSending(false);
             }
         },
-        [callReasoningWithStream, addDexieMessage]
+        [callReasoningWithStream, addDexieMessage, sessionId]
     );
 
     return {

@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useEffect, useState, useRef, useMemo, Suspense } from 'react';
+import { useEffect, useState, useRef, useMemo, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Header } from './Header';
 import { ReasoningSidebar } from './ReasoningSideBar';
@@ -15,7 +15,7 @@ import { practiceSessionStore } from '@/src/stores/practiceSessionStore';
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
 import { useExitProtection } from '@/src/hooks/useExitProtection';
-import { practiceSessionService } from '@/src/services/practice-session-service';
+import { ApiHttpError, practiceSessionService } from '@/src/services/practice-session-service';
 import { ExitConfirmModal } from "@/src/features/practice/takePractice/components/ExitConfirmModal";
 
 interface ReasoningPageProps {
@@ -65,7 +65,7 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
         storageKey: `reasoning_timer_${sessionId}`,
     });
 
-    const patchStatusOnce = async (status: string): Promise<void> => {
+    const patchStatusOnce = useCallback(async (status: string): Promise<void> => {
         if (!sessionId || hasPatchedStatus.current) return;
         hasPatchedStatus.current = true;
         try {
@@ -74,10 +74,14 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
                 status as Parameters<typeof practiceSessionService.patchStatus>[1]
             );
         } catch (e) {
+            if (e instanceof ApiHttpError && e.status === 404) {
+                console.warn('[ReasoningPage] status sync endpoint unavailable (404):', e.url);
+                return;
+            }
             console.error('[ReasoningPage] patchStatus error:', e);
-            hasPatchedStatus.current = false; 
+            hasPatchedStatus.current = false;
         }
-    };
+    }, [sessionId]);
 
     useEffect(() => {
         let cancelled = false;
@@ -104,7 +108,7 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
 
     useEffect(() => {
         void patchStatusOnce('ReasoningStarted');
-    }, [sessionId]);
+    }, [patchStatusOnce]);
 
     const patientCase = useMemo(() => {
         if (!patientData) return `Clinical case for session ${sessionId}`;
@@ -163,12 +167,18 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
         setIsExiting(true);
         try {
             timer.stop();
-            await practiceSessionService.patchStatus(sessionId, 'Abandoned');
-            router.push(`/practice/${id}`);
-        } catch (err) {
-            console.error('[ReasoningPage] Exit error:', err);
-            setIsExiting(false);
+        } catch (timerErr) {
+            console.error('[ReasoningPage] Failed to stop timer:', timerErr);
         }
+
+        try {
+            await practiceSessionService.patchStatus(sessionId, 'Abandoned');
+        } catch (apiErr) {
+            console.warn('[ReasoningPage] Backend session sync skipped or failed (404/500):', apiErr);
+        }
+
+        setIsExiting(false);
+        router.push(`/practice/${id}`);
     };
 
     const maxTimeArgument = useMemo(

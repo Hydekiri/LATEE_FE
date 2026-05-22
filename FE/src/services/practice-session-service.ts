@@ -44,6 +44,18 @@ export interface ActiveSessionResponse {
 
 const BASE = '/practice-session/api/practice-sessions';
 
+export class ApiHttpError extends Error {
+    readonly status: number;
+    readonly url: string;
+
+    constructor(url: string, status: number, message: string) {
+        super(message);
+        this.name = 'ApiHttpError';
+        this.status = status;
+        this.url = url;
+    }
+}
+
 async function patchJson<T>(
     url: string,
     body: unknown
@@ -59,9 +71,43 @@ async function patchJson<T>(
     });
     if (!res.ok) {
         const errData = await res.json().catch(() => ({})) as { message?: string };
-        throw new Error(errData.message ?? `PATCH ${url} failed: ${res.status}`);
+        throw new ApiHttpError(
+            url,
+            res.status,
+            errData.message ?? `PATCH ${url} failed: ${res.status}`
+        );
     }
     return res.json() as Promise<T>;
+}
+
+async function patchStatusWithFallback(
+    sessionId: string,
+    status: PracticeStatus
+): Promise<UpdateStatusResponse> {
+    const candidates = [
+        `${BASE}/${sessionId}/status`,
+        `${BASE}/${sessionId}`,
+        `${BASE}/${sessionId}/update-status`,
+    ];
+
+    let last404Error: ApiHttpError | null = null;
+
+    for (const url of candidates) {
+        try {
+            return await patchJson<UpdateStatusResponse>(url, { status });
+        } catch (error) {
+            if (error instanceof ApiHttpError && error.status === 404) {
+                last404Error = error;
+                continue;
+            }
+            throw error;
+        }
+    }
+
+    throw (
+        last404Error ??
+        new Error(`No status update endpoint is available for session ${sessionId}`)
+    );
 }
 
 export const practiceSessionService = {
@@ -83,7 +129,7 @@ export const practiceSessionService = {
         sessionId: string,
         status: PracticeStatus
     ): Promise<UpdateStatusResponse> =>
-        patchJson<UpdateStatusResponse>(`${BASE}/${sessionId}/status`, { status }),
+        patchStatusWithFallback(sessionId, status),
 
     getActive: async (
         learnerId: string,

@@ -85,11 +85,11 @@ export function mapEvaluationReportToResultsData(
 
 export function mapToEvaluationTabData(
     feedback: PracticeFeedbackResponse,
-    report: EvaluationReportResponse
+    report?: EvaluationReportResponse // Đổi thành optional để an toàn khi load rỗng
 ): EvaluationTabData {
-    const epaScores: ResultsEpaScore[] = (report.epaScores ?? []).map(
+    const epaScores: ResultsEpaScore[] = (report?.epaScores ?? []).map(
         (epa: EpaScoreResponse) => ({
-            scoreId: epa.id ?? `${epa.epaId}_${report.evaluationId}`,
+            scoreId: epa.id ?? `${epa.epaId}_${report?.evaluationId}`,
             epaId: epa.epaId,
             title: getEpaTitle(epa.epaId),
             numericalScore: epa.numericalScore,
@@ -101,9 +101,9 @@ export function mapToEvaluationTabData(
 
     const overallLabel =
         feedback.overallLabel ??
-        (report.score >= 80
+        (report && report.score >= 80
             ? 'Qualified'
-            : report.score >= 60
+            : report && report.score >= 60
                 ? 'Partially qualified'
                 : 'Not yet qualified');
 
@@ -116,7 +116,7 @@ export function mapToEvaluationTabData(
         (feedback.strengths ? feedback.strengths.join('\n') : '');
 
     return {
-        overallAttempt: feedback.overallAttempt,
+        overallAttempt: feedback.overallAttempt ?? '',
         overallLabel,
         strength: strengthText,
         improvements: improvementText,
@@ -144,23 +144,25 @@ export const evaluationService = {
         );
         if (!res.ok)
             throw new Error(`Failed to generate feedback: ${res.status}`);
-        const json = (await res.json()) as { data: PracticeFeedbackResponse };
-        return json.data;
+
+        const json = (await res.json()) as { message?: string; data?: PracticeFeedbackResponse } | PracticeFeedbackResponse;
+        return ('data' in json && json.data ? json.data : json) as PracticeFeedbackResponse;
     },
 
-    async getCachedPracticeFeedback(
-        practiceSessionId: string
+    async getFeedbackFromReport(
+        evaluationId: string
     ): Promise<PracticeFeedbackResponse | null> {
         try {
             const res = await fetch(
-                `${API_BASE_URL}/evaluation/api/evaluation/practice-feedback/${practiceSessionId}`,
-                { method: 'GET', headers: getAuthHeaders() }
+                `${API_BASE_URL}/evaluation/api/evaluation/${evaluationId}/report`,
+                { headers: getAuthHeaders() }
             );
             if (!res.ok) return null;
-            const json = (await res.json()) as {
-                data: PracticeFeedbackResponse | null;
+
+            const report = (await res.json()) as EvaluationReportResponse & {
+                practiceFeedback?: PracticeFeedbackResponse | null;
             };
-            return json.data;
+            return report.practiceFeedback ?? null;
         } catch {
             return null;
         }
