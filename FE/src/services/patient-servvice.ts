@@ -1,4 +1,4 @@
-import { apiClient } from '@/src/utils/api-client';
+import { clientApi, serverApi } from '@/src/utils/api-client';
 import {
     PatientData,
     Expert,
@@ -146,7 +146,7 @@ export const patientService = {
         page = 1,
         pageSize = 9,
         options: PatientQueryOptions = {}
-    ): Promise<PaginatedResponse<PatientData>> {
+    ): Promise<PaginatedResponse> {
         const q = new URLSearchParams();
         q.set('page', String(page));
         q.set('pageSize', String(pageSize));
@@ -156,33 +156,46 @@ export const patientService = {
         if (options.occupation) q.set('occupation', options.occupation);
         if (options.sortBy) q.set('sortBy', options.sortBy);
 
-        const response = await apiClient.get<PaginatedRawResponse>(
-            `/virtual-patient/api/virtual-patients?${q.toString()}`
-        );
-
-        return {
-            ...response,
-            items: response.items.map(mapRawToPatientData),
-        };
+        try {
+            // ✅ serverApi — hàm này gọi từ Server Component (SSR page.tsx)
+            const response = await serverApi.get(
+                `/virtual-patient/api/virtual-patients?${q.toString()}`
+            );
+            return {
+                ...response,
+                items: response.items.map(mapRawToPatientData),
+            };
+        } catch (error) {
+            console.error('[PATIENT SERVICE ERROR] getVirtualPatients', error);
+            return { items: [], total: 0, page, pageSize, totalPages: 0 };
+        }
     },
 
-    async getVirtualPatientById(id: string): Promise<PatientData> {
-        const item = await apiClient.get<PatientApiResponse>(
-            `/virtual-patient/api/virtual-patients/${id}`
-        );
-        return mapRawToPatientData(item);
+    async getVirtualPatientById(id: string): Promise {
+        try {
+            // ✅ serverApi — gọi từ Server Component page.tsx
+            const item = await serverApi.get(
+                `/virtual-patient/api/virtual-patients/${id}`
+            );
+            return mapRawToPatientData(item);
+        } catch (error) {
+            console.error('[PATIENT SERVICE ERROR] getVirtualPatientById', { id, error });
+            throw error;
+        }
     },
 
     async getAttemptCount(
         learnerId: string,
         patientId: string
-    ): Promise<AttemptCountData> {
-        return apiClient.get<AttemptCountData>(
+    ): Promise {
+        // ✅ clientApi — gọi từ useEffect trong PatientInfo.tsx (Client Component)
+        // và từ useEffect trong Evaluation.tsx (Client Component)
+        return clientApi.get(
             `/practice-session/api/practice-sessions/attempt-count?learnerId=${encodeURIComponent(learnerId)}&patientId=${encodeURIComponent(patientId)}`
         );
     },
 };
 
-export async function getPatientById(id: string): Promise<PatientData> {
+export async function getPatientById(id: string): Promise {
     return patientService.getVirtualPatientById(id);
 }

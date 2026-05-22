@@ -97,6 +97,7 @@ export async function fetchAiAssistantResponse(
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'text/event-stream',
+                'x-auth-env': 'client', 
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
             },
             body: JSON.stringify({
@@ -173,6 +174,7 @@ export async function validateLearnerQuestion(params: {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'x-auth-env': 'client',
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({

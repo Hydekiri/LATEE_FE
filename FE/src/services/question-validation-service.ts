@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '@/src/config/env';
+import { getCookie } from '@/src/utils/cookies';
 
 export interface ConversationContextMessage {
     role: string;
@@ -22,11 +23,16 @@ export async function validateQuestionStream(
     payload: QuestionValidationPayload,
     onEvent: (event: QuestionValidationEvent) => void,
 ) {
+
+    const accessToken = getCookie('accessToken');
+
     const response = await fetch(`${API_BASE_URL}/ai-assistant/assistant/validate_question`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'text/event-stream',
+            // FIX: inject token để BE auth middleware không reject
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify(payload),
     });

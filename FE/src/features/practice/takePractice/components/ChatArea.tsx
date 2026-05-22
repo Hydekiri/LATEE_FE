@@ -74,7 +74,6 @@ export const ChatArea = ({
     const [notesState, setNotesState] = useState<Record<string, NoteChatState>>({});
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
 
-    // Dùng Ref để cô lập sessionId, chặn đứng việc tạo lại hàm handleWarning gây loop
     const sessionIdRef = useRef<string>(sessionId);
     useEffect(() => {
         sessionIdRef.current = sessionId;
@@ -121,7 +120,7 @@ export const ChatArea = ({
                 severity: warning.severity,
             }).catch(console.error);
         },
-        [] // Luôn để trống để đảm bảo reference hàm ổn định tuyệt đối
+        [] 
     );
 
     const { messages, isSending, isValidating, sendMessage } = useVpChat({
@@ -130,14 +129,12 @@ export const ChatArea = ({
         onWarning: handleWarning,
     });
 
-    // Cuộn trang thông minh: Chỉ tự động cuộn khi độ dài mảng tin nhắn tăng lên thực tế
     useEffect(() => {
         if (messages.length > 0) {
             bottomRef.current?.scrollIntoView({ behavior: 'auto' });
         }
     }, [messages.length]);
 
-    // Tự động focus con trỏ chuột vào ô nhập liệu khi trạng thái rảnh
     useEffect(() => {
         if (!isSending && !isValidating) {
             inputRef.current?.focus();
@@ -160,7 +157,6 @@ export const ChatArea = ({
 
     return (
         <div className="flex-1 flex flex-col h-full min-h-0 bg-white relative transition-all duration-300 overflow-hidden z-10">
-            {/* Vùng hiển thị tin nhắn */}
             <div className="flex-1 overflow-y-auto p-8 space-y-6 scroll-smooth">
                 {messages.map((msg) => (
                     <ChatBubble
@@ -180,7 +176,6 @@ export const ChatArea = ({
                 <div ref={bottomRef} />
             </div>
 
-            {/* Warning Panel cảnh báo y khoa lâm sàng */}
             <div className="relative z-20">
                 <WarningPanel
                     isPanelExpanded={isPanelExpanded}
@@ -192,7 +187,6 @@ export const ChatArea = ({
                 />
             </div>
 
-            {/* Form nhập liệu Input Chat */}
             <div className="p-6 pt-0 bg-white shrink-0 relative z-30">
                 <form onSubmit={handleSend} className="relative group">
                     <input
@@ -216,7 +210,6 @@ export const ChatArea = ({
                 </form>
             </div>
 
-            {/* Modal chẩn đoán xác nhận chuyển pha */}
             <ConfirmModal
                 isOpen={isConfirmModalOpen}
                 onClose={() => setIsConfirmModalOpen(false)}

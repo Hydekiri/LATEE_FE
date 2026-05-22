@@ -11,11 +11,13 @@ import { usePracticeTimer } from '@/src/hooks/usePracticeTimer';
 import { usePracticeSession } from '@/src/hooks/usePracticeSession';
 import { useExitProtection } from '@/src/hooks/useExitProtection';
 import { getCookie } from '@/src/utils/cookies';
-import { API_BASE_URL } from '@/src/config/env';
 import { PatientData } from '@/src/types/practice';
 import { getPatientById } from '@/src/services/patient-servvice';
 import { resolvePatientAvatar } from '@/src/utils/patient-assets';
 import { practiceSessionService } from '@/src/services/practice-session-service';
+// REASON: clientApi được dùng thay raw fetch fallback vì đây là "use client" component,
+// useEffect chạy trên browser. clientApi tự inject token từ browser cookie.
+import { clientApi } from '@/src/utils/api-client';
 
 interface TakePracticePageProps {
     readonly params: { id: string };
@@ -45,7 +47,6 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
     const sessionIdFromQuery = searchParams.get('sessionId') ?? '';
 
     const hasInitialized = useRef<boolean>(false);
-    // Sử dụng trực tiếp query string để khởi tạo trạng thái ban đầu, triệt tiêu việc set lại state trùng lặp
     const [sessionId, setSessionId] = useState<string>(sessionIdFromQuery);
     const [currentPatient, setCurrentPatient] = useState<PatientData | null>(null);
     const [isAiSidebarOpen, setIsAiSidebarOpen] = useState<boolean>(true);
@@ -53,8 +54,7 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
     const [isExiting, setIsExiting] = useState<boolean>(false);
 
     const { initSession } = usePracticeSession(params.id);
-    
-    // Khóa cứng storageKey theo VP ID để không bị biến đổi tham chiếu
+
     const timer = usePracticeTimer({
         autoStart: false,
         storageKey: `vp_timer_${params.id}`,
@@ -65,7 +65,9 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         onExitAttempt: () => setIsExitModalOpen(true),
     });
 
-    // 1. Tải thông tin bệnh án từ API hệ thống
+    // REASON: useEffect trong "use client" component.
+    // FIX: raw fetch + getCookie fallback → clientApi.get (token inject otomatis).
+    // getPatientById (serverApi) được gọi trước — nếu fail mới dùng clientApi fallback.
     useEffect(() => {
         let cancelled = false;
         const fetchPatientDetails = async () => {
@@ -74,14 +76,11 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
                 if (!cancelled) setCurrentPatient(data);
             } catch {
                 try {
-                    const accessToken = getCookie('accessToken');
-                    const res = await fetch(
-                        `${API_BASE_URL}/virtual-patient/api/virtual-patients/${params.id}`,
-                        { headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {} }
+                    // FIX: clientApi thay thế raw fetch + manual token injection
+                    const rawData = await clientApi.get<RawPatientApiResponse>(
+                        `/virtual-patient/api/virtual-patients/${params.id}`
                     );
-                    if (res.ok && !cancelled) {
-                        const rawData = (await res.json()) as RawPatientApiResponse;
-                        
+                    if (!cancelled) {
                         const safeVitalSigns = {
                             bp: rawData.vitalSigns?.bp || 'N/A',
                             hr: rawData.vitalSigns?.hr || 0,
@@ -143,7 +142,6 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         );
     }, [currentPatient]);
 
-    // SỬA CHÍ MẠNG: Dùng Ref để lưu các hàm của timer, đảm bảo dependencies useEffect không bị trigger lại khi đếm giây
     const timerRef = useRef(timer);
     useEffect(() => {
         timerRef.current = timer;
@@ -157,22 +155,18 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         return timerRef.current.stop();
     }, []);
 
-    // 2. Thiết lập cấu hình Session Tuần Tự Duy Nhất 
     useEffect(() => {
         if (hasInitialized.current) return;
         hasInitialized.current = true;
 
         const setupSession = async () => {
-            // Trường hợp A: URL đã mang sẵn sessionId truyền sang 
             if (sessionIdFromQuery) {
                 initSession(sessionIdFromQuery, 'EPA_STANDARD_V1');
                 resumeTimer();
-                // CHỈ set lại state khi thực sự có sự thay đổi giá trị để chống lag nghẽn Input
                 setSessionId((prev) => prev !== sessionIdFromQuery ? sessionIdFromQuery : prev);
                 return;
             }
 
-            // Trường hợp B: Khôi phục phiên hoặc tạo mới ngầm
             const learnerId = getCookie('userId') || 'USR001';
             try {
                 const active = await practiceSessionService.getActive(learnerId, params.id);
