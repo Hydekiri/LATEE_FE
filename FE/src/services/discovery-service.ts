@@ -1,45 +1,62 @@
-import { apiClient } from '@/src/utils/api-client';
+// src/services/discovery-service.ts
+import { clientApi } from '@/src/utils/api-client';
 import {
-    DiscoveryFilterState,
-    DiscoveryResponse,
+    DiscoveryPatientItem,
+    FetchCasesPayload,
+    FetchCasesResponse,
     LearnerLastDiscovery,
     LearnerLastDiscoveryPayload,
     SaveDiscoveryResponse,
-    FetchCasesPayload,
-    FetchCasesResponse,
 } from '@/src/types/discovery';
 
-const VP_BASE = '/virtual-patient/api/virtual-patients';
+// ── Shape returned by GET /discovery ──────────────────────────
+interface DiscoveryApiResponse {
+    readonly items: readonly DiscoveryPatientItem[];
+    readonly total: number;
+    readonly page: number;
+    readonly pageSize: number;
+    readonly filters: {
+        readonly availableLevels: readonly string[];
+        readonly availableGenders: readonly string[];
+        readonly availableSpecialties: readonly string[];
+        readonly availableCaseTypes: readonly string[];
+    } | null;
+}
+
+const BASE = '/virtual-patient/api/virtual-patients';
 
 export const discoveryService = {
-    async getDiscoveryList(
+    async getDiscoveryPool(
         learnerId: string,
-        filters: DiscoveryFilterState
-    ): Promise<DiscoveryResponse> {
-        const q = new URLSearchParams();
-        q.set('learnerId', learnerId);
-        q.set('page', String(filters.page));
-        q.set('pageSize', String(filters.pageSize));
-        q.set('sortBy', filters.sortBy);
-        if (filters.level) q.set('level', filters.level);
-        if (filters.gender) q.set('gender', filters.gender);
-
-        return apiClient.get<DiscoveryResponse>(
-            `${VP_BASE}/discovery?${q.toString()}`
+        sortBy: string = 'newest'
+    ): Promise<readonly DiscoveryPatientItem[]> {
+        const q = new URLSearchParams({
+            learnerId,
+            sortBy,
+            pageSize: '200',
+            page: '1',
+        });
+        const res = await clientApi.get<DiscoveryApiResponse>(
+            `${BASE}/discovery?${q.toString()}`
         );
+        return res.items;
     },
 
-    async fetchNewCasesFromDB(payload: FetchCasesPayload): Promise<FetchCasesResponse> {
-        return apiClient.post<FetchCasesResponse, FetchCasesPayload>(
-            `${VP_BASE}/discovery/fetch-cases`,
+    async fetchNewCasesFromDB(
+        payload: FetchCasesPayload
+    ): Promise<FetchCasesResponse> {
+        return clientApi.post<FetchCasesResponse, FetchCasesPayload>(
+            `${BASE}/discovery/fetch-cases`,
             payload
         );
     },
 
-    async getLearnerLastDiscovery(learnerId: string): Promise<LearnerLastDiscovery | null> {
+    async getLearnerLastDiscovery(
+        learnerId: string
+    ): Promise<LearnerLastDiscovery | null> {
         try {
-            return await apiClient.get<LearnerLastDiscovery>(
-                `${VP_BASE}/learner-last-discovery?learnerId=${encodeURIComponent(learnerId)}`
+            return await clientApi.get<LearnerLastDiscovery>(
+                `${BASE}/learner-last-discovery?learnerId=${encodeURIComponent(learnerId)}`
             );
         } catch {
             return null;
@@ -49,9 +66,9 @@ export const discoveryService = {
     async saveLearnerLastDiscovery(
         payload: LearnerLastDiscoveryPayload
     ): Promise<SaveDiscoveryResponse> {
-        return apiClient.post<SaveDiscoveryResponse, LearnerLastDiscoveryPayload>(
-            `${VP_BASE}/learner-last-discovery`,
+        return clientApi.post<SaveDiscoveryResponse, LearnerLastDiscoveryPayload>(
+            `${BASE}/learner-last-discovery`,
             payload
         );
     },
-};
+} as const;

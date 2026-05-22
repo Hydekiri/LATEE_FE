@@ -4,6 +4,7 @@ LATEE_FE
 ├─ FE
 │  ├─ .env
 │  ├─ README.md
+│  ├─ public
 │  ├─ src
 │  │  ├─ app
 │  │  │  ├─ (auth)
@@ -41,16 +42,32 @@ LATEE_FE
 │  │  │  │  │  └─ page.tsx
 │  │  │  │  ├─ layout.tsx
 │  │  │  │  ├─ page.tsx
+│  │  │  │  ├─ profile
+│  │  │  │  │  └─ page.tsx
 │  │  │  │  └─ users
 │  │  │  │     └─ page.tsx
 │  │  │  ├─ api
 │  │  │  │  └─ page.tsx
 │  │  │  ├─ authFilterChain.tsx
 │  │  │  ├─ expert
-│  │  │  │  ├─ clinicalcase
+│  │  │  │  ├─ assessment
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  ├─ clinical-case
+│  │  │  │  │  ├─ page.tsx
+│  │  │  │  │  └─ [id]
+│  │  │  │  │     └─ page.tsx
+│  │  │  │  ├─ feedback
 │  │  │  │  │  └─ page.tsx
 │  │  │  │  ├─ layout.tsx
-│  │  │  │  └─ page.tsx
+│  │  │  │  ├─ learner-progress
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  ├─ page.tsx
+│  │  │  │  ├─ profile
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  └─ virtual-patient
+│  │  │  │     ├─ page.tsx
+│  │  │  │     └─ [id]
+│  │  │  │        └─ page.tsx
 │  │  │  ├─ favicon.ico
 │  │  │  ├─ global-error.tsx
 │  │  │  ├─ globals.css
@@ -141,6 +158,7 @@ LATEE_FE
 │  │  │  │  │  ├─ LearnerTable.tsx
 │  │  │  │  │  ├─ MainAnalytics.tsx
 │  │  │  │  │  ├─ PartnerSession.tsx
+│  │  │  │  │  ├─ ProfilePage.tsx
 │  │  │  │  │  ├─ Sidebar.tsx
 │  │  │  │  │  ├─ Topbar.tsx
 │  │  │  │  │  ├─ UserPage.tsx
@@ -175,7 +193,9 @@ LATEE_FE
 │  │  │  │     │     ├─ ActionModal.tsx
 │  │  │  │     │     ├─ PauseModal.tsx
 │  │  │  │     │     └─ SubmitModal.tsx
-│  │  │  │     └─ TakeAssessmentPage.tsx
+│  │  │  │     ├─ TakeAssessmentPage.tsx
+│  │  │  │     └─ utils
+│  │  │  │        └─ pauseAssessmentStorage.ts
 │  │  │  ├─ auth
 │  │  │  │  ├─ components
 │  │  │  │  │  ├─ Admin_Login_Form.tsx
@@ -183,6 +203,7 @@ LATEE_FE
 │  │  │  │  │  └─ Login_Form.tsx
 │  │  │  │  └─ page.tsx
 │  │  │  ├─ blog
+│  │  │  │  ├─ BlogPageDetails.tsx
 │  │  │  │  ├─ components
 │  │  │  │  │  ├─ BlogCard.tsx
 │  │  │  │  │  ├─ BlogList.tsx
@@ -192,6 +213,11 @@ LATEE_FE
 │  │  │  │  └─ types
 │  │  │  │     └─ index.ts
 │  │  │  ├─ expert
+│  │  │  │  ├─ assessment
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  ├─ clinical-case
+│  │  │  │  │  ├─ detail.tsx
+│  │  │  │  │  └─ page.tsx
 │  │  │  │  ├─ components
 │  │  │  │  │  ├─ ActivityCharts.tsx
 │  │  │  │  │  ├─ IssueManagement.tsx
@@ -200,13 +226,29 @@ LATEE_FE
 │  │  │  │  │  ├─ MainAnalytics.tsx
 │  │  │  │  │  ├─ Sidebar.tsx
 │  │  │  │  │  └─ Topbar.tsx
+│  │  │  │  ├─ feedback
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  ├─ learner-progress
+│  │  │  │  │  └─ page.tsx
 │  │  │  │  ├─ page.tsx
-│  │  │  │  └─ types
-│  │  │  │     └─ dashboard.ts
+│  │  │  │  ├─ profile
+│  │  │  │  │  └─ page.tsx
+│  │  │  │  ├─ types
+│  │  │  │  │  └─ dashboard.ts
+│  │  │  │  └─ virtual-patient
+│  │  │  │     └─ page.tsx
 │  │  │  ├─ home
 │  │  │  │  └─ homepage.tsx
 │  │  │  ├─ practice
 │  │  │  │  ├─ components
+│  │  │  │  │  ├─ DiscoveryFilterForm.tsx
+│  │  │  │  │  ├─ DiscoveryGrid.tsx
+│  │  │  │  │  ├─ DiscoveryPatientCard.tsx
+│  │  │  │  │  ├─ EmptyDiscoveryState.tsx
+│  │  │  │  │  ├─ FetchCasesModal.tsx
+│  │  │  │  │  ├─ PatientCardSkeleton.tsx
+│  │  │  │  │  ├─ PracticeListContent.tsx
+│  │  │  │  │  ├─ PracticeListPagination.tsx
 │  │  │  │  │  ├─ Practice_Card.tsx
 │  │  │  │  │  ├─ Practice_Details.tsx
 │  │  │  │  │  └─ subComponents
@@ -227,6 +269,7 @@ LATEE_FE
 │  │  │  │     │  ├─ AiAssistantSidebar.tsx
 │  │  │  │     │  ├─ ChatArea.tsx
 │  │  │  │     │  ├─ ConfirmModal.tsx
+│  │  │  │     │  ├─ ExitConfirmModal.tsx
 │  │  │  │     │  ├─ Header.tsx
 │  │  │  │     │  ├─ PatientSidebar.tsx
 │  │  │  │     │  ├─ ReasoningChat.tsx
@@ -254,6 +297,10 @@ LATEE_FE
 │  │  │  │  ├─ ValidationNotes.table.ts
 │  │  │  │  └─ VPChatMessages.table.ts
 │  │  │  ├─ submition-practice-session.ts
+│  │  │  ├─ useExitProtection.ts
+│  │  │  ├─ usePatientFilter.ts
+│  │  │  ├─ usePracticeAttempts.ts
+│  │  │  ├─ usePracticeDiscovery.ts
 │  │  │  ├─ usePracticeSession.ts
 │  │  │  ├─ usePracticeTimer.ts
 │  │  │  ├─ useReasoningChat.ts
@@ -263,23 +310,27 @@ LATEE_FE
 │  │  │  ├─ assessment-servvice.ts
 │  │  │  ├─ auth-service.ts
 │  │  │  ├─ clinical-reasoning-service.ts
+│  │  │  ├─ discovery-service.ts
 │  │  │  ├─ evaluation-service.ts
 │  │  │  ├─ issue-service.ts
+│  │  │  ├─ knowledge-resources-service.ts
 │  │  │  ├─ patient-servvice.ts
 │  │  │  ├─ practice-session-service.ts
 │  │  │  ├─ question-validation-service.ts
 │  │  │  ├─ roadmap-service.tsx
 │  │  │  ├─ submition-practice-session-ver1.ts
-│  │  │  ├─ submition-practice-session.ts
+│  │  │  ├─ submition-practice-session-ver2.ts
 │  │  │  ├─ user-service.ts
-│  │  │  └─ validate-question-service.tsx
+│  │  │  └─ validate-question-service.ts
 │  │  ├─ stores
 │  │  │  └─ practiceSessionStore.ts
 │  │  ├─ types
 │  │  │  ├─ api.d.ts
 │  │  │  ├─ api.ts
 │  │  │  ├─ assessment.ts
+│  │  │  ├─ discovery.ts
 │  │  │  ├─ evaluation.ts
+│  │  │  ├─ knowledge-resources.ts
 │  │  │  ├─ next-auth.d.ts
 │  │  │  ├─ practice.ts
 │  │  │  └─ submition.ts

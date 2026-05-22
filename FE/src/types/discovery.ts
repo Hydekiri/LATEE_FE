@@ -1,3 +1,7 @@
+// ============================================================
+// discovery.ts — Updated types for VP Discovery feature
+// ============================================================
+
 export interface DiscoveryAttemptSummary {
     readonly attempted: boolean;
     readonly attemptCount: number;
@@ -39,7 +43,6 @@ export interface DiscoveryFilters {
     readonly availableCaseTypes: readonly string[];
 }
 
-// --- Các Interface cũ bạn hỏi nằm ở đây ---
 export interface DiscoveryResponse {
     readonly items: readonly DiscoveryPatientItem[];
     readonly total: number;
@@ -66,15 +69,57 @@ export interface SaveDiscoveryResponse {
     readonly lastAccessed: string;
 }
 
-export type DiscoverySortBy = 'newest' | 'oldest' | 'level_asc' | 'level_desc';
+export type DiscoverySortBy =
+    | 'newest'
+    | 'oldest'
+    | 'level_asc'
+    | 'level_desc'
+    | 'expert_asc'
+    | 'expert_desc';
 
+// -------------------------------------------------------
+// Client-side UI filter state (used in PracticeListContent)
+// -------------------------------------------------------
+export interface DiscoveryUIFilter {
+    readonly search: string;         // search by name / chiefConcern
+    readonly level: string;          // '' = all
+    readonly occupation: string;     // '' = all
+    readonly sortBy: DiscoverySortBy;
+}
+
+export const DEFAULT_DISCOVERY_UI_FILTER: DiscoveryUIFilter = {
+    search: '',
+    level: '',
+    occupation: '',
+    sortBy: 'newest',
+};
+
+// -------------------------------------------------------
+// Fetch-cases form state (used in +New modal)
+// -------------------------------------------------------
+export interface FetchCasesFormState {
+    readonly level: string;          // '' = all
+    readonly gender: string;         // '' = all
+    readonly fetchCount: number;     // 1–20
+}
+
+export const DEFAULT_FETCH_CASES_FORM: FetchCasesFormState = {
+    level: '',
+    gender: '',
+    fetchCount: 5,
+};
+
+// -------------------------------------------------------
+// Legacy DiscoveryFilterState kept for backward compat
+// (used in discovery-service & learner-last-discovery)
+// -------------------------------------------------------
 export interface DiscoveryFilterState {
     readonly level: string;
     readonly gender: string;
     readonly sortBy: DiscoverySortBy;
     readonly page: number;
     readonly pageSize: number;
-    readonly fetchCount: number; 
+    readonly fetchCount: number;
 }
 
 export const DEFAULT_DISCOVERY_FILTER: DiscoveryFilterState = {
@@ -83,7 +128,7 @@ export const DEFAULT_DISCOVERY_FILTER: DiscoveryFilterState = {
     sortBy: 'newest',
     page: 1,
     pageSize: 9,
-    fetchCount: 5, 
+    fetchCount: 5,
 };
 
 export interface FetchedPatientSummary {

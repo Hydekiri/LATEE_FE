@@ -1,12 +1,10 @@
-// src/hooks/useVpChat.ts
 'use client';
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'; 
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
 import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
 import { PatientData } from '@/src/types/practice'; 
-// Đảm bảo import đúng file service bạn đã refactor cấu hình headers
-import { validateLearnerQuestion } from '@/src/hooks/ai-validation-service';
+import { ValidateQuestion } from '@/src/services/validate-question-service';
 import { resolvePatientAvatar } from "@/src/utils/patient-assets";
 
 export interface VpChatMessage {
@@ -73,6 +71,7 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
     const [isValidating, setIsValidating] = useState<boolean>(false);
     const isSendingRef = useRef<boolean>(false);
 
+    // Dùng Ref giữ callback onWarning luôn có reference ổn định
     const onWarningRef = useRef(onWarning);
     useEffect(() => {
         onWarningRef.current = onWarning;
@@ -99,18 +98,20 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                 createdAt: Date.now(),
             }).catch(console.error);
 
+            // Tạo chat history an toàn từ Ref tĩnh không gây loop render
             const chatHistoryForAi = messagesRef.current.map((m) => ({
                 role: m.role === 'user' ? 'doctor' as const : 'patient' as const,
                 content: m.message,
             }));
 
+            // Chạy Validation ngầm song song
             void (async () => {
                 try {
                     setIsValidating(true);
-                    const validation = await validateLearnerQuestion({
-                        doctorId: getCookie('userId') || 'DR-001',
-                        question: text,
-                        context: chatHistoryForAi,
+                    const validation = await ValidateQuestion({
+                        doctor_id: getCookie('userId') || 'DR-001',
+                        learner_question: text,
+                        conversation_context: chatHistoryForAi,
                     });
                     
                     if (!validation.isValid && onWarningRef.current) {
@@ -138,7 +139,6 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'x-auth-env': 'client', 
                         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
                     },
                     body: JSON.stringify({
