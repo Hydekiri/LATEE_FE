@@ -93,7 +93,7 @@ export function DiscoveryFilterForm({
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h2 className="text-xl font-bold text-[#235697]">
-                            {isFirstDiscovery ? '📥 Initialize Personal Case Pool' : '📥 Pull More Cases from Database'}
+                            {isFirstDiscovery ? 'Initialize Personal Case Pool' : 'Pull More Cases from Database'}
                         </h2>
                         <p className="text-sm text-gray-500 mt-0.5">
                             Max 9 patients are displayed per page. Select how many cases to pull from system DB.

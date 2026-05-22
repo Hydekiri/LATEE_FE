@@ -27,7 +27,6 @@ export default async function PatientDetailPage(props: PageProps) {
     const practiceId = params.id;
     console.log('[INFO]: Learner is logged in, fetching patient data with id', practiceId);
 
-    // Fetch data using the corrected service
     const patientData = await getPatientById(practiceId);
 
     if (!patientData) {

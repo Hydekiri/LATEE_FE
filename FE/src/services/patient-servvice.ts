@@ -1,4 +1,4 @@
-import { apiClient } from '@/src/utils/api-client';
+import { apiClient, serverApiGet } from '@/src/utils/api-client';
 import {
     PatientData,
     Expert,
@@ -173,6 +173,13 @@ export const patientService = {
         return mapRawToPatientData(item);
     },
 
+    async getVirtualPatientByIdServer(id: string): Promise<PatientData> {
+        const item = await serverApiGet<PatientApiResponse>(
+            `/virtual-patient/api/virtual-patients/${id}`
+        );
+        return mapRawToPatientData(item);
+    },
+
     async getAttemptCount(
         learnerId: string,
         patientId: string
@@ -184,5 +191,5 @@ export const patientService = {
 };
 
 export async function getPatientById(id: string): Promise<PatientData> {
-    return patientService.getVirtualPatientById(id);
+    return patientService.getVirtualPatientByIdServer(id);
 }
