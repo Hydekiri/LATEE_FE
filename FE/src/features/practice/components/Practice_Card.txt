@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useMemo, useState } from "react";
 import { getAvatarByAge, resolvePatientAvatar } from "@/src/utils/patient-assets";
+
 interface PatientCardProps {
     item: PatientData;
 }
@@ -46,8 +47,6 @@ export default function PatientCard({ item }: PatientCardProps) {
                 <Image
                     src={displayImage}
                     alt={item.id}
-                    // width={736}
-                    // height={736}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
                     className="w-full h-full object-cover object-[0%_30%] transition-transform duration-700 ease-out group-hover:scale-105"
@@ -77,8 +76,8 @@ export default function PatientCard({ item }: PatientCardProps) {
                         </div>
                     </div>
 
-                    {/* Metadata (Date & Feedback) */}
-                    <div className="flex items-center gap-4 text-[12px] xl:text-[13px] text-gray-500 border-b border-dashed border-gray-200 pb-2 xl:pb-3 font-lato-r">
+                    {/* Metadata (Date & Feedback & Author) */}
+                    <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-[12px] xl:text-[13px] text-gray-500 border-b border-dashed border-gray-200 pb-2 xl:pb-3 font-lato-r">
                         <div className="flex items-center gap-1.5">
                             <CalendarDaysIcon className="w-4 h-4 text-[#235697]/70" />
                             <span>{item.date}</span>
@@ -87,6 +86,14 @@ export default function PatientCard({ item }: PatientCardProps) {
                             <ChatBubbleLeftRightIcon className="w-4 h-4 text-[#235697]/70" />
                             <span>Feedback ({item.feedback})</span>
                         </div>
+                        
+                        {/* HIỂN THỊ TÊN CHUYÊN GIA (EXPERT) */}
+                        {item.experts?.[0]?.name && (
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                <span>By: <span className="font-lato-bold text-[#235697]/80">{item.experts[0].name}</span></span>
+                            </div>
+                        )}
                     </div>
 
                     <div>

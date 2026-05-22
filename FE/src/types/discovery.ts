@@ -78,29 +78,30 @@ export type DiscoverySortBy =
     | 'expert_desc';
 
 // -------------------------------------------------------
-// Client-side UI filter state (used in PracticeListContent)
+// Client-side UI filter state=
 // -------------------------------------------------------
 export interface DiscoveryUIFilter {
-    readonly search: string;         // search by name / chiefConcern
-    readonly level: string;          // '' = all
-    readonly occupation: string;     // '' = all
-    readonly sortBy: DiscoverySortBy;
+    search: string;
+    level: string;
+    occupation: string;
+    expert: string; 
+    sortBy: DiscoverySortBy;
 }
 
 export const DEFAULT_DISCOVERY_UI_FILTER: DiscoveryUIFilter = {
     search: '',
     level: '',
     occupation: '',
+    expert: '', 
     sortBy: 'newest',
 };
-
 // -------------------------------------------------------
-// Fetch-cases form state (used in +New modal)
+// Fetch-cases form state=
 // -------------------------------------------------------
 export interface FetchCasesFormState {
-    readonly level: string;          // '' = all
-    readonly gender: string;         // '' = all
-    readonly fetchCount: number;     // 1–20
+    readonly level: string;         
+    readonly gender: string;         
+    readonly fetchCount: number;     
 }
 
 export const DEFAULT_FETCH_CASES_FORM: FetchCasesFormState = {
@@ -109,10 +110,6 @@ export const DEFAULT_FETCH_CASES_FORM: FetchCasesFormState = {
     fetchCount: 5,
 };
 
-// -------------------------------------------------------
-// Legacy DiscoveryFilterState kept for backward compat
-// (used in discovery-service & learner-last-discovery)
-// -------------------------------------------------------
 export interface DiscoveryFilterState {
     readonly level: string;
     readonly gender: string;

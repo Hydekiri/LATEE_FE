@@ -67,7 +67,7 @@ export default function DiscoveryPatientCard({ item }: DiscoveryPatientCardProps
                         duration-700 ease-out group-hover:scale-105"
                     onError={() => setImgError(true)}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/10 via-transparent to-transparent" />
 
                 {/* Attempt badge */}
                 {item.attemptSummary?.attempted && item.attemptSummary.bestScore !== null && (
@@ -107,7 +107,7 @@ export default function DiscoveryPatientCard({ item }: DiscoveryPatientCardProps
                     </div>
 
                     {/* Meta */}
-                    <div className="flex items-center gap-4 text-[12px] xl:text-[13px] text-gray-500
+                    <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-[12px] xl:text-[13px] text-gray-500
                             border-b border-dashed border-gray-200 pb-2 xl:pb-3 font-lato-r">
                         <div className="flex items-center gap-1.5">
                             <CalendarDaysIcon className="w-4 h-4 text-[#235697]/70" />
@@ -117,6 +117,15 @@ export default function DiscoveryPatientCard({ item }: DiscoveryPatientCardProps
                             <ChatBubbleLeftRightIcon className="w-4 h-4 text-[#235697]/70" />
                             <span>Feedback ({item.feedbackCount})</span>
                         </div>
+                        
+                        {/* HIỂN THỊ TÊN CHUYÊN GIA (EXPERT) */}
+                        {item.experts?.[0]?.name && (
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                <span>By: <span className="font-lato-bold text-[#235697]/80">{item.experts[0].name}</span></span>
+                            </div>
+                        )}
+
                         {attemptsLeft !== null && (
                             <span
                                 className={`ml-auto text-[11px] font-semibold ${isMaxAttempts ? 'text-red-500' : 'text-emerald-600'

@@ -67,7 +67,7 @@ export default function VirtualPatientFeature() {
             </div>
 
             <div className="overflow-x-auto no-scrollbar bg-white rounded-[10px] p-6 shadow-sm">
-                <table className="w-full border-collapse text-left text-xs min-w-[900px]">
+                <table className="w-full border-collapse text-left text-xs min-w-225">
                     <thead>
                         <tr className="border-b border-gray-100 text-gray-400 font-extrabold uppercase tracking-wider text-[10px]">
                             <th className="pb-3 pl-2">Patient ID</th>
@@ -85,7 +85,7 @@ export default function VirtualPatientFeature() {
                                 <td className="py-4 pl-2 font-mono font-bold text-[#235697]">{p.patientId}</td>
                                 <td className="py-4 font-bold text-slate-800">{p.name}</td>
                                 <td className="py-4 text-gray-500">{p.gender}, {p.age} y/o • {p.ethnicity}</td>
-                                <td className="py-4 max-w-[200px] truncate">{p.chiefConcern}</td>
+                                <td className="py-4 max-w-50 truncate">{p.chiefConcern}</td>
                                 <td className="py-4">
                                     <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-blue-50 text-[#235697] border border-blue-100">{p.level}</span>
                                 </td>

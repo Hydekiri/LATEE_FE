@@ -16,7 +16,6 @@ import { getLearnerId } from '@/src/utils/cookies';
 const PAGE_SIZE = 9;
 const LOAD_ALL_PAGE_SIZE = 200;
 
-
 function applyClientSort(
     items: DiscoveryPatientItem[],
     sortBy: DiscoverySortBy
@@ -80,6 +79,12 @@ function applyClientFilters(
         );
     }
 
+    if (filter.expert) {
+        result = result.filter(
+            (p) => p.experts && p.experts.some((e) => e.name === filter.expert)
+        );
+    }
+
     return applyClientSort(result, filter.sortBy);
 }
 
@@ -90,6 +95,7 @@ export interface UsePracticeDiscoveryReturn {
     readonly patients: readonly DiscoveryPatientItem[];
     readonly availableOccupations: readonly string[];
     readonly availableLevels: readonly string[];
+    readonly availableExperts: readonly string[]; // <--- THÊM RETURN
     readonly totalFiltered: number;
     readonly totalPages: number;
     readonly currentPage: number;
@@ -107,7 +113,6 @@ export interface UsePracticeDiscoveryReturn {
     readonly fetchNewCases: (form: FetchCasesFormState) => Promise<void>;
     readonly retry: () => void;
 }
-
 
 export function usePracticeDiscovery(): UsePracticeDiscoveryReturn {
     const learnerId = getLearnerId();
@@ -199,6 +204,18 @@ export function usePracticeDiscovery(): UsePracticeDiscoveryReturn {
         return Array.from(set).sort();
     }, [allPatients]);
 
+    const availableExperts = useMemo(() => {
+        const set = new Set<string>();
+        for (const p of allPatients) {
+            if (p.experts) {
+                for (const e of p.experts) {
+                    if (e.name) set.add(e.name);
+                }
+            }
+        }
+        return Array.from(set).sort();
+    }, [allPatients]);
+
     const setUIFilter = useCallback(
         <K extends keyof DiscoveryUIFilter>(key: K, value: DiscoveryUIFilter[K]) => {
             setUIFilterState((prev) => ({ ...prev, [key]: value }));
@@ -264,6 +281,7 @@ export function usePracticeDiscovery(): UsePracticeDiscoveryReturn {
         patients,
         availableOccupations,
         availableLevels,
+        availableExperts, // <--- TRẢ VỀ STATE EXPERTS
         totalFiltered,
         totalPages,
         currentPage,

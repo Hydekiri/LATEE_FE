@@ -146,7 +146,7 @@ export const patientService = {
         page = 1,
         pageSize = 9,
         options: PatientQueryOptions = {}
-    ): Promise<PaginatedResponse> {
+    ): Promise<PaginatedResponse<PatientData>> {
         const q = new URLSearchParams();
         q.set('page', String(page));
         q.set('pageSize', String(pageSize));
@@ -155,10 +155,9 @@ export const patientService = {
         if (options.search) q.set('search', options.search);
         if (options.occupation) q.set('occupation', options.occupation);
         if (options.sortBy) q.set('sortBy', options.sortBy);
-
+    
         try {
-            // ✅ serverApi — hàm này gọi từ Server Component (SSR page.tsx)
-            const response = await serverApi.get(
+            const response = await serverApi.get<PaginatedRawResponse>(
                 `/virtual-patient/api/virtual-patients?${q.toString()}`
             );
             return {
@@ -168,13 +167,12 @@ export const patientService = {
         } catch (error) {
             console.error('[PATIENT SERVICE ERROR] getVirtualPatients', error);
             return { items: [], total: 0, page, pageSize, totalPages: 0 };
-        }
+        };
     },
 
-    async getVirtualPatientById(id: string): Promise {
+    async getVirtualPatientById(id: string): Promise<PatientData> {
         try {
-            // ✅ serverApi — gọi từ Server Component page.tsx
-            const item = await serverApi.get(
+            const item = await serverApi.get<PatientApiResponse>(
                 `/virtual-patient/api/virtual-patients/${id}`
             );
             return mapRawToPatientData(item);
@@ -187,15 +185,13 @@ export const patientService = {
     async getAttemptCount(
         learnerId: string,
         patientId: string
-    ): Promise {
-        // ✅ clientApi — gọi từ useEffect trong PatientInfo.tsx (Client Component)
-        // và từ useEffect trong Evaluation.tsx (Client Component)
-        return clientApi.get(
+    ): Promise<AttemptCountData> {
+        return clientApi.get<AttemptCountData>(
             `/practice-session/api/practice-sessions/attempt-count?learnerId=${encodeURIComponent(learnerId)}&patientId=${encodeURIComponent(patientId)}`
         );
     },
 };
 
-export async function getPatientById(id: string): Promise {
+export async function getPatientById(id: string): Promise<PatientData> {
     return patientService.getVirtualPatientById(id);
 }
