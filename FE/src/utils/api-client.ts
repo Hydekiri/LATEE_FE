@@ -31,10 +31,6 @@ ApiClient2.interceptors.response.use(
     }
 );
 
-
-
-const BASE_URL = env.NEXT_PUBLIC_API_BASE_URL || API_BASE_URL || "http://localhost:5000";
-
 const COMMON_HEADERS = {
     "Content-Type": "application/json",
     accept: "*/*",

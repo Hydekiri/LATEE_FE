@@ -1,67 +1,62 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Plus, Filter, Download, Eye, Trash2 } from "lucide-react";
-
-interface ClinicalCaseEntity {
-    caseId: string;        
-    title: string;         
-    description: string;   
-    type: string;          
-    status: string;        
-    pe: string;            
-    symptom: string;       
-    medicalhistory: string;
-    createdBy: string;     
-    eccid: string;         
-    createdAt: string;     
-    updatedAt: string;     
-}
-
-const INITIAL_CLINICAL_CASES: ClinicalCaseEntity[] = [
-    {
-        caseId: "27892518",
-        title: "Acute Appendicitis Presentation",
-        description: "A patient came to the hospital for evaluation of abdominal symptoms, and was subsequently diagnosed with appendicitis",
-        type: "APPENDICITIS",
-        status: "active",
-        pe: "Admission Vitals: Temp: 98 HR: 112 Resp: 16 O2Sat: 97% General: No acute distress; alert and fully oriented Abdomen: Soft, non-distended, acutely tender to palpation in the right lower quadrant; (+) rebound.",
-        symptom: "Patient presents with complaint of right lower quadrant/flank abdominal pain since this morning.",
-        medicalhistory: "Past Medical History: Asthma, HT, neuropathy in bilateral legs and arm for multiple years, GERD.",
-        createdBy: "USR-EXP-001",
-        eccid: "CRIT-001",
-        createdAt: "2026-05-15T09:00:00Z",
-        updatedAt: "2026-05-15T09:12:00Z"
-    },
-    {
-        caseId: "21807759",
-        title: "Acute Appendicitis Operational Differential",
-        description: "A patient came to the hospital for evaluation of abdominal symptoms, and was subsequently diagnosed with acute appendicitis",
-        type: "ACUTE APPENDICITIS",
-        status: "active",
-        pe: "Guarding on the right side of the abdomen and some mild right lower quadrant tenderness.",
-        symptom: "History of prostate cancer presents with a 2 day history of abdominal pain which began with a periumbilical burning sensation.",
-        medicalhistory: "Past Medical History: PMH: Prostate Cancer.",
-        createdBy: "USR-EXP-001",
-        eccid: "CRIT-001",
-        createdAt: "2026-05-16T10:00:00Z",
-        updatedAt: "2026-05-16T10:30:00Z"
-    }
-];
+import { Search, Plus, Filter, Download, Eye, Trash2, ChevronDown } from "lucide-react";
+import { CompleteClinicalCaseSchema } from "@/src/types/clinicalcase";
+import { getPaginatedClinicalCases, exportClinicalCasesToExcel } from "@/src/services/expert-clinicalcase-service";
+import { Pagination } from "./pagination";
 
 export default function ClinicalCaseFeature() {
     const router = useRouter();
-    const [cases] = useState<ClinicalCaseEntity[]>(INITIAL_CLINICAL_CASES);
+    const [cases, setCases] = useState<CompleteClinicalCaseSchema[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [total, setTotal] = useState(0);
+
+    const [showFilter, setShowFilter] = useState(false);
+    const [status, setStatus] = useState("");
+    const [sortBy, setSortBy] = useState("createdAt");
+    const [sortDir, setSortDir] = useState("desc");
+
+    useEffect(() => {
+        const fetchCases = async () => {
+            try {
+                const fetchedCases = await getPaginatedClinicalCases("", "", "", "", "", "", 1, 20);
+
+                setCases(fetchedCases);
+                setTotal(fetchedCases.length);
+            } catch (error) {
+                console.error("Error fetching clinical cases:", error);
+            }
+        };
+
+        fetchCases();
+    }, []);
 
     const filteredCases = useMemo(() => {
-        return cases.filter(c => 
-            c.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-            c.caseId.includes(searchQuery) ||
-            c.type.toLowerCase().includes(searchQuery.toLowerCase())
+
+        const base = cases.filter(c =>
+            (c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                c.caseId.includes(searchQuery) ||
+                c.caseType.toLowerCase().includes(searchQuery.toLowerCase())) &&
+            (status ? c.status === status : true)
         );
-    }, [cases, searchQuery]);
+
+        const sorted = base.sort((a, b) => {
+            const aValue = a[sortBy as keyof CompleteClinicalCaseSchema] || "";
+            const bValue = b[sortBy as keyof CompleteClinicalCaseSchema] || "";
+            if (aValue < bValue) return sortDir === "asc" ? -1 : 1;
+            if (aValue > bValue) return sortDir === "asc" ? 1 : -1;
+            return 0;
+        });
+
+        const start = (page - 1) * pageSize;
+        const casesToFilter = sorted.slice(start, start + pageSize);
+
+        return casesToFilter;
+    }, [cases, searchQuery, pageSize, page, status, sortBy, sortDir]);
 
     // HIỆU CHỈNH: Thêm dấu gạch ngang cho đúng với URL vật lý của Next.js app/expert/clinical-case/[id]
     const handleNavigateToDetail = (id: string) => {
@@ -91,13 +86,112 @@ export default function ClinicalCaseFeature() {
                             className="w-full bg-[#F7FAFC] border border-[#DDE7F0] rounded-[10px] py-2 pl-10 pr-4 text-xs text-[#173B67] placeholder:text-[#7F96AD] outline-none focus:border-[#1BA7D9] focus:bg-[#FFFFFF] transition-all"
                         />
                     </div>
-                    
+
                     <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
-                        <button className="flex items-center gap-1.5 border border-[#DDE7F0] text-[#4F6F94] px-3 py-2 rounded-[10px] text-xs font-semibold hover:bg-[#EDF6FB] transition-all">
-                            <Filter size={14} /> Filter
-                        </button>
-                        <button className="flex items-center gap-1.5 border border-[#DDE7F0] text-[#4F6F94] px-3 py-2 rounded-[10px] text-xs font-semibold hover:bg-[#EDF6FB] transition-all">
-                            <Download size={14} /> Export
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowFilter(v => !v)}
+                                className="flex items-center gap-2 border border-[#DDE7F0] px-3 py-2 rounded-[10px]">
+                                <Filter size={14} />
+                                Filter
+                                <ChevronDown size={14} />
+                            </button>
+                            {showFilter && (
+                                <div className="absolute right-0 top-12 z-50 w-[320px] bg-white border rounded-xl shadow-xl p-4 space-y-4">
+                                    <div>
+                                        <label>Status</label>
+                                        <select
+                                            value={status}
+                                            onChange={(e) => setStatus(e.target.value)}
+                                            className="w-full border rounded p-2"
+                                        >
+                                            <option value="">
+                                                All
+                                            </option>
+                                            <option value="active">
+                                                active
+                                            </option>
+                                            <option value="draft">
+                                                draft
+                                            </option>
+                                            <option value="archived">
+                                                archived
+                                            </option>
+                                            <option value="published">
+                                                published
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label>Sort By</label>
+                                        <select
+                                            value={sortBy}
+                                            onChange={(e) =>
+                                                setSortBy(e.target.value)}
+                                            className="w-full border rounded p-2"
+                                        >
+                                            <option value="createdAt">
+                                                createdAt
+                                            </option>
+                                            <option value="updatedAt">
+                                                updatedAt
+                                            </option>
+                                            <option value="title">
+                                                title
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label>Direction</label>
+
+                                        <select
+                                            value={sortDir}
+                                            onChange={(e) =>
+                                                setSortDir(
+                                                    e.target.value
+                                                )
+                                            }
+                                            className="w-full border rounded p-2"
+                                        >
+                                            <option value="asc">
+                                                asc
+                                            </option>
+                                            <option value="desc">
+                                                desc
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <button
+                                            className="flex-1 bg-[#1BA7D9] text-white rounded p-2"
+                                            onClick={() =>
+                                                setShowFilter(false)
+                                            }
+                                        >
+                                            Apply
+                                        </button>
+
+                                        <button
+                                            className="flex-1 border rounded p-2"
+                                            onClick={() => {
+                                                setStatus("");
+                                                setSortBy("createdAt");
+                                                setSortDir("desc");
+                                            }}
+                                        >
+                                            Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            )
+                            }
+                        </div>
+
+                        <button
+                            onClick={() => exportClinicalCasesToExcel(filteredCases)}
+                            className="flex items-center gap-1.5 border border-[#DDE7F0] text-[#4F6F94] px-3 py-2 rounded-[10px]">
+                            <Download size={14} />
+                            Export
                         </button>
                         <button className="flex items-center gap-1.5 bg-[#1BA7D9] hover:bg-[#1487AE] text-white px-3 py-2 rounded-[10px] text-xs font-bold shadow-sm transition-all">
                             Instantiate New Case Block <Plus size={14} strokeWidth={2.5} />
@@ -111,16 +205,16 @@ export default function ClinicalCaseFeature() {
                             <tr className="text-[#7F96AD] font-extrabold text-[11px] tracking-wider uppercase">
                                 <th className="pb-1 pl-4 w-[120px]">Case ID</th>
                                 <th className="pb-1">Descriptor Title</th>
-                                <th className="pb-1">Pathology Core (type)</th>
-                                <th className="pb-1">Criteria Bound (eccid)</th>
+                                <th className="pb-1">Pathology Core (caseType)</th>
+                                <th className="pb-1">Criteria Bound (eccId)</th>
                                 <th className="pb-1">Lifecycle State</th>
                                 <th className="pb-1 text-center pr-4 w-[120px]">Execution Workspace</th>
                             </tr>
                         </thead>
                         <tbody className="text-[#173B67] font-semibold">
-                            {filteredCases.map((c) => (
-                                <tr 
-                                    key={c.caseId} 
+                            {filteredCases?.map((c) => (
+                                <tr
+                                    key={c.caseId}
                                     className="bg-white border border-[#DDE7F0] rounded-xl shadow-xs hover:shadow-sm hover:border-[#1BA7D9]/30 transition-all group"
                                 >
                                     <td className="py-3.5 pl-4 rounded-l-xl border-y border-l border-[#DDE7F0] bg-white font-mono font-bold text-[#235697]">
@@ -128,9 +222,9 @@ export default function ClinicalCaseFeature() {
                                     </td>
                                     <td className="py-3.5 border-y border-[#DDE7F0] bg-white pr-4">
                                         <div className="flex flex-col max-w-[280px]">
-                                            <span 
+                                            <span
                                                 onClick={() => handleNavigateToDetail(c.caseId)}
-                                                className="font-bold text-[#173B67] hover:text-[#1BA7D9] hover:underline cursor-pointer truncate" 
+                                                className="font-bold text-[#173B67] hover:text-[#1BA7D9] hover:underline cursor-pointer truncate"
                                                 title={c.title}
                                             >
                                                 {c.title}
@@ -139,10 +233,10 @@ export default function ClinicalCaseFeature() {
                                         </div>
                                     </td>
                                     <td className="py-3.5 border-y border-[#DDE7F0] bg-white font-mono text-[#4F6F94]">
-                                        {c.type}
+                                        {c.caseType.slice(0, 20)}...
                                     </td>
                                     <td className="py-3.5 border-y border-[#DDE7F0] bg-white font-mono text-slate-500">
-                                        {c.eccid}
+                                        {c.eccId}
                                     </td>
                                     <td className="py-3.5 border-y border-[#DDE7F0] bg-white">
                                         <span className="inline-block px-2.5 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-green-50 text-green-600 border border-green-100">
@@ -151,7 +245,7 @@ export default function ClinicalCaseFeature() {
                                     </td>
                                     <td className="py-3.5 rounded-r-xl border-y border-r border-[#DDE7F0] bg-white text-center pr-4">
                                         <div className="flex items-center justify-center gap-1.5 text-[#7F96AD]">
-                                            <button 
+                                            <button
                                                 onClick={() => handleNavigateToDetail(c.caseId)}
                                                 className="p-1 hover:text-[#235697] hover:bg-[#EDF6FB] rounded transition-all flex items-center gap-1 font-bold text-xs"
                                                 title="Inspect Schema Workspace"
@@ -169,6 +263,14 @@ export default function ClinicalCaseFeature() {
                         </tbody>
                     </table>
                 </div>
+
+                <Pagination
+                    page={page}
+                    setPage={setPage}
+                    total={total}
+                    pageSize={pageSize}
+                    setPageSize={setPageSize}
+                />
             </div>
         </section>
     );

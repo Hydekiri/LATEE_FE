@@ -1,17 +1,27 @@
 "use client";
 
 import React from "react";
+import { useState } from "react";
 import {
     Bars3Icon,
     MagnifyingGlassIcon,
     BellIcon
 } from "@heroicons/react/24/outline";
+import Image from "next/image";
+import { avatarURL } from "@/src/features/admin/components/UsersTable";
 
 interface TopbarProps {
     onMenuClick: () => void;
 }
+import { getCookie } from "@/src/utils/cookies";
 
 export default function Topbar({ onMenuClick }: TopbarProps) {
+    const adminId = getCookie("userId") || "default-id";
+    const username = getCookie("username") || "Default Admin";
+    const userImgURL = getCookie("avatarURL") || avatarURL.admin;
+    const [localUsername, setLocalUsername] = useState((username && username !== '') ? username : 'Default Admin');
+    const [localUserImgURL, setLocalUserImgURL] = useState((userImgURL && userImgURL !== '' && userImgURL !== null && userImgURL !== undefined) ? userImgURL : avatarURL.admin);
+
     return (
         <header className="flex justify-between items-center p-4 lg:p-6 bg-linear-to-l from-[#235697] to-[#1BA7D9] backdrop-blur-sm shadow-lg">
             <div className="flex items-center gap-4">
@@ -24,10 +34,10 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
 
                 <div className="hidden sm:block">
                     <h1 className="text-lg font-extrabold text-white leading-tight">
-                        Hello Nguyen&lsquo;s Tu
+                        Hello {localUsername.split(" ")[0]}!
                     </h1>
                     <p className="text-[10px] text-white/70 font-medium">
-                        3:15 pm 11 Jan 2026
+                        {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC", hour: "2-digit", minute: "2-digit" })}
                     </p>
                 </div>
             </div>
@@ -54,14 +64,17 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                 {/* Profile Pill */}
                 <div className="flex items-center gap-2 lg:gap-3 bg-white/10 p-1 lg:p-1.5 lg:pr-4 rounded-full border border-white/20 hover:bg-white/20 transition-all cursor-pointer">
                     <div className="w-8 h-8 rounded-full bg-white overflow-hidden shadow-inner shrink-0">
-                        <img
-                            src="/images/Profile.png"
+                        <Image
+                            src={localUserImgURL}
                             alt="User"
                             className="w-full h-full object-cover"
+                            unoptimized
+                            width={32}
+                            height={32}
                         />
                     </div>
                     <span className="text-xs font-bold text-white hidden lg:block">
-                        Nguyen&lsquo;s Tu
+                        {localUsername.length > 15 ? localUsername.slice(0, 12) + "..." : localUsername}
                     </span>
                 </div>
             </div>
