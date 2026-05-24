@@ -9,6 +9,20 @@ interface Props {
     onUpdateRad: (radId: number, text: string) => Promise<void>;
 }
 
+// export function TabRadiology({ radiology, onUpdateRad }: Props) {
+//     return (
+//         <div className="space-y-4">
+//             <div className="flex items-center justify-between pb-2 border-b border-[#DDE7F0]">
+//                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#7F96AD]">
+//                     Radiology Scan Records
+//                 </span>
+//             </div>
+//             {radiology.map((rad) => (
+//                 <RadiologyCard key={rad.id} rad={rad} onUpdate={onUpdateRad} />
+//             ))}
+//         </div>
+//     );
+// }
 export function TabRadiology({ radiology, onUpdateRad }: Props) {
     if (!radiology || radiology.length === 0) {
         return (
