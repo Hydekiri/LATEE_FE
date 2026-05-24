@@ -58,7 +58,7 @@ export const ReasoningChat = ({
                         {chat.role === 'assistant' && (
                             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
                                 <Image
-                                    src="/images/LVP1.jpeg"
+                                    src="/images/AI Result.png"
                                     width={40}
                                     height={40}
                                     alt="AI Reasoning"

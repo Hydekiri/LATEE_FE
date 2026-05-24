@@ -4,7 +4,7 @@ import { useState, Dispatch, SetStateAction } from 'react';
 import { AlertTriangle, MessageSquare, ChevronDown } from 'lucide-react';
 import { NoteChatState } from '@/src/features/practice/takePractice/types/note';
 import { NoteChatContainer } from '@/src/features/practice/takePractice/components/subComponents/NoteChatContainer';
-import { ValidateQuestion, ValidationMessageItem } from '@/src/services/validate-question-service'; // Đường dẫn api chuẩn /ai-assistant
+import { ValidateQuestion, ValidationMessageItem } from '@/src/services/validate-question-service'; 
 import { getCookie } from '@/src/utils/cookies';
 
 interface WarningPanelProps {

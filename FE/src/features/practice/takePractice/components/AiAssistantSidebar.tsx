@@ -106,7 +106,6 @@ export const AiAssistantSidebar = ({ sessionId }: AiAssistantSidebarProps) => {
                     });
                 },
                 async () => {
-                    // Kịch bản Xong (Stream hoàn tất) -> Tiến hành ghi đồng bộ 1 phát duy nhất vào IndexedDB
                     setIsLoading(false);
                     try {
                         await AIAssistantChatMessageTable.add({

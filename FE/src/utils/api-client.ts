@@ -4,15 +4,16 @@ import { getCookie } from '@/src/utils/cookies';
 
 const BASE_URL = API_BASE_URL || 'http://localhost:5000';
 
-export const ApiClient = axios.create({
-    baseURL: BASE_URL,
+export const ApiClient2 = axios.create({
+    baseURL: API_BASE_URL || 'http://localhost:5000',
     headers: {
         'Content-Type': 'application/json',
         'accept': '*/*',
     },
 });
 
-ApiClient.interceptors.request.use(
+
+ApiClient2.interceptors.request.use(
     (config) => {
         const token = getCookie('accessToken');
         if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -21,7 +22,7 @@ ApiClient.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
-ApiClient.interceptors.response.use(
+ApiClient2.interceptors.response.use(
     (response) => response,
     (error) => {
         const message = error.response?.data?.message || 'Có lỗi xảy ra từ Server';
@@ -30,59 +31,120 @@ ApiClient.interceptors.response.use(
     }
 );
 
-async function coreFetch<T>(
+
+
+const BASE_URL = env.NEXT_PUBLIC_API_BASE_URL || API_BASE_URL || "http://localhost:5000";
+
+const COMMON_HEADERS = {
+    "Content-Type": "application/json",
+    accept: "*/*",
+};
+
+export const AUTH_ENV = {
+    CLIENT: "client",
+    SERVER: "server",
+} as const;
+
+export type AuthEnv = (typeof AUTH_ENV)[keyof typeof AUTH_ENV];
+
+const getAccessToken = async (authEnv: AuthEnv): Promise<string | null> => {
+    try {
+        if (authEnv === AUTH_ENV.SERVER) {
+            const { cookies } = await import("next/headers");
+            const cookieStore = await cookies();
+            return cookieStore.get("accessToken")?.value || null;
+        }
+        return getCookie("accessToken"); 
+    } catch (error) {
+        console.error("[TOKEN ERROR]", error);
+        return null;
+    }
+};
+
+const coreFetch = async <T>(
     endpoint: string,
-    token: string | undefined,
-    options: RequestInit = {}
-): Promise<T> {
+    options: RequestInit = {},
+    authEnv: AuthEnv = AUTH_ENV.CLIENT
+): Promise<T> => {
+    const token = await getAccessToken(authEnv);
+
     const headers: HeadersInit = {
-        'Content-Type': 'application/json',
+        ...COMMON_HEADERS,
+        "x-auth-env": authEnv,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
     };
 
-    const response = await fetch(`${BASE_URL}${endpoint}`, {
-        ...options,
-        headers,
-    });
+    try {
+        const response = await fetch(`${BASE_URL}${endpoint}`, {
+            ...options,
+            headers,
+            cache: "no-store",
+        });
 
-    if (!response.ok) {
-        const errorData: unknown = await response.json().catch(() => ({}));
-        const message =
-            (errorData as { message?: string })?.message ||
-            `Request failed: ${response.status} ${response.statusText}`;
-        throw new Error(message);
+        if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData?.message || errorData?.title || errorMessage;
+            } catch { }
+
+            console.error(`[API ERROR] ${options.method || "GET"} ${endpoint}`, {
+                status: response.status,
+                authEnv,
+                errorMessage,
+            });
+
+            throw new Error(errorMessage);
+        }
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            return {} as T;
+        }
+
+        return response.json() as Promise<T>;
+    } catch (error) {
+        console.error("[FETCH ERROR]", error);
+        throw error;
     }
-
-    return response.json() as Promise<T>;
-}
-
-export const apiClient = {
-    fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-        const token = getCookie('accessToken') ?? undefined;
-        return coreFetch<T>(endpoint, token, options);
-    },
-
-    get: <T>(url: string) => apiClient.fetch<T>(url, { method: 'GET' }),
-
-    post: <T, B = unknown>(url: string, body: B) =>
-        apiClient.fetch<T>(url, {
-            method: 'POST',
-            body: JSON.stringify(body),
-        }),
-
-    patch: <T, B = unknown>(url: string, body: B) =>
-        apiClient.fetch<T>(url, {
-            method: 'PATCH',
-            body: JSON.stringify(body),
-        }),
-
-    delete: <T>(url: string) => apiClient.fetch<T>(url, { method: 'DELETE' }),
 };
 
-export async function serverApiGet<T>(endpoint: string): Promise<T> {
-    const { cookies } = await import('next/headers');
-    const cookieStore = await cookies();
-    const token = cookieStore.get('accessToken')?.value;
-    return coreFetch<T>(endpoint, token, { method: 'GET' });
-}
+export const apiClient = {
+    fetch: coreFetch,
+
+    get: <T>(url: string, authEnv: AuthEnv = AUTH_ENV.CLIENT) =>
+        coreFetch<T>(url, { method: "GET" }, authEnv),
+
+    post: <T, B = unknown>(url: string, body: B, authEnv: AuthEnv = AUTH_ENV.CLIENT) =>
+        coreFetch<T>(url, { method: "POST", body: JSON.stringify(body) }, authEnv),
+
+    put: <T, B = unknown>(url: string, body: B, authEnv: AuthEnv = AUTH_ENV.CLIENT) =>
+        coreFetch<T>(url, { method: "PUT", body: JSON.stringify(body) }, authEnv),
+
+    patch: <T, B = unknown>(url: string, body: B, authEnv: AuthEnv = AUTH_ENV.CLIENT) =>
+        coreFetch<T>(url, { method: "PATCH", body: JSON.stringify(body) }, authEnv),
+
+    delete: <T>(url: string, authEnv: AuthEnv = AUTH_ENV.CLIENT) =>
+        coreFetch<T>(url, { method: "DELETE" }, authEnv),
+};
+
+export const ApiClient = apiClient;
+
+export const clientApi = {
+    fetch: <T>(endpoint: string, options?: RequestInit) => apiClient.fetch<T>(endpoint, options, AUTH_ENV.CLIENT),
+    get: <T>(url: string) => apiClient.get<T>(url, AUTH_ENV.CLIENT),
+    post: <T, B = unknown>(url: string, body: B) => apiClient.post<T, B>(url, body, AUTH_ENV.CLIENT),
+    put: <T, B = unknown>(url: string, body: B) => apiClient.put<T, B>(url, body, AUTH_ENV.CLIENT),
+    patch: <T, B = unknown>(url: string, body: B) => apiClient.patch<T, B>(url, body, AUTH_ENV.CLIENT),
+    delete: <T>(url: string) => apiClient.delete<T>(url, AUTH_ENV.CLIENT),
+};
+
+export const serverApi = {
+    fetch: <T>(endpoint: string, options?: RequestInit) => apiClient.fetch<T>(endpoint, options, AUTH_ENV.SERVER),
+    get: <T>(url: string) => apiClient.get<T>(url, AUTH_ENV.SERVER),
+    post: <T, B = unknown>(url: string, body: B) => apiClient.post<T, B>(url, body, AUTH_ENV.SERVER),
+    put: <T, B = unknown>(url: string, body: B) => apiClient.put<T, B>(url, body, AUTH_ENV.SERVER),
+    patch: <T, B = unknown>(url: string, body: B) => apiClient.patch<T, B>(url, body, AUTH_ENV.SERVER),
+    delete: <T>(url: string) => apiClient.delete<T>(url, AUTH_ENV.SERVER),
+};

@@ -1,54 +1,117 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { discoveryService } from '@/src/services/discovery-service';
 import {
-    DiscoveryFilterState,
     DiscoveryPatientItem,
-    DiscoveryFilters,
-    DEFAULT_DISCOVERY_FILTER,
-    DiscoveryLoadState,
+    DiscoveryUIFilter,
     DiscoverySortBy,
+    DEFAULT_DISCOVERY_UI_FILTER,
+    DiscoveryLoadState,
     LearnerLastDiscovery,
+    FetchCasesFormState,
 } from '@/src/types/discovery';
 import { getLearnerId } from '@/src/utils/cookies';
 
-export interface UsePracticeDiscoveryReturn {
-    readonly loadState: DiscoveryLoadState;
-    readonly patients: readonly DiscoveryPatientItem[];
-    readonly availableFilters: DiscoveryFilters | null;
-    readonly totalItems: number;
-    readonly totalPages: number;
-    readonly currentPage: number;
-    readonly filters: DiscoveryFilterState;
-    readonly error: string | null;
-    readonly hasDiscovery: boolean;
-    readonly lastDiscovery: LearnerLastDiscovery | null;
-    readonly setFilter: <K extends keyof DiscoveryFilterState>(key: K, value: DiscoveryFilterState[K]) => void;
-    readonly applyFilters: () => Promise<void>;
-    readonly resetFilters: () => Promise<void>;
-    readonly goToPage: (page: number) => Promise<void>;
-    readonly startDiscovery: (filters: DiscoveryFilterState) => Promise<void>;
-    readonly retry: () => void;
+const PAGE_SIZE = 9;
+const LOAD_ALL_PAGE_SIZE = 200;
+
+function applyClientSort(
+    items: DiscoveryPatientItem[],
+    sortBy: DiscoverySortBy
+): DiscoveryPatientItem[] {
+    const sorted = [...items];
+    switch (sortBy) {
+        case 'newest':
+            return sorted.sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+        case 'oldest':
+            return sorted.sort(
+                (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            );
+        case 'level_asc':
+            return sorted.sort((a, b) => a.level.localeCompare(b.level));
+        case 'level_desc':
+            return sorted.sort((a, b) => b.level.localeCompare(a.level));
+        case 'expert_asc':
+            return sorted.sort((a, b) =>
+                (a.experts[0]?.name ?? '').localeCompare(b.experts[0]?.name ?? '')
+            );
+        case 'expert_desc':
+            return sorted.sort((a, b) =>
+                (b.experts[0]?.name ?? '').localeCompare(a.experts[0]?.name ?? '')
+            );
+        default:
+            return sorted;
+    }
 }
 
-function parseFilterJson(filterJson: string | null): DiscoveryFilterState {
-    if (!filterJson) return DEFAULT_DISCOVERY_FILTER;
-    try {
-        const parsed = JSON.parse(filterJson) as Partial<DiscoveryFilterState>;
-        return {
-            level: parsed.level ?? '',
-            gender: parsed.gender ?? '',
-            sortBy: (parsed.sortBy as DiscoverySortBy) ?? 'newest',
-            page: 1,
-            pageSize: 9, 
-            fetchCount: parsed.fetchCount && parsed.fetchCount >= 1 && parsed.fetchCount <= 20 
-                ? parsed.fetchCount 
-                : 5,
-        };
-    } catch {
-        return DEFAULT_DISCOVERY_FILTER;
+function applyClientFilters(
+    items: readonly DiscoveryPatientItem[],
+    filter: DiscoveryUIFilter
+): readonly DiscoveryPatientItem[] {
+    let result = [...items];
+
+    const q = filter.search.trim().toLowerCase();
+    if (q) {
+        result = result.filter(
+            (p) =>
+                p.name.toLowerCase().includes(q) ||
+                p.chiefConcern.toLowerCase().includes(q) ||
+                (p.symptom ?? '').toLowerCase().includes(q) ||
+                (p.occupation ?? '').toLowerCase().includes(q) ||
+                p.patientId.toLowerCase().includes(q)
+        );
     }
+
+    if (filter.level) {
+        result = result.filter(
+            (p) => p.level.toLowerCase() === filter.level.toLowerCase()
+        );
+    }
+
+    if (filter.occupation) {
+        result = result.filter(
+            (p) =>
+                p.occupation != null &&
+                p.occupation.toLowerCase().includes(filter.occupation.toLowerCase())
+        );
+    }
+
+    if (filter.expert) {
+        result = result.filter(
+            (p) => p.experts && p.experts.some((e) => e.name === filter.expert)
+        );
+    }
+
+    return applyClientSort(result, filter.sortBy);
+}
+
+export interface UsePracticeDiscoveryReturn {
+    readonly loadState: DiscoveryLoadState;
+    readonly fetchState: 'idle' | 'fetching' | 'error';
+    readonly allPatients: readonly DiscoveryPatientItem[];
+    readonly patients: readonly DiscoveryPatientItem[];
+    readonly availableOccupations: readonly string[];
+    readonly availableLevels: readonly string[];
+    readonly availableExperts: readonly string[]; // <--- THÊM RETURN
+    readonly totalFiltered: number;
+    readonly totalPages: number;
+    readonly currentPage: number;
+    readonly uiFilter: DiscoveryUIFilter;
+    readonly error: string | null;
+    readonly fetchError: string | null;
+    readonly hasDiscovery: boolean;
+    readonly lastDiscovery: LearnerLastDiscovery | null;
+    readonly setUIFilter: <K extends keyof DiscoveryUIFilter>(
+        key: K,
+        value: DiscoveryUIFilter[K]
+    ) => void;
+    readonly setPage: (page: number) => void;
+    readonly resetFilters: () => void;
+    readonly fetchNewCases: (form: FetchCasesFormState) => Promise<void>;
+    readonly retry: () => void;
 }
 
 export function usePracticeDiscovery(): UsePracticeDiscoveryReturn {
@@ -56,37 +119,31 @@ export function usePracticeDiscovery(): UsePracticeDiscoveryReturn {
     const isMounted = useRef(true);
 
     const [loadState, setLoadState] = useState<DiscoveryLoadState>('idle');
-    const [patients, setPatients] = useState<readonly DiscoveryPatientItem[]>([]);
-    const [availableFilters, setAvailableFilters] = useState<DiscoveryFilters | null>(null);
-    const [totalItems, setTotalItems] = useState(0);
-    const [totalPages, setTotalPages] = useState(1);
-    const [filters, setFiltersState] = useState<DiscoveryFilterState>(DEFAULT_DISCOVERY_FILTER);
+    const [fetchState, setFetchState] = useState<'idle' | 'fetching' | 'error'>('idle');
+    const [allPatients, setAllPatients] = useState<readonly DiscoveryPatientItem[]>([]);
+    const [uiFilter, setUIFilterState] = useState<DiscoveryUIFilter>(DEFAULT_DISCOVERY_UI_FILTER);
+    const [currentPage, setCurrentPage] = useState(1);
     const [error, setError] = useState<string | null>(null);
+    const [fetchError, setFetchError] = useState<string | null>(null);
     const [hasDiscovery, setHasDiscovery] = useState(false);
     const [lastDiscovery, setLastDiscovery] = useState<LearnerLastDiscovery | null>(null);
     const [retryCount, setRetryCount] = useState(0);
 
-    const fetchDiscoveryList = useCallback(
-        async (activeFilters: DiscoveryFilterState) => {
+    const loadPool = useCallback(async () => {
+        if (!isMounted.current) return;
+        setLoadState('loading');
+        setError(null);
+        try {
+            const items = await discoveryService.getDiscoveryPool(learnerId, 'newest');
             if (!isMounted.current) return;
-            setLoadState('loading');
-            setError(null);
-            try {
-                const result = await discoveryService.getDiscoveryList(learnerId, activeFilters);
-                if (!isMounted.current) return;
-                setPatients(result.items);
-                setTotalItems(result.total);
-                setTotalPages(result.total === 0 ? 1 : Math.ceil(result.total / activeFilters.pageSize));
-                setAvailableFilters(result.filters ?? null);
-                setLoadState(result.items.length === 0 ? 'empty' : 'ready');
-            } catch (err) {
-                if (!isMounted.current) return;
-                setError(err instanceof Error ? err.message : 'Failed to load practice cases.');
-                setLoadState('error');
-            }
-        },
-        [learnerId]
-    );
+            setAllPatients(items);
+            setLoadState(items.length === 0 ? 'empty' : 'ready');
+        } catch (err) {
+            if (!isMounted.current) return;
+            setError(err instanceof Error ? err.message : 'Failed to load practice cases.');
+            setLoadState('error');
+        }
+    }, [learnerId]);
 
     useEffect(() => {
         isMounted.current = true;
@@ -108,105 +165,135 @@ export function usePracticeDiscovery(): UsePracticeDiscoveryReturn {
 
             setHasDiscovery(true);
             setLastDiscovery(discovery);
-            const restoredFilters = parseFilterJson(discovery.filterJson);
-            setFiltersState(restoredFilters);
-            await fetchDiscoveryList(restoredFilters);
+            await loadPool();
         };
 
         void bootstrap();
-
         return () => {
             cancelled = true;
             isMounted.current = false;
         };
-    }, [learnerId, retryCount, fetchDiscoveryList]);
+    }, [learnerId, retryCount, loadPool]);
 
-    const setFilter = useCallback(
-        <K extends keyof DiscoveryFilterState>(key: K, value: DiscoveryFilterState[K]) => {
-            setFiltersState((prev) => ({ ...prev, [key]: value }));
+    const filtered = useMemo(
+        () => applyClientFilters(allPatients, uiFilter),
+        [allPatients, uiFilter]
+    );
+
+    const totalFiltered = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE));
+
+    const patients = useMemo(() => {
+        const start = (currentPage - 1) * PAGE_SIZE;
+        return filtered.slice(start, start + PAGE_SIZE);
+    }, [filtered, currentPage]);
+
+    const availableOccupations = useMemo(() => {
+        const set = new Set<string>();
+        for (const p of allPatients) {
+            if (p.occupation) set.add(p.occupation);
+        }
+        return Array.from(set).sort();
+    }, [allPatients]);
+
+    const availableLevels = useMemo(() => {
+        const set = new Set<string>();
+        for (const p of allPatients) {
+            if (p.level) set.add(p.level);
+        }
+        return Array.from(set).sort();
+    }, [allPatients]);
+
+    const availableExperts = useMemo(() => {
+        const set = new Set<string>();
+        for (const p of allPatients) {
+            if (p.experts) {
+                for (const e of p.experts) {
+                    if (e.name) set.add(e.name);
+                }
+            }
+        }
+        return Array.from(set).sort();
+    }, [allPatients]);
+
+    const setUIFilter = useCallback(
+        <K extends keyof DiscoveryUIFilter>(key: K, value: DiscoveryUIFilter[K]) => {
+            setUIFilterState((prev) => ({ ...prev, [key]: value }));
+            setCurrentPage(1);
         },
         []
     );
 
-    const applyFilters = useCallback(async () => {
-        const next: DiscoveryFilterState = { ...filters, page: 1, pageSize: 9 };
-        setFiltersState(next);
-        await fetchDiscoveryList(next);
-    }, [filters, fetchDiscoveryList]);
+    const setPage = useCallback((page: number) => setCurrentPage(page), []);
 
-    const startDiscovery = useCallback(
-        async (newFilters: DiscoveryFilterState) => {
-            setLoadState('loading');
-            setError(null);
+    const resetFilters = useCallback(() => {
+        setUIFilterState(DEFAULT_DISCOVERY_UI_FILTER);
+        setCurrentPage(1);
+    }, []);
+
+    const fetchNewCases = useCallback(
+        async (form: FetchCasesFormState) => {
+            if (!isMounted.current) return;
+            setFetchState('fetching');
+            setFetchError(null);
             try {
                 await discoveryService.fetchNewCasesFromDB({
                     learnerId,
-                    level: newFilters.level || null,
-                    gender: newFilters.gender || null,
-                    fetchCount: newFilters.fetchCount
+                    level: form.level || null,
+                    gender: form.gender || null,
+                    fetchCount: form.fetchCount,
                 });
 
                 await discoveryService.saveLearnerLastDiscovery({
                     learnerId,
                     filterJson: JSON.stringify({
-                        level: newFilters.level,
-                        gender: newFilters.gender,
-                        sortBy: newFilters.sortBy,
-                        fetchCount: newFilters.fetchCount
+                        level: form.level,
+                        gender: form.gender,
+                        fetchCount: form.fetchCount,
                     }),
                     lastAccessed: new Date().toISOString(),
                 });
 
+                if (!isMounted.current) return;
                 setHasDiscovery(true);
-                const nextState = { ...newFilters, page: 1, pageSize: 9 };
-                setFiltersState(nextState);
+                setFetchState('idle');
 
-                await fetchDiscoveryList(nextState);
+                await loadPool();
             } catch (err) {
-                if (isMounted.current) {
-                    setError(err instanceof Error ? err.message : 'Failed to fetch new cases from system database.');
-                    setLoadState('error');
-                }
+                if (!isMounted.current) return;
+                setFetchError(
+                    err instanceof Error
+                        ? err.message
+                        : 'Failed to fetch new cases. Please try again.'
+                );
+                setFetchState('error');
             }
         },
-        [learnerId, fetchDiscoveryList]
+        [learnerId, loadPool]
     );
 
-    const resetFilters = useCallback(async () => {
-        const next = { ...DEFAULT_DISCOVERY_FILTER };
-        setFiltersState(next);
-        await fetchDiscoveryList(next);
-    }, [fetchDiscoveryList]);
-
-    const goToPage = useCallback(
-        async (page: number) => {
-            const next: DiscoveryFilterState = { ...filters, page };
-            setFiltersState(next);
-            await fetchDiscoveryList(next);
-        },
-        [filters, fetchDiscoveryList]
-    );
-
-    const retry = useCallback(() => {
-        setRetryCount((n) => n + 1);
-    }, []);
+    const retry = useCallback(() => setRetryCount((n) => n + 1), []);
 
     return {
         loadState,
+        fetchState,
+        allPatients,
         patients,
-        availableFilters,
-        totalItems,
+        availableOccupations,
+        availableLevels,
+        availableExperts, // <--- TRẢ VỀ STATE EXPERTS
+        totalFiltered,
         totalPages,
-        currentPage: filters.page,
-        filters,
+        currentPage,
+        uiFilter,
         error,
+        fetchError,
         hasDiscovery,
         lastDiscovery,
-        setFilter,
-        applyFilters,
+        setUIFilter,
+        setPage,
         resetFilters,
-        goToPage,
-        startDiscovery,
+        fetchNewCases,
         retry,
     };
 }

@@ -1,4 +1,4 @@
-import { apiClient } from '@/src/utils/api-client';
+import { clientApi  } from '@/src/utils/api-client';
 import { PracticeSessionSubmitDTO } from '@/src/types/submition';
 import { PracticeStatus } from '@/src/types/practice';
 import { getCookie } from '@/src/utils/cookies';
@@ -112,15 +112,15 @@ async function patchStatusWithFallback(
 
 export const practiceSessionService = {
     create: async (payload: CreateSessionDTO): Promise<{ id: string }> =>
-        apiClient.post<{ id: string }, CreateSessionDTO>(BASE, payload),
+        clientApi.post<{ id: string }, CreateSessionDTO>(BASE, payload),
 
     getById: async (sessionId: string): Promise<PracticeSessionDto> =>
-        apiClient.get<PracticeSessionDto>(`${BASE}/${sessionId}`),
+        clientApi.get<PracticeSessionDto>(`${BASE}/${sessionId}`),
 
     submit: async (
         payload: PracticeSessionSubmitDTO
     ): Promise<{ sessionId: string }> =>
-        apiClient.post<{ sessionId: string }, PracticeSessionSubmitDTO>(
+        clientApi.post<{ sessionId: string }, PracticeSessionSubmitDTO>(
             `${BASE}/submit`,
             payload
         ),
@@ -136,7 +136,7 @@ export const practiceSessionService = {
         patientId: string
     ): Promise<ActiveSessionResponse | null> => {
         try {
-            return await apiClient.get<ActiveSessionResponse>(
+            return await clientApi.get<ActiveSessionResponse>(
                 `${BASE}/active?learnerId=${encodeURIComponent(learnerId)}&patientId=${encodeURIComponent(patientId)}`
             );
         } catch {
@@ -153,6 +153,6 @@ export const practiceSessionService = {
         if (params.status) q.append('status', params.status);
         if (params.page) q.append('page', String(params.page));
         if (params.pageSize) q.append('pageSize', String(params.pageSize));
-        return apiClient.get(`${BASE}/clinical-cases?${q.toString()}`);
+        return clientApi.get(`${BASE}/clinical-cases?${q.toString()}`);
     },
 };

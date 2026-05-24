@@ -1,4 +1,3 @@
-// src/app/(main)/practice/page.tsx
 import PracticePageFeature from "@/src/features/practice/page";
 import { checkIsLearnerLoggedIn } from "../../authFilterChain";
 import { redirect } from "next/navigation";

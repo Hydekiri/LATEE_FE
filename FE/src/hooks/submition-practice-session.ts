@@ -140,6 +140,7 @@ export async function submitPracticeSession(
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'x-auth-env': 'client',
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
             },
             body: JSON.stringify(payload),
@@ -160,7 +161,10 @@ export async function getPracticeSessionById(sessionId: string): Promise<Practic
     const res = await fetch(
         `${API_BASE_URL}/practice-session/api/practice-sessions/${sessionId}`,
         {
-            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+            headers: {
+                'x-auth-env': 'client', 
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+            },
         }
     );
     if (!res.ok) throw new Error(`Fetch practice session details failed: ${res.status}`);
@@ -175,6 +179,7 @@ export async function submitEvaluation(
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'x-auth-env': 'client', 
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify(payload),

@@ -1,4 +1,4 @@
-import { apiClient, serverApiGet } from '@/src/utils/api-client';
+import { clientApi, serverApi } from '@/src/utils/api-client';
 import {
     PatientData,
     Expert,
@@ -156,35 +156,37 @@ export const patientService = {
         if (options.occupation) q.set('occupation', options.occupation);
         if (options.sortBy) q.set('sortBy', options.sortBy);
 
-        const response = await apiClient.get<PaginatedRawResponse>(
-            `/virtual-patient/api/virtual-patients?${q.toString()}`
-        );
-
-        return {
-            ...response,
-            items: response.items.map(mapRawToPatientData),
+        try {
+            const response = await serverApi.get<PaginatedRawResponse>(
+                `/virtual-patient/api/virtual-patients?${q.toString()}`
+            );
+            return {
+                ...response,
+                items: response.items.map(mapRawToPatientData),
+            };
+        } catch (error) {
+            console.error('[PATIENT SERVICE ERROR] getVirtualPatients', error);
+            return { items: [], total: 0, page, pageSize, totalPages: 0 };
         };
     },
 
     async getVirtualPatientById(id: string): Promise<PatientData> {
-        const item = await apiClient.get<PatientApiResponse>(
-            `/virtual-patient/api/virtual-patients/${id}`
-        );
-        return mapRawToPatientData(item);
-    },
-
-    async getVirtualPatientByIdServer(id: string): Promise<PatientData> {
-        const item = await serverApiGet<PatientApiResponse>(
-            `/virtual-patient/api/virtual-patients/${id}`
-        );
-        return mapRawToPatientData(item);
+        try {
+            const item = await serverApi.get<PatientApiResponse>(
+                `/virtual-patient/api/virtual-patients/${id}`
+            );
+            return mapRawToPatientData(item);
+        } catch (error) {
+            console.error('[PATIENT SERVICE ERROR] getVirtualPatientById', { id, error });
+            throw error;
+        }
     },
 
     async getAttemptCount(
         learnerId: string,
         patientId: string
     ): Promise<AttemptCountData> {
-        return apiClient.get<AttemptCountData>(
+        return clientApi.get<AttemptCountData>(
             `/practice-session/api/practice-sessions/attempt-count?learnerId=${encodeURIComponent(learnerId)}&patientId=${encodeURIComponent(patientId)}`
         );
     },

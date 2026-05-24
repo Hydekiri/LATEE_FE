@@ -70,6 +70,7 @@ const requestClinicalReasoning = async (
         headers: {
             'Content-Type': 'application/json',
             Accept: 'text/event-stream',
+            'x-auth-env': 'client', 
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify(payload),

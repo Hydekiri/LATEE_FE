@@ -1,3 +1,7 @@
+// ============================================================
+// discovery.ts — Updated types for VP Discovery feature
+// ============================================================
+
 export interface DiscoveryAttemptSummary {
     readonly attempted: boolean;
     readonly attemptCount: number;
@@ -39,7 +43,6 @@ export interface DiscoveryFilters {
     readonly availableCaseTypes: readonly string[];
 }
 
-// --- Các Interface cũ bạn hỏi nằm ở đây ---
 export interface DiscoveryResponse {
     readonly items: readonly DiscoveryPatientItem[];
     readonly total: number;
@@ -66,7 +69,46 @@ export interface SaveDiscoveryResponse {
     readonly lastAccessed: string;
 }
 
-export type DiscoverySortBy = 'newest' | 'oldest' | 'level_asc' | 'level_desc';
+export type DiscoverySortBy =
+    | 'newest'
+    | 'oldest'
+    | 'level_asc'
+    | 'level_desc'
+    | 'expert_asc'
+    | 'expert_desc';
+
+// -------------------------------------------------------
+// Client-side UI filter state=
+// -------------------------------------------------------
+export interface DiscoveryUIFilter {
+    search: string;
+    level: string;
+    occupation: string;
+    expert: string; 
+    sortBy: DiscoverySortBy;
+}
+
+export const DEFAULT_DISCOVERY_UI_FILTER: DiscoveryUIFilter = {
+    search: '',
+    level: '',
+    occupation: '',
+    expert: '', 
+    sortBy: 'newest',
+};
+// -------------------------------------------------------
+// Fetch-cases form state=
+// -------------------------------------------------------
+export interface FetchCasesFormState {
+    readonly level: string;         
+    readonly gender: string;         
+    readonly fetchCount: number;     
+}
+
+export const DEFAULT_FETCH_CASES_FORM: FetchCasesFormState = {
+    level: '',
+    gender: '',
+    fetchCount: 5,
+};
 
 export interface DiscoveryFilterState {
     readonly level: string;
@@ -74,7 +116,7 @@ export interface DiscoveryFilterState {
     readonly sortBy: DiscoverySortBy;
     readonly page: number;
     readonly pageSize: number;
-    readonly fetchCount: number; 
+    readonly fetchCount: number;
 }
 
 export const DEFAULT_DISCOVERY_FILTER: DiscoveryFilterState = {
@@ -83,7 +125,7 @@ export const DEFAULT_DISCOVERY_FILTER: DiscoveryFilterState = {
     sortBy: 'newest',
     page: 1,
     pageSize: 9,
-    fetchCount: 5, 
+    fetchCount: 5,
 };
 
 export interface FetchedPatientSummary {

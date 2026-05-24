@@ -227,7 +227,7 @@ function ResultSummaryCard({
 
     return (
         <div className="grid grid-cols-10 gap-8 bg-white rounded-xl">
-            <div className="col-span-3 relative w-full h-full rounded-2xl overflow-hidden shadow-inner bg-[#A7E6FF] min-h-[180px]">
+            <div className="col-span-3 relative w-full h-full rounded-2xl overflow-hidden shadow-inner bg-[#A7E6FF] min-h-45">
                 <Image
                     src="/images/Robot2.png"
                     alt="AI Assistant Result"

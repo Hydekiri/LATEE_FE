@@ -1,11 +1,19 @@
 'use client';
 
+// ============================================================
+// FetchCasesModal.tsx
+// Opened by "+New" button — lets learner pull more VP from DB
+// ============================================================
+
 import { useState, ChangeEvent } from 'react';
-import { XMarkIcon, ArrowsUpDownIcon, DocumentArrowDownIcon } from '@heroicons/react/24/solid';
 import {
-    DEFAULT_DISCOVERY_FILTER,
-    DiscoveryFilterState,
-    DiscoverySortBy,
+    XMarkIcon,
+    ArrowsUpDownIcon,
+    DocumentArrowDownIcon,
+} from '@heroicons/react/24/solid';
+import {
+    FetchCasesFormState,
+    DEFAULT_FETCH_CASES_FORM,
 } from '@/src/types/discovery';
 
 const LEVEL_OPTIONS = ['Beginner', 'Intermediate', 'Advanced', 'Expert'] as const;
@@ -15,37 +23,28 @@ const GENDER_OPTIONS = [
     { value: 'FEMALE', label: 'Female' },
 ] as const;
 
-const SORT_OPTIONS: { value: DiscoverySortBy; label: string }[] = [
-    { value: 'newest', label: 'Newest' },
-    { value: 'oldest', label: 'Oldest' },
-    { value: 'level_asc', label: 'Level ↑' },
-    { value: 'level_desc', label: 'Level ↓' },
-];
-
-interface DiscoveryFilterFormProps {
+interface FetchCasesModalProps {
     readonly isOpen: boolean;
     readonly isLoading: boolean;
-    readonly initialFilters?: DiscoveryFilterState;
-    readonly onSubmit: (filters: DiscoveryFilterState) => Promise<void>;
+    readonly errorMessage: string | null;
+    readonly onSubmit: (form: FetchCasesFormState) => Promise<void>;
     readonly onClose: () => void;
-    readonly isFirstDiscovery?: boolean;
 }
 
-export function DiscoveryFilterForm({
+export function FetchCasesModal({
     isOpen,
     isLoading,
-    initialFilters = DEFAULT_DISCOVERY_FILTER,
+    errorMessage,
     onSubmit,
     onClose,
-    isFirstDiscovery = false,
-}: DiscoveryFilterFormProps) {
-    const [draft, setDraft] = useState<DiscoveryFilterState>(initialFilters);
+}: FetchCasesModalProps) {
+    const [draft, setDraft] = useState<FetchCasesFormState>(DEFAULT_FETCH_CASES_FORM);
 
     if (!isOpen) return null;
 
-    const handleChange = <K extends keyof DiscoveryFilterState>(
+    const handleChange = <K extends keyof FetchCasesFormState>(
         key: K,
-        value: DiscoveryFilterState[K]
+        value: FetchCasesFormState[K]
     ): void => {
         setDraft((prev) => ({ ...prev, [key]: value }));
     };
@@ -58,33 +57,19 @@ export function DiscoveryFilterForm({
     };
 
     const handleSubmit = async (): Promise<void> => {
-        await onSubmit({ ...draft, page: 1, pageSize: 9 });
-        const payloadToSend = { 
-            ...draft, 
-            page: 1, 
-            pageSize: 9 
-        };
-        console.log('[FE Request Payload] -> Submitting to Backend:', {
-            learnerId: "USR-LRN-08 (Injected via hook/cookie)", 
-            level: payloadToSend.level || null, 
-            gender: payloadToSend.gender || null,
-            fetchCount: payloadToSend.fetchCount,
-            sortBy: payloadToSend.sortBy,
-            page: payloadToSend.page,
-            pageSize: payloadToSend.pageSize
-        });
-        onClose();
+        await onSubmit(draft);
+        // Modal stays open while loading; parent closes it on success
     };
 
     const handleReset = (): void => {
-        setDraft(DEFAULT_DISCOVERY_FILTER);
+        setDraft(DEFAULT_FETCH_CASES_FORM);
     };
 
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
             onClick={(e) => {
-                if (e.target === e.currentTarget) onClose();
+                if (e.target === e.currentTarget && !isLoading) onClose();
             }}
         >
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-8
@@ -93,10 +78,10 @@ export function DiscoveryFilterForm({
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h2 className="text-xl font-bold text-[#235697]">
-                            {isFirstDiscovery ? 'Initialize Personal Case Pool' : 'Pull More Cases from Database'}
+                            Pull New Cases
                         </h2>
                         <p className="text-sm text-gray-500 mt-0.5">
-                            Max 9 patients are displayed per page. Select how many cases to pull from system DB.
+                            Choose filters and how many cases to add to your personal pool.
                         </p>
                     </div>
                     <button
@@ -110,31 +95,40 @@ export function DiscoveryFilterForm({
                     </button>
                 </div>
 
+                {/* Error banner */}
+                {errorMessage && (
+                    <div className="mb-4 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600 font-medium">
+                        {errorMessage}
+                    </div>
+                )}
+
                 {/* Fields */}
                 <div className="flex flex-col gap-5">
                     {/* Level */}
                     <div>
                         <label className="block text-sm font-semibold text-[#235697] mb-2">
-                            Filter System Case Difficulty
+                            Filter by Difficulty Level
                         </label>
                         <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={() => handleChange('level', '')}
-                                className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${draft.level === ''
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
+                                    draft.level === ''
                                         ? 'bg-[#235697] text-white border-[#235697]'
                                         : 'bg-white text-[#235697] border-[#235697]/40 hover:border-[#235697]'
-                                    }`}
+                                }`}
                             >
-                                All Difficulty Levels
+                                All Levels
                             </button>
                             {LEVEL_OPTIONS.map((l) => (
                                 <button
                                     key={l}
                                     onClick={() => handleChange('level', l)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${draft.level === l
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
+                                        draft.level === l
                                             ? 'bg-[#235697] text-white border-[#235697]'
                                             : 'bg-white text-[#235697] border-[#235697]/40 hover:border-[#235697]'
-                                        }`}
+                                    }`}
                                 >
                                     {l}
                                 </button>
@@ -145,16 +139,16 @@ export function DiscoveryFilterForm({
                     {/* Gender */}
                     <div>
                         <label className="block text-sm font-semibold text-[#235697] mb-2">
-                            Filter System Patient Gender
+                            Filter by Patient Gender
                         </label>
                         <div className="flex gap-2">
-                            {/* Nút Any Gender gán giá trị chuỗi rỗng '' */}
                             <button
                                 onClick={() => handleChange('gender', '')}
-                                className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${draft.gender === ''
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
+                                    draft.gender === ''
                                         ? 'bg-[#235697] text-white border-[#235697]'
                                         : 'bg-white text-[#235697] border-[#235697]/40 hover:border-[#235697]'
-                                    }`}
+                                }`}
                             >
                                 Any Gender
                             </button>
@@ -162,10 +156,11 @@ export function DiscoveryFilterForm({
                                 <button
                                     key={value}
                                     onClick={() => handleChange('gender', value)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${draft.gender === value
+                                    className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-all ${
+                                        draft.gender === value
                                             ? 'bg-[#235697] text-white border-[#235697]'
                                             : 'bg-white text-[#235697] border-[#235697]/40 hover:border-[#235697]'
-                                        }`}
+                                    }`}
                                 >
                                     {label}
                                 </button>
@@ -173,50 +168,26 @@ export function DiscoveryFilterForm({
                         </div>
                     </div>
 
-                    {/* Controls Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Sort */}
-                        <div>
-                            <label className="block text-sm font-semibold text-[#235697] mb-2">
-                                Sort Layout Display
-                            </label>
-                            <div className="relative flex items-center">
-                                <ArrowsUpDownIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
-                                <select
-                                    value={draft.sortBy}
-                                    onChange={(e) => handleChange('sortBy', e.target.value as DiscoverySortBy)}
-                                    className="w-full border border-[#235697]/40 pl-9 pr-4 py-2.5 rounded-lg
-                                    bg-white text-[#235697] font-semibold text-sm
-                                    focus:outline-none focus:border-[#235697] appearance-none cursor-pointer"
-                                >
-                                    {SORT_OPTIONS.map(({ value, label }) => (
-                                        <option key={value} value={value}>{label}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        {/* Fetch Count Selection */}
-                        <div>
-                            <label className="block text-sm font-semibold text-[#235697] mb-2">
-                                Number of Cases to Fetch
-                            </label>
-                            <div className="relative flex items-center">
-                                <DocumentArrowDownIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
-                                <select
-                                    value={draft.fetchCount}
-                                    onChange={handleFetchCountChange}
-                                    className="w-full border border-[#235697]/40 pl-9 pr-4 py-2.5 rounded-lg
-                                    bg-white text-[#235697] font-semibold text-sm
-                                    focus:outline-none focus:border-[#235697] appearance-none cursor-pointer"
-                                >
-                                    {Array.from({ length: 20 }, (_, index) => index + 1).map((num) => (
-                                        <option key={num} value={num}>
-                                            +{num} {num === 1 ? 'New Case' : 'New Cases'}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                    {/* Fetch count */}
+                    <div className="max-w-xs">
+                        <label className="block text-sm font-semibold text-[#235697] mb-2">
+                            Number of Cases to Fetch
+                        </label>
+                        <div className="relative flex items-center">
+                            <DocumentArrowDownIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                            <select
+                                value={draft.fetchCount}
+                                onChange={handleFetchCountChange}
+                                className="w-full border border-[#235697]/40 pl-9 pr-4 py-2.5 rounded-lg
+                                bg-white text-[#235697] font-semibold text-sm
+                                focus:outline-none focus:border-[#235697] appearance-none cursor-pointer"
+                            >
+                                {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                                    <option key={num} value={num}>
+                                        +{num} {num === 1 ? 'New Case' : 'New Cases'}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -250,7 +221,7 @@ export function DiscoveryFilterForm({
                             shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             <DocumentArrowDownIcon className="w-4 h-4" />
-                            {isLoading ? 'Pulling Data...' : `Fetch ${draft.fetchCount} Cases`}
+                            {isLoading ? 'Fetching...' : `Fetch ${draft.fetchCount} Cases`}
                         </button>
                     </div>
                 </div>

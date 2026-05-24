@@ -31,9 +31,11 @@ function getAuthHeaders(): HeadersInit {
     const token = getCookie('accessToken');
     return {
         'Content-Type': 'application/json',
+        'x-auth-env': 'client',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 }
+
 
 export function mapEvaluationReportToResultsData(
     report: EvaluationReportResponse
@@ -85,7 +87,7 @@ export function mapEvaluationReportToResultsData(
 
 export function mapToEvaluationTabData(
     feedback: PracticeFeedbackResponse,
-    report?: EvaluationReportResponse // Đổi thành optional để an toàn khi load rỗng
+    report?: EvaluationReportResponse 
 ): EvaluationTabData {
     const epaScores: ResultsEpaScore[] = (report?.epaScores ?? []).map(
         (epa: EpaScoreResponse) => ({

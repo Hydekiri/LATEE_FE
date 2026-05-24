@@ -20,6 +20,7 @@ export async function validateLearnerQuestion(params: {
         method: 'POST',
         headers: {
         'Content-Type': 'application/json',
+        'x-auth-env': 'client', 
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({

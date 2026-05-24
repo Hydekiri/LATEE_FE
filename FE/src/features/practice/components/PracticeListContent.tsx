@@ -1,77 +1,82 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
     MagnifyingGlassIcon,
-    FunnelIcon,
     ArrowsUpDownIcon,
+    FunnelIcon,
+    PlusIcon,
 } from '@heroicons/react/24/solid';
+import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
+
 import { usePracticeDiscovery } from '@/src/hooks/usePracticeDiscovery';
 import { PracticeListPagination } from '@/src/features/practice/components/PracticeListPagination';
 import { PatientCardSkeleton } from '@/src/features/practice/components/PatientCardSkeleton';
 import { EmptyDiscoveryState } from '@/src/features/practice/components/EmptyDiscoveryState';
-import { DiscoveryFilterForm } from '@/src/features/practice/components/DiscoveryFilterForm';
-import DiscoveryPatientCard from '@/src/features/practice/components/DiscoveryPatientCard';
-import { DiscoveryFilterState, DiscoverySortBy } from '@/src/types/discovery';
-import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { DiscoveryGrid } from '@/src/features/practice/components/DiscoveryGrid';
+import { FetchCasesModal } from '@/src/features/practice/components/FetchCasesModal';
+
+import {
+    DiscoverySortBy,
+    FetchCasesFormState,
+} from '@/src/types/discovery';
 
 const SORT_OPTIONS: { value: DiscoverySortBy; label: string }[] = [
-    { value: 'newest', label: 'Newest' },
-    { value: 'oldest', label: 'Oldest' },
-    { value: 'level_asc', label: 'Level ↑' },
-    { value: 'level_desc', label: 'Level ↓' },
+    { value: 'newest',      label: 'Newest' },
+    { value: 'oldest',      label: 'Oldest' },
+    { value: 'level_asc',   label: 'Level ↑' },
+    { value: 'level_desc',  label: 'Level ↓' },
+    { value: 'expert_asc',  label: 'Expert A→Z' },
+    { value: 'expert_desc', label: 'Expert Z→A' },
 ];
 
 export function PracticeListContent() {
     const {
         loadState,
+        fetchState,
         patients,
-        totalItems,
+        allPatients,
+        availableOccupations,
+        availableLevels,
+        availableExperts,
+        totalFiltered,
         totalPages,
         currentPage,
-        filters,
+        uiFilter,
         error,
+        fetchError,
         hasDiscovery,
-        setFilter,
-        applyFilters,
+        setUIFilter,
+        setPage,
         resetFilters,
-        goToPage,
-        startDiscovery,
+        fetchNewCases,
         retry,
     } = usePracticeDiscovery();
 
-    const [isFilterFormOpen, setIsFilterFormOpen] = useState(false);
+    const [isFetchModalOpen, setIsFetchModalOpen] = useState(false);
 
     const isLoading = loadState === 'loading' || loadState === 'checking';
-    const isFirstDiscovery = !hasDiscovery;
+    const isPoolEmpty = loadState === 'empty' && !hasDiscovery;
+    const hasActiveFilter =
+        !!uiFilter.search || !!uiFilter.level || !!uiFilter.occupation || !!uiFilter.expert;
 
-    const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') void applyFilters();
-    };
+    const handleFetchSubmit = useCallback(
+        async (form: FetchCasesFormState) => {
+            await fetchNewCases(form);
+            if (fetchState !== 'error') {
+                setIsFetchModalOpen(false);
+            }
+        },
+        [fetchNewCases, fetchState]
+    );
 
-    const handleFilterSubmit = async (newFilters: DiscoveryFilterState) => {
-        if (isFirstDiscovery) {
-            await startDiscovery(newFilters);
-        } else {
-            setFilter('level', newFilters.level);
-            setFilter('gender', newFilters.gender);
-            setFilter('sortBy', newFilters.sortBy);
-            await applyFilters();
-        }
-    };
-
-    if (loadState === 'checking') {
-        return (
-            <div className="w-full flex justify-center items-center py-24">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#235697]" />
-                    <p className="text-[#235697] font-semibold text-sm animate-pulse">
-                        Loading your practice cases...
-                    </p>
-                </div>
-            </div>
-        );
-    }
+    const handleFetchSubmitWithClose = useCallback(
+        async (form: FetchCasesFormState) => {
+            await fetchNewCases(form);
+            setIsFetchModalOpen(false);
+        },
+        [fetchNewCases]
+    );
 
     if (loadState === 'error' && error !== null) {
         return (
@@ -79,7 +84,7 @@ export function PracticeListContent() {
                 <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
                     <ExclamationCircleIcon className="w-8 h-8 text-red-400" />
                 </div>
-                <p className="text-red-600 font-semibold text-base">{error}</p>
+                <p className="text-red-600 font-semibold text-base text-center px-4">{error}</p>
                 <button
                     onClick={retry}
                     className="px-6 py-2.5 rounded-lg bg-[#235697] text-white font-bold text-sm
@@ -91,130 +96,187 @@ export function PracticeListContent() {
         );
     }
 
-    if (loadState === 'empty' && !hasDiscovery) {
+    if (loadState === 'checking') {
         return (
-            <>
-                <EmptyDiscoveryState onNewDiscovery={() => setIsFilterFormOpen(true)} />
-                <DiscoveryFilterForm
-                    isOpen={isFilterFormOpen}
-                    isLoading={isLoading}
-                    onSubmit={handleFilterSubmit}
-                    onClose={() => setIsFilterFormOpen(false)}
-                    isFirstDiscovery
-                />
-            </>
+            <div className="w-full flex justify-center items-center py-24 px-4">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#235697]" />
+                    <p className="text-[#235697] font-semibold text-sm animate-pulse text-center">
+                        Loading your practice cases...
+                    </p>
+                </div>
+            </div>
         );
     }
 
     return (
         <>
-            {/* Search + Filter Bar */}
-            <div className="w-full grid grid-cols-1 xl:grid-cols-12 gap-4 items-center mt-10 xl:mt-16">
+            {/* ── Toolbar ── */}
+            <div className="w-full flex flex-wrap gap-4 lg:gap-6 items-center justify-between mt-6 lg:mt-10">
 
-                <div className="xl:col-span-5 w-full">
-                    <div className="flex items-center h-12 border border-[#235697] rounded-lg bg-white
-                            px-4 xl:px-6 w-full shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex-1 w-full min-w-70 sm:min-w-[320px]">
+                    <div className="flex items-center py-2 border border-[#235697] rounded-lg bg-white
+                            px-4 lg:px-6 w-full shadow-sm hover:shadow-md transition-shadow">
                         <input
                             type="text"
-                            value={filters.level}
-                            onChange={(e) => setFilter('level', e.target.value)}
-                            onKeyDown={handleSearchKeyDown}
-                            placeholder="Filter by level..."
-                            className="flex-1 font-semibold text-base placeholder-[#235697]/60 outline-none
-                            text-[#235697] bg-transparent"
-                            aria-label="Filter by level"
+                            value={uiFilter.search}
+                            onChange={(e) => setUIFilter('search', e.target.value)}
+                            placeholder="Search by name, concern, occupation..."
+                            className="flex-1 font-semibold text-sm sm:text-base placeholder-[#235697]/60 outline-none
+                            text-[#235697] bg-transparent min-w-0"
+                            aria-label="Search patients"
                         />
-                        <button
-                            onClick={() => void applyFilters()}
-                            className="flex cursor-pointer text-[#235697] hover:text-[#1BA7D9] transition-colors"
-                            aria-label="Apply filter"
-                        >
-                            <MagnifyingGlassIcon className="w-6 h-6" />
-                        </button>
+                        <MagnifyingGlassIcon className="w-5 h-5 text-[#235697]/60 shrink-0 ml-2" />
                     </div>
                 </div>
 
-                {/* Filter controls */}
-                <div className="xl:col-span-7 w-full overflow-x-auto scrollbar-hide">
-                    <div className="flex gap-3 xl:gap-4 justify-start xl:justify-end min-w-max pb-2 xl:pb-0 items-center">
+                <div className="flex flex-wrap items-center gap-3 justify-start lg:justify-end w-full xl:w-auto">
 
-                        {/* Sort */}
-                        <div className="relative flex items-center">
-                            <ArrowsUpDownIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                    {/* Expert Filter */}
+                    {availableExperts.length > 0 && (
+                        <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
+                            <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
                             <select
-                                value={filters.sortBy}
-                                onChange={(e) => setFilter('sortBy', e.target.value as DiscoverySortBy)}
-                                className="border border-[#235697] pl-9 pr-4 xl:pr-5 py-2.5 rounded-lg bg-white
-                            text-[#235697] font-semibold text-sm xl:text-base
-                            hover:bg-[#235697] hover:text-white transition-all shadow-sm
-                            appearance-none cursor-pointer"
-                                aria-label="Sort by"
+                                value={uiFilter.expert || ''}
+                                onChange={(e) => setUIFilter('expert', e.target.value)}
+                                className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
+                                text-[#235697] font-semibold text-sm truncate
+                                hover:bg-[#235697] hover:text-white transition-all shadow-sm
+                                appearance-none cursor-pointer outline-none"
+                                aria-label="Filter by Expert"
                             >
-                                {SORT_OPTIONS.map(({ value, label }) => (
-                                    <option key={value} value={value}>{label}</option>
+                                <option value="">All Experts</option>
+                                {availableExperts.map((exp) => (
+                                    <option key={exp} value={exp}>{exp}</option>
                                 ))}
                             </select>
                         </div>
+                    )}
 
-                        {/* Apply */}
-                        <button
-                            onClick={() => void applyFilters()}
-                            disabled={isLoading}
-                            className="flex items-center gap-2 border border-[#235697] px-4 xl:px-6 py-2.5
-                            rounded-lg bg-[#235697] text-white font-semibold text-sm xl:text-base
-                            hover:bg-[#1BA7D9] hover:border-[#1BA7D9] transition-all shadow-sm
-                            whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
-                            aria-label="Apply filters"
+                    {/* Level filter */}
+                    <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
+                        <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                        <select
+                            value={uiFilter.level}
+                            onChange={(e) => setUIFilter('level', e.target.value)}
+                            className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
+                            text-[#235697] font-semibold text-sm truncate
+                            hover:bg-[#235697] hover:text-white transition-all shadow-sm
+                            appearance-none cursor-pointer outline-none" 
+                            aria-label="Filter by level"
                         >
-                            <FunnelIcon className="w-4 h-4" />
-                            Apply
-                        </button>
+                            <option value="">All Levels</option>
+                            {availableLevels.map((l) => (
+                                <option key={l} value={l}>{l}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                        {/* Advanced filter (opens modal) */}
-                        <button
-                            onClick={() => setIsFilterFormOpen(true)}
-                            className="border border-[#235697]/50 px-4 py-2.5 rounded-lg bg-white
-                            text-[#235697] font-semibold text-sm xl:text-base
-                            hover:border-[#235697] transition-all shadow-sm whitespace-nowrap"
+                    {/* Occupation filter */}
+                    {availableOccupations.length > 0 && (
+                        <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-40">
+                            <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                            <select
+                                value={uiFilter.occupation}
+                                onChange={(e) => setUIFilter('occupation', e.target.value)}
+                                className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
+                                text-[#235697] font-semibold text-sm truncate
+                                hover:bg-[#235697] hover:text-white transition-all shadow-sm
+                                appearance-none cursor-pointer outline-none"
+                                aria-label="Filter by occupation"
+                            >
+                                <option value="">All Occupations</option>
+                                {availableOccupations.map((o) => (
+                                    <option key={o} value={o}>{o}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    {/* Sort */}
+                    <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
+                        <ArrowsUpDownIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                        <select
+                            value={uiFilter.sortBy}
+                            onChange={(e) => setUIFilter('sortBy', e.target.value as DiscoverySortBy)}
+                            className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
+                            text-[#235697] font-semibold text-sm truncate
+                            hover:bg-[#235697] hover:text-white transition-all shadow-sm
+                            appearance-none cursor-pointer outline-none"
+                            aria-label="Sort by"
                         >
-                            More Filters
-                        </button>
+                            {SORT_OPTIONS.map(({ value, label }) => (
+                                <option key={value} value={value}>{label}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                        {/* Reset */}
-                        {(filters.level || filters.gender || filters.sortBy !== 'newest') && (
+                    {/* Button Group (Reset + New) */}
+                    <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                        {/* Reset filters */}
+                        {hasActiveFilter && (
                             <button
-                                onClick={() => void resetFilters()}
+                                onClick={resetFilters}
                                 className="border border-gray-300 px-4 py-2.5 rounded-lg bg-white text-gray-500
-                            font-semibold text-sm xl:text-base hover:border-red-300 hover:text-red-500
-                            transition-all shadow-sm whitespace-nowrap"
+                                font-semibold text-sm hover:border-red-300 hover:text-red-500
+                                transition-all shadow-sm whitespace-nowrap outline-none flex-1 sm:flex-none text-center"
                                 aria-label="Reset filters"
                             >
                                 Reset
                             </button>
                         )}
+
+                        {/* +New button */}
+                        <button
+                            onClick={() => setIsFetchModalOpen(true)}
+                            className="flex justify-center items-center gap-2 border border-[#235697] px-5 py-2.5
+                            rounded-lg bg-[#235697] text-white font-bold text-sm
+                            hover:bg-[#1BA7D9] hover:border-[#1BA7D9] transition-all shadow-sm
+                            whitespace-nowrap outline-none flex-1 sm:flex-none"
+                            aria-label="Fetch new cases"
+                        >
+                            <PlusIcon className="w-4 h-4" />
+                            New
+                        </button>
                     </div>
                 </div>
             </div>
 
-            {/* Grid */}
-            <div className="w-full min-h-[500px]">
+            {/* ── Pool count badge ── */}
+            {!isLoading && allPatients.length > 0 && (
+                <div className="w-full flex items-center gap-2 mt-4">
+                    <span className="text-xs text-gray-400 font-medium">
+                        Your pool: <span className="text-[#235697] font-bold">{allPatients.length}</span> cases
+                        {totalFiltered !== allPatients.length && (
+                            <> <span className="hidden sm:inline">·</span> <br className="sm:hidden" /> <span className="text-[#235697] font-bold">{totalFiltered}</span> match filters</>
+                        )}
+                    </span>
+                </div>
+            )}
+
+            {/* ── Content ── */}
+            <div className="w-full min-h-125 mt-4 lg:mt-6">
                 {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-7.5">
-                        {Array.from({ length: filters.pageSize }).map((_, i) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-7.5">
+                        {Array.from({ length: 9 }).map((_, i) => (
                             <PatientCardSkeleton key={i} />
                         ))}
                     </div>
+                ) : isPoolEmpty ? (
+                    <EmptyDiscoveryState onNewDiscovery={() => setIsFetchModalOpen(true)} />
                 ) : patients.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-7.5">
-                        {patients.map((item) => (
-                            <DiscoveryPatientCard key={item.patientId} item={item} />
-                        ))}
-                    </div>
+                    <DiscoveryGrid
+                        patients={patients}
+                        isLoading={false}
+                        pageSize={9}
+                    />
                 ) : (
-                    <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-                        <p className="text-gray-500 mb-3">No practice cases match your current filters.</p>
+                    <div className="text-center py-20 px-4 bg-white rounded-xl border border-dashed border-gray-300">
+                        <p className="text-gray-500 mb-3 text-sm sm:text-base">
+                            No cases match your current filters.
+                        </p>
                         <button
-                            onClick={() => void resetFilters()}
+                            onClick={resetFilters}
                             className="text-[#235697] font-semibold text-sm hover:underline"
                         >
                             Clear filters
@@ -223,24 +285,29 @@ export function PracticeListContent() {
                 )}
             </div>
 
-            {/* Pagination */}
-            <PracticeListPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                pageSize={filters.pageSize}
-                isLoading={isLoading}
-                onPageChange={(page) => void goToPage(page)}
-            />
+            {/* ── Pagination ── */}
+            {!isPoolEmpty && (
+                <div className="w-full overflow-x-auto pb-4 mt-6">
+                    <PracticeListPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={totalFiltered}
+                        pageSize={9}
+                        isLoading={isLoading}
+                        onPageChange={setPage}
+                    />
+                </div>
+            )}
 
-            {/* Filter Form Modal */}
-            <DiscoveryFilterForm
-                isOpen={isFilterFormOpen}
-                isLoading={isLoading}
-                initialFilters={filters}
-                onSubmit={handleFilterSubmit}
-                onClose={() => setIsFilterFormOpen(false)}
-                isFirstDiscovery={false}
+            {/* ── +New modal ── */}
+            <FetchCasesModal
+                isOpen={isFetchModalOpen}
+                isLoading={fetchState === 'fetching'}
+                errorMessage={fetchError}
+                onSubmit={handleFetchSubmitWithClose}
+                onClose={() => {
+                    if (fetchState !== 'fetching') setIsFetchModalOpen(false);
+                }}
             />
         </>
     );
