@@ -2,8 +2,6 @@ import TakeAssessmentFeature from "@/src/features/assessment/takeAssessment/Take
 import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
-import { redirect } from "next/navigation";
 
 async function getFullAssessmentDetails(id: string) {
     console.log('[INFO]: Learner is logged in, fetching assessment data for id:', id);
