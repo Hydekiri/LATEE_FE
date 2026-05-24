@@ -17,3 +17,10 @@
 
 //     return <FeedbackFeature />;
 // }
+
+export default function FeedbackPage() {
+    return <div className="p-6">
+        <h1 className="text-2xl font-bold mb-4">Issues & Feedback</h1>
+        <p className="text-gray-600">This is the Issues & Feedback page. Here, experts can view and manage reported errata, clinical debates, and user inquiries.</p>
+    </div>;
+}

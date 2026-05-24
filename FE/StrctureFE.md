@@ -3,8 +3,11 @@
 LATEE_FE
 ├─ FE
 │  ├─ .env
-│  ├─ README.md
 │  ├─ public
+│  │  ├─ next.svg
+│  │  ├─ vercel.svg
+│  │  └─ window.svg
+│  ├─ README.md
 │  ├─ src
 │  │  ├─ app
 │  │  │  ├─ (auth)
@@ -216,6 +219,27 @@ LATEE_FE
 │  │  │  │  ├─ assessment
 │  │  │  │  │  └─ page.tsx
 │  │  │  │  ├─ clinical-case
+│  │  │  │  │  ├─ components
+│  │  │  │  │  │  ├─ CaseCard.tsx
+│  │  │  │  │  │  ├─ CaseEmptyState.tsx
+│  │  │  │  │  │  ├─ CaseFilterBar.tsx
+│  │  │  │  │  │  ├─ CaseSkeletonCard.tsx
+│  │  │  │  │  │  ├─ CaseSkeletonRow.tsx
+│  │  │  │  │  │  ├─ CaseStatsBanner.tsx
+│  │  │  │  │  │  ├─ CaseStatusBadge.tsx
+│  │  │  │  │  │  ├─ CaseTableRow.tsx
+│  │  │  │  │  │  ├─ CreateCaseModal.tsx
+│  │  │  │  │  │  ├─ DeleteConfirmModal.tsx
+│  │  │  │  │  │  └─ detail
+│  │  │  │  │  │     ├─ CaseDetailHeader.tsx
+│  │  │  │  │  │     ├─ CaseDetailSidebar.tsx
+│  │  │  │  │  │     ├─ CaseDetailTabNav.tsx
+│  │  │  │  │  │     └─ tabs
+│  │  │  │  │  │        ├─ TabLabs.tsx
+│  │  │  │  │  │        ├─ TabOverview.tsx
+│  │  │  │  │  │        ├─ TabPhysicalExam.tsx
+│  │  │  │  │  │        ├─ TabRadiology.tsx
+│  │  │  │  │  │        └─ TabSymptoms.tsx
 │  │  │  │  │  ├─ detail.tsx
 │  │  │  │  │  └─ page.tsx
 │  │  │  │  ├─ components
@@ -241,7 +265,6 @@ LATEE_FE
 │  │  │  │  └─ homepage.tsx
 │  │  │  ├─ practice
 │  │  │  │  ├─ components
-│  │  │  │  │  ├─ DiscoveryFilterForm.tsx
 │  │  │  │  │  ├─ DiscoveryGrid.tsx
 │  │  │  │  │  ├─ DiscoveryPatientCard.tsx
 │  │  │  │  │  ├─ EmptyDiscoveryState.tsx
@@ -249,7 +272,7 @@ LATEE_FE
 │  │  │  │  │  ├─ PatientCardSkeleton.tsx
 │  │  │  │  │  ├─ PracticeListContent.tsx
 │  │  │  │  │  ├─ PracticeListPagination.tsx
-│  │  │  │  │  ├─ Practice_Card.tsx
+│  │  │  │  │  ├─ Practice_Card.txt
 │  │  │  │  │  ├─ Practice_Details.tsx
 │  │  │  │  │  └─ subComponents
 │  │  │  │  │     ├─ CaseOverview.tsx
@@ -297,6 +320,10 @@ LATEE_FE
 │  │  │  │  ├─ ValidationNotes.table.ts
 │  │  │  │  └─ VPChatMessages.table.ts
 │  │  │  ├─ submition-practice-session.ts
+│  │  │  ├─ useClinicalCaseActions.ts
+│  │  │  ├─ useClinicalCaseDetail.ts
+│  │  │  ├─ useClinicalCaseFilters.ts
+│  │  │  ├─ useClinicalCases.ts
 │  │  │  ├─ useExitProtection.ts
 │  │  │  ├─ usePatientFilter.ts
 │  │  │  ├─ usePracticeAttempts.ts
@@ -309,6 +336,7 @@ LATEE_FE
 │  │  │  ├─ aiAssistant-service.tsx
 │  │  │  ├─ assessment-servvice.ts
 │  │  │  ├─ auth-service.ts
+│  │  │  ├─ clinical-case-service.ts
 │  │  │  ├─ clinical-reasoning-service.ts
 │  │  │  ├─ discovery-service.ts
 │  │  │  ├─ evaluation-service.ts
@@ -318,8 +346,6 @@ LATEE_FE
 │  │  │  ├─ practice-session-service.ts
 │  │  │  ├─ question-validation-service.ts
 │  │  │  ├─ roadmap-service.tsx
-│  │  │  ├─ submition-practice-session-ver1.ts
-│  │  │  ├─ submition-practice-session-ver2.ts
 │  │  │  ├─ user-service.ts
 │  │  │  └─ validate-question-service.ts
 │  │  ├─ stores
@@ -328,6 +354,7 @@ LATEE_FE
 │  │  │  ├─ api.d.ts
 │  │  │  ├─ api.ts
 │  │  │  ├─ assessment.ts
+│  │  │  ├─ clinical-case.ts
 │  │  │  ├─ discovery.ts
 │  │  │  ├─ evaluation.ts
 │  │  │  ├─ knowledge-resources.ts

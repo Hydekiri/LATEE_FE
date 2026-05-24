@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -22,6 +22,7 @@ import {
     ChartBarIcon as AssessmentSolid,
     ChatBubbleLeftRightIcon as FeedbackSolid,
 } from "@heroicons/react/24/solid";
+import { logoutApi } from "@/src/services/auth-service";
 
 const menuItems = [
     { name: "Dashboard", href: "/expert", outline: DashboardIcon, solid: DashboardSolid },
@@ -43,60 +44,67 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     return (
         <>
-        {isOpen && (
-            <div 
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden" 
-            onClick={onClose} 
-            />
-        )}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+                    onClick={onClose}
+                />
+            )}
 
-        <aside className={`
+            <aside className={`
             fixed lg:sticky top-0 left-0 z-40 h-screen w-64 bg-white p-6 shadow-xl transition-transform duration-300
             ${isOpen ? "translate-x-0" : "-translate-x-full"} 
             lg:translate-x-0
         `}>
-            <div className="shrink-0 mb-4 flex justify-center border-b-2 border-[#1BA7D9] pb-1"> 
-                <Link href="/expert" className="relative block w-full max-w-50 h-16">
-                    <Image
-                        src="/images/LATEE1.png"
-                        alt="LATEE Logo"
-                        fill
-                        className="object-contain" 
-                        priority
-                    />
-                </Link>
-            </div>
-
-            {/* Menu Items */}
-            <nav className="flex-1 space-y-2">
-                {menuItems.map((item) => {
-                    const isActive = pathname === item.href;
-                    const Icon = isActive ? item.solid : item.outline;
-
-                    return (
-                    <Link
-                        key={item.name}
-                        href={item.href}
-                        onClick={() => { if (window.innerWidth < 1024) onClose(); }}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
-                        isActive 
-                        ? "bg-linear-to-l from-[#1BA7D9] to-[#235697] text-white shadow-lg" 
-                        : "text-[#00140E]/80 hover:bg-[#878787]/20 hover:text-[#235697]"
-                        }`}
-                    >
-                        <Icon className="w-5 h-5" />
-                        {item.name}
+                <div className="shrink-0 mb-4 flex justify-center border-b-2 border-[#1BA7D9] pb-1">
+                    <Link href="/expert" className="relative block w-full max-w-50 h-16">
+                        <Image
+                            src="/images/LATEE1.png"
+                            alt="LATEE Logo"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
                     </Link>
-                    );
-                })}
-            </nav>
+                </div>
 
-            {/* Logout */}
-            <button className="flex items-center gap-3 px-4 py-3 text-gray-400 font-bold text-sm mt-auto hover:bg-red-500 hover:text-white transition-all">
-                <ArrowLeftStartOnRectangleIcon className="w-5 h-5" />
-                Log out
-            </button>
-        </aside>
+                {/* Menu Items */}
+                <nav className="flex-1 space-y-2">
+                    {menuItems.map((item) => {
+                        const isActive = pathname === item.href;
+                        const Icon = isActive ? item.solid : item.outline;
+
+                        return (
+                            <Link
+                                key={item.name}
+                                href={item.href}
+                                onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${isActive
+                                    ? "bg-linear-to-l from-[#1BA7D9] to-[#235697] text-white shadow-lg"
+                                    : "text-[#00140E]/80 hover:bg-[#878787]/20 hover:text-[#235697]"
+                                    }`}
+                            >
+                                <Icon className="w-5 h-5" />
+                                {item.name}
+                            </Link>
+                        );
+                    })}
+                </nav>
+
+                {/* Logout */}
+                <button className="flex items-center gap-3 px-4 py-3 text-gray-400 font-bold text-sm mt-auto hover:bg-red-500 hover:text-white transition-all"
+                    onClick={async () => {
+                        await logoutApi();
+                        redirect('/login');
+                        if (window.innerWidth < 1024) {
+                            onClose();
+                        }
+                    }}
+                >
+                    <ArrowLeftStartOnRectangleIcon className="w-5 h-5" />
+                    Log out
+                </button>
+            </aside>
         </>
     );
 }
