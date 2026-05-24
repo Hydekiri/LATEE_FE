@@ -5,11 +5,11 @@ import type { UpdateClinicalCaseRequest } from "@/src/types/clinical-case";
 
 interface TabSymptomsProps {
     symptom: string;
-    medicalhistory: string;
+    medicalHistory: string;
     onFieldChange: (key: keyof UpdateClinicalCaseRequest, value: string) => void;
 }
 
-export function TabSymptoms({ symptom, medicalhistory, onFieldChange }: TabSymptomsProps) {
+export function TabSymptoms({ symptom, medicalHistory, onFieldChange }: TabSymptomsProps) {
     return (
         <div
             role="tabpanel"
@@ -43,8 +43,8 @@ export function TabSymptoms({ symptom, medicalhistory, onFieldChange }: TabSympt
                 id="medhistory-field"
                 label="Medical History"
                 hint="Past medical history, surgical history, allergies, medications, family and social history."
-                value={medicalhistory}
-                onChange={(v) => onFieldChange("medicalhistory", v)}
+                value={medicalHistory}
+                onChange={(v) => onFieldChange("medicalHistory", v)}
                 rows={6}
                 placeholder="PMH: No significant past medical history. PSH: Appendectomy denied. Allergies: NKDA. Medications: None. FH: Non-contributory..."
             />

@@ -145,23 +145,28 @@ export interface PaginatedResponse<T> {
 }
 
 export interface CreateClinicalCaseRequest {
+    caseId: string;
     title: string;
-    description: string;
-    caseType: string;
-    status: ClinicalCaseStatus;
-    pe: string;
-    symptom: string;
-    medicalHistory: string;
-    eccId: string;
-}
-
-export interface UpdateClinicalCaseRequest {
-    title?: string;
     description?: string;
     caseType?: string;
+    status?: ClinicalCaseStatus;
     pe?: string;
     symptom?: string;
     medicalHistory?: string;
+    createdBy?: string;
+    eccId?: string;
+}
+
+export interface UpdateClinicalCaseRequest {
+    caseId: string;
+    title?: string;
+    description?: string;
+    caseType?: string;
+    status?: ClinicalCaseStatus;
+    pe?: string;
+    symptom?: string;
+    medicalHistory?: string;
+    createdBy?: string;
     eccId?: string;
 }
 

@@ -40,8 +40,8 @@ export default function ClinicalCaseFeature() {
         const timer = setTimeout(() => {
             setLocalItems(items);
         }, 0);
-        
-        return () => clearTimeout(timer); 
+
+        return () => clearTimeout(timer);
     }, [items]);
 
     const handleCreate = useCallback(async (payload: CreateClinicalCaseRequest) => {
@@ -172,16 +172,16 @@ export default function ClinicalCaseFeature() {
                             {loading
                                 ? Array.from({ length: 6 }).map((_, i) => <CaseSkeletonCard key={i} />)
                                 : displayItems.length === 0
-                                ? <div className="col-span-full"><CaseEmptyState onCreateNew={() => setCreateOpen(true)} /></div>
-                                : displayItems.map((item) => (
-                                    <CaseCard
-                                        key={item.caseId}
-                                        item={item}
-                                        onDelete={(id) => setDeleteTarget(id)}
-                                        onDuplicate={handleDuplicate}
-                                        onStatusChange={handleStatusChange}
-                                    />
-                                ))
+                                    ? <div className="col-span-full"><CaseEmptyState onCreateNew={() => setCreateOpen(true)} /></div>
+                                    : displayItems.map((item) => (
+                                        <CaseCard
+                                            key={item.caseId}
+                                            item={item}
+                                            onDelete={(id) => setDeleteTarget(id)}
+                                            onDuplicate={handleDuplicate}
+                                            onStatusChange={handleStatusChange}
+                                        />
+                                    ))
                             }
                         </div>
                     ) : (
@@ -202,22 +202,22 @@ export default function ClinicalCaseFeature() {
                                     {loading
                                         ? Array.from({ length: 8 }).map((_, i) => <CaseSkeletonRow key={i} />)
                                         : displayItems.length === 0
-                                        ? (
-                                            <tr>
-                                                <td colSpan={7}>
-                                                    <CaseEmptyState onCreateNew={() => setCreateOpen(true)} />
-                                                </td>
-                                            </tr>
-                                        )
-                                        : displayItems.map((item) => (
-                                            <CaseTableRow
-                                                key={item.caseId}
-                                                item={item}
-                                                onDelete={(id) => setDeleteTarget(id)}
-                                                onDuplicate={handleDuplicate}
-                                                onStatusChange={handleStatusChange}
-                                            />
-                                        ))
+                                            ? (
+                                                <tr>
+                                                    <td colSpan={7}>
+                                                        <CaseEmptyState onCreateNew={() => setCreateOpen(true)} />
+                                                    </td>
+                                                </tr>
+                                            )
+                                            : displayItems.map((item) => (
+                                                <CaseTableRow
+                                                    key={item.caseId}
+                                                    item={item}
+                                                    onDelete={(id) => setDeleteTarget(id)}
+                                                    onDuplicate={handleDuplicate}
+                                                    onStatusChange={handleStatusChange}
+                                                />
+                                            ))
                                     }
                                 </tbody>
                             </table>
@@ -236,11 +236,10 @@ export default function ClinicalCaseFeature() {
                                 <button
                                     key={p}
                                     onClick={() => setPage(p)}
-                                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
-                                        p === page
+                                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${p === page
                                             ? "bg-[#235697] text-white shadow-sm"
                                             : "border border-[#DDE7F0] text-[#4F6F94] hover:bg-[#EDF6FB]"
-                                    }`}
+                                        }`}
                                 >
                                     {p}
                                 </button>
@@ -252,6 +251,7 @@ export default function ClinicalCaseFeature() {
 
             {/* Modals */}
             <CreateCaseModal
+                key={createOpen ? "create-case-open" : "create-case-closed"}
                 open={createOpen}
                 loading={actionLoading}
                 onClose={() => setCreateOpen(false)}
