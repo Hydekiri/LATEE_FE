@@ -2,7 +2,6 @@
 ```
 LATEE_FE
 ├─ FE
-│  ├─ .env
 │  ├─ public
 │  │  ├─ next.svg
 │  │  ├─ vercel.svg
@@ -224,7 +223,6 @@ LATEE_FE
 │  │  │  │  │  │  ├─ CaseEmptyState.tsx
 │  │  │  │  │  │  ├─ CaseFilterBar.tsx
 │  │  │  │  │  │  ├─ CaseSkeletonCard.tsx
-│  │  │  │  │  │  ├─ CaseSkeletonRow.tsx
 │  │  │  │  │  │  ├─ CaseStatsBanner.tsx
 │  │  │  │  │  │  ├─ CaseStatusBadge.tsx
 │  │  │  │  │  │  ├─ CaseTableRow.tsx

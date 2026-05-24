@@ -15,8 +15,6 @@ import { PatientData } from '@/src/types/practice';
 import { getPatientById } from '@/src/services/patient-servvice';
 import { resolvePatientAvatar } from '@/src/utils/patient-assets';
 import { practiceSessionService } from '@/src/services/practice-session-service';
-// REASON: clientApi được dùng thay raw fetch fallback vì đây là "use client" component,
-// useEffect chạy trên browser. clientApi tự inject token từ browser cookie.
 import { clientApi } from '@/src/utils/api-client';
 
 interface TakePracticePageProps {
@@ -65,9 +63,7 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         onExitAttempt: () => setIsExitModalOpen(true),
     });
 
-    // REASON: useEffect trong "use client" component.
-    // FIX: raw fetch + getCookie fallback → clientApi.get (token inject otomatis).
-    // getPatientById (serverApi) được gọi trước — nếu fail mới dùng clientApi fallback.
+
     useEffect(() => {
         let cancelled = false;
         const fetchPatientDetails = async () => {
@@ -76,7 +72,6 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
                 if (!cancelled) setCurrentPatient(data);
             } catch {
                 try {
-                    // FIX: clientApi thay thế raw fetch + manual token injection
                     const rawData = await clientApi.get<RawPatientApiResponse>(
                         `/virtual-patient/api/virtual-patients/${params.id}`
                     );
@@ -133,7 +128,7 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
     }, [params.id]);
 
     const resolvedAvatar = useMemo(() => {
-        if (!currentPatient) return '/images/VirtualPatient/VP5.jpeg';
+        if (!currentPatient) return '/images/VirtualPatient/ava1.jpg';
         return resolvePatientAvatar(
             currentPatient.img,
             currentPatient.id,

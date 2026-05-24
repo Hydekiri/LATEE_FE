@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,7 +13,6 @@ import {
     ChatBubbleLeftRightIcon as FeedbackIcon,
 } from "@heroicons/react/24/outline";
 
-
 import {
     Squares2X2Icon as DashboardSolid,
     UserCircleIcon as VPSolid,
@@ -22,6 +21,8 @@ import {
     ChartBarIcon as AssessmentSolid,
     ChatBubbleLeftRightIcon as FeedbackSolid,
 } from "@heroicons/react/24/solid";
+
+import { logoutApi } from "@/src/services/auth-service";
 
 const menuItems = [
     { name: "Dashboard", href: "/expert", outline: DashboardIcon, solid: DashboardSolid },
@@ -40,18 +41,28 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        try {
+            await logoutApi();
+        } catch (error) {
+            console.error("[LOGOUT] Failed:", error);
+        }
+        router.replace("/login");
+    };
 
     return (
         <>
         {isOpen && (
             <div 
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden" 
-            onClick={onClose} 
+                className="fixed inset-0 bg-black/50 z-30 lg:hidden" 
+                onClick={onClose} 
             />
         )}
 
         <aside className={`
-            fixed lg:sticky top-0 left-0 z-40 h-screen w-64 bg-white p-6 shadow-xl transition-transform duration-300
+            fixed lg:sticky top-0 left-0 z-40 h-screen w-64 bg-white p-6 shadow-xl transition-transform duration-300 flex flex-col
             ${isOpen ? "translate-x-0" : "-translate-x-full"} 
             lg:translate-x-0
         `}>
@@ -67,35 +78,39 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </Link>
             </div>
 
-            {/* Menu Items */}
-            <nav className="flex-1 space-y-2">
-                {menuItems.map((item) => {
-                    const isActive = pathname === item.href;
-                    const Icon = isActive ? item.solid : item.outline;
+            <div className="flex-1 overflow-y-auto pr-2 space-y-6"> 
+                {/* Menu Items */}
+                <nav className="space-y-2">
+                    {menuItems.map((item) => {
+                        const isActive = pathname === item.href;
+                        const Icon = isActive ? item.solid : item.outline;
 
-                    return (
-                    <Link
-                        key={item.name}
-                        href={item.href}
-                        onClick={() => { if (window.innerWidth < 1024) onClose(); }}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
-                        isActive 
-                        ? "bg-linear-to-l from-[#1BA7D9] to-[#235697] text-white shadow-lg" 
-                        : "text-[#00140E]/80 hover:bg-[#878787]/20 hover:text-[#235697]"
-                        }`}
-                    >
-                        <Icon className="w-5 h-5" />
-                        {item.name}
-                    </Link>
-                    );
-                })}
-            </nav>
+                        return (
+                        <Link
+                            key={item.name}
+                            href={item.href}
+                            onClick={() => { if (window.innerWidth < 1024) onClose(); }}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
+                            isActive 
+                            ? "bg-linear-to-l from-[#1BA7D9] to-[#235697] text-white shadow-lg" 
+                            : "text-[#00140E]/80 hover:bg-[#878787]/20 hover:text-[#235697]"
+                            }`}
+                        >
+                            <Icon className="w-5 h-5" />
+                            {item.name}
+                        </Link>
+                        );
+                    })}
+                </nav>
 
-            {/* Logout */}
-            <button className="flex items-center gap-3 px-4 py-3 text-gray-400 font-bold text-sm mt-auto hover:bg-red-500 hover:text-white transition-all">
-                <ArrowLeftStartOnRectangleIcon className="w-5 h-5" />
-                Log out
-            </button>
+                <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-3 w-full rounded-xl bg-transparent text-red-500 hover:bg-red-500 hover:text-white font-bold text-sm transition-colors"
+                >
+                    <ArrowLeftStartOnRectangleIcon className="w-5 h-5 rotate-180" strokeWidth={2} />
+                    Log out
+                </button>
+            </div>
         </aside>
         </>
     );

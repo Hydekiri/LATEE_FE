@@ -42,7 +42,7 @@ export interface IssueItem {
     expertReply: string | null;
 }
 
-export type IssueStatus = 'Open' | 'InReview' | 'Resolved' | 'Rejected';
+export type IssueStatus = 'Pending' | 'Open' | 'In Review' | 'Reviewed' | 'Resolved' | 'Rejected';
 export type ItemType = 'Assessment' | 'Practice';
 
 export type PatientLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';

@@ -6,7 +6,7 @@ import {
     MagnifyingGlassIcon,
     BellIcon
 } from "@heroicons/react/24/outline";
-
+import Image from "next/image";
 interface TopbarProps {
     onMenuClick: () => void;
 }
@@ -54,9 +54,11 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                 {/* Profile Pill */}
                 <div className="flex items-center gap-2 lg:gap-3 bg-white/10 p-1 lg:p-1.5 lg:pr-4 rounded-full border border-white/20 hover:bg-white/20 transition-all cursor-pointer">
                     <div className="w-8 h-8 rounded-full bg-white overflow-hidden shadow-inner shrink-0">
-                        <img
-                            src="/images/Profile.png"
+                        <Image
+                            src="/images/doctorFEMALE.jpeg"
                             alt="User"
+                            width={32}
+                            height={32}
                             className="w-full h-full object-cover"
                         />
                     </div>

@@ -46,7 +46,7 @@ const variants = {
 };
 
 export default function Experts({ data }: ExpertsProps) {
-    const experts: Expert[] = data.experts ?? [];
+    const experts: readonly Expert[] = data.experts ?? [];
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
