@@ -25,7 +25,7 @@ export default function Testimonial() {
                         />
                     </div>
                     <div className="flex-1 w-[442px] h-[326px]">
-                        <div className="flex justify-start sm:justify-start mb-2 sm:mb-3 xl:mb-4 gap-0.5 gap-1 sm:gap-1">
+                        <div className="flex justify-start sm:justify-start mb-2 sm:mb-3 xl:mb-4 gap-0.5 sm:gap-1">
                             <Image src="/images/star.png" alt="star" width={20} height={20} className="w-3 h-3 sm:w-4 sm:h-4 xl:w-5 xl:h-5" />
                             <Image src="/images/star.png" alt="star" width={20} height={20} className="w-3 h-3 sm:w-4 sm:h-4 xl:w-5 xl:h-5" />
                             <Image src="/images/star.png" alt="star" width={20} height={20} className="w-3 h-3 sm:w-4 sm:h-4 xl:w-5 xl:h-5" />
