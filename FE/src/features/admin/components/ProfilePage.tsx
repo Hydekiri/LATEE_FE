@@ -456,26 +456,14 @@ export default function ProfilePage({
                                             </span>
 
                                             <select
-                                                value={
-                                                    form.gender ||
-                                                    ""
+                                                value={form.gender || ""}
+                                                onChange={(e) =>
+                                                    setForm({
+                                                        ...form,
+                                                        gender: (e.target.value || undefined) as "Male" | "Female" | undefined,
+                                                    })
                                                 }
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setForm(
-                                                        {
-                                                            ...form,
-                                                            gender:
-                                                                e
-                                                                    .target
-                                                                    .value,
-                                                        }
-                                                    )
-                                                }
-                                                className={
-                                                    inputClass
-                                                }
+                                                className={inputClass}
                                             >
                                                 <option value="">
                                                     Select gender
