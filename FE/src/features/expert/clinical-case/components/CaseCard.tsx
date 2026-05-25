@@ -6,7 +6,7 @@ import {
     Eye, Copy, Trash2, Archive, Globe, MoreVertical,
     Calendar, Users, BarChart2,
 } from "lucide-react";
-import { CaseStatusBadge } from "./CaseStatusBadge";
+import { CaseStatusBadge } from "@/src/features/expert/clinical-case/components/CaseStatusBadge";
 import { ClinicalCaseStatus } from "@/src/types/clinical-case";
 import type { ClinicalCaseSummary } from "@/src/types/clinical-case";
 
@@ -58,7 +58,7 @@ export function CaseCard({ item, onDelete, onDuplicate, onStatusChange }: CaseCa
                             <MoreVertical className="w-4 h-4" />
                         </button>
                         {menuOpen && (
-                            <div className="absolute right-0 top-7 bg-white border border-[#DDE7F0] rounded-xl shadow-xl z-20 min-w-[160px] overflow-hidden">
+                            <div className="absolute right-0 top-7 bg-white border border-[#DDE7F0] rounded-xl shadow-xl z-20 min-w-40 overflow-hidden">
                                 <MenuItem
                                     icon={<Eye className="w-3.5 h-3.5" />}
                                     label="View Detail"
@@ -102,10 +102,10 @@ export function CaseCard({ item, onDelete, onDuplicate, onStatusChange }: CaseCa
             {/* Tags row */}
             <div className="flex flex-wrap gap-1.5">
                 <span className="text-[10px] font-bold text-[#235697] bg-[#235697]/10 px-2 py-0.5 rounded font-mono">
-                    {item.type}
+                    {item.caseType}
                 </span>
                 <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded font-mono">
-                    {item.eccid}
+                    {item.eccId}
                 </span>
             </div>
 
@@ -146,11 +146,10 @@ function MenuItem({ icon, label, danger, onClick }: MenuItemProps) {
     return (
         <button
             onClick={onClick}
-            className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors ${
-                danger
+            className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold transition-colors ${danger
                     ? "text-rose-500 hover:bg-rose-50"
                     : "text-[#173B67] hover:bg-[#EDF6FB]"
-            }`}
+                }`}
         >
             {icon}
             {label}

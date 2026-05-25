@@ -86,13 +86,13 @@ export default function LearnerProgressFeature() {
             <div className="absolute top-[18%] left-[12%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-[-8deg] animate-bounce" style={{ animationDuration: "3s" }}>
                 <FlaskConical className="w-5 h-5 text-[#1BA7D9]" />
             </div>
-            <div className="absolute top-[25%] right-[14%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-[6deg] animate-bounce" style={{ animationDuration: "4s", animationDelay: "0.5s" }}>
+            <div className="absolute top-[25%] right-[14%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-6 animate-bounce" style={{ animationDuration: "4s", animationDelay: "0.5s" }}>
                 <Stethoscope className="w-5 h-5 text-[#235697]" />
             </div>
-            <div className="absolute bottom-[22%] left-[16%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-[10deg] animate-bounce" style={{ animationDuration: "3.5s", animationDelay: "1s" }}>
+            <div className="absolute bottom-[22%] left-[16%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-10 animate-bounce" style={{ animationDuration: "3.5s", animationDelay: "1s" }}>
                 <Code2 className="w-5 h-5 text-[#1BA7D9]" />
             </div>
-            <div className="absolute bottom-[28%] right-[12%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-[-6deg] animate-bounce" style={{ animationDuration: "2.8s", animationDelay: "0.3s" }}>
+            <div className="absolute bottom-[28%] right-[12%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-6 animate-bounce" style={{ animationDuration: "2.8s", animationDelay: "0.3s" }}>
                 <Sparkles className="w-5 h-5 text-[#235697]" />
             </div>
 
@@ -100,16 +100,16 @@ export default function LearnerProgressFeature() {
             <div className="relative bg-white border border-[#DDE7F0] rounded-3xl shadow-2xl px-14 py-16 flex flex-col items-center gap-7 text-center w-full max-w-lg">
 
                 {/* Glow ring */}
-                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#1BA7D9]/5 via-transparent to-[#235697]/5 pointer-events-none" />
+                <div className="absolute inset-0 rounded-3xl bg-linear-to-br from-[#1BA7D9]/5 via-transparent to-[#235697]/5 pointer-events-none" />
 
                 {/* Top accent line */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-gradient-to-r from-[#1BA7D9] to-[#235697]" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-1 rounded-full bg-linear-to-r from-[#1BA7D9] to-[#235697]" />
 
                 {/* Icon */}
                 <div className="relative mt-2">
                     {/* Outer ring pulse */}
                     <div className="absolute inset-0 w-24 h-24 rounded-2xl bg-[#1BA7D9]/20 animate-ping" style={{ animationDuration: "2.5s" }} />
-                    <div className="relative w-24 h-24 rounded-2xl bg-gradient-to-br from-[#1BA7D9] to-[#235697] flex items-center justify-center shadow-lg shadow-[#1BA7D9]/30">
+                    <div className="relative w-24 h-24 rounded-2xl bg-linear-to-br from-[#1BA7D9] to-[#235697] flex items-center justify-center shadow-lg shadow-[#1BA7D9]/30">
                         <Clock className="w-11 h-11 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-white border-2 border-[#DDE7F0] flex items-center justify-center shadow-sm">
@@ -137,7 +137,7 @@ export default function LearnerProgressFeature() {
                     </div>
                     <div className="w-full h-2 bg-[#EDF6FB] rounded-full overflow-hidden border border-[#DDE7F0]">
                         <div
-                            className="h-full rounded-full bg-gradient-to-r from-[#1BA7D9] to-[#235697]"
+                            className="h-full rounded-full bg-linear-to-r from-[#1BA7D9] to-[#235697]"
                             style={{ width: "68%" }}
                         />
                     </div>

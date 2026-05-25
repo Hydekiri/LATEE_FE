@@ -20,6 +20,7 @@ import type {
     VPSortDir,
 } from "@/src/types/virtual-patient-expert";
 import { VPSortDir as VPSortDirEnum } from "@/src/types/virtual-patient-expert";
+import { RefreshCw } from "lucide-react";
 
 const TABLE_HEADERS = [
     { key: "patientId", label: "Patient ID", className: "w-36" },
@@ -133,6 +134,13 @@ export default function VirtualPatientFeature() {
                         Manage AI simulation personas, configure clinical scenarios, monitor simulation readiness
                     </p>
                 </div>
+                <button
+                    onClick={refetch}
+                    className="flex items-center gap-1.5 bg-white border border-white/30 text-[#1BA7D9] px-3 py-2 rounded-[10px] text-xs font-semibold hover:bg-[#1BA7D9] hover:text-white transition-all"
+                >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                    Refresh
+                </button>
             </div>
 
             {/* ── Stats Banner ── */}
@@ -153,6 +161,7 @@ export default function VirtualPatientFeature() {
                 onSearchChange={setSearch}
                 onStatusChange={setStatus}
                 onLevelChange={setLevel}
+                onCaseIdChange={setCaseId}
                 onGenderChange={setGender}
                 onSortByChange={setSortBy}
                 onSortDirToggle={handleSortDirToggle}

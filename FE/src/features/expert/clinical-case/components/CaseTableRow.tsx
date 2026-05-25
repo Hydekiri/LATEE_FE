@@ -25,7 +25,7 @@ export function CaseTableRow({ item, onDelete, onDuplicate }: CaseTableRowProps)
                 {item.caseId}
             </td>
             <td className="py-3.5 border-y border-[#DDE7F0] pr-4">
-                <div className="max-w-[280px]">
+                <div className="max-w-70">
                     <button
                         onClick={() => router.push(`/expert/clinical-case/${item.caseId}`)}
                         className="font-bold text-[#173B67] hover:text-[#1BA7D9] hover:underline text-xs text-left truncate block w-full transition-colors"
@@ -36,10 +36,10 @@ export function CaseTableRow({ item, onDelete, onDuplicate }: CaseTableRowProps)
                 </div>
             </td>
             <td className="py-3.5 border-y border-[#DDE7F0] font-mono text-[#4F6F94] text-xs">
-                {item.type}
+                {item.caseType}
             </td>
             <td className="py-3.5 border-y border-[#DDE7F0] font-mono text-slate-500 text-xs">
-                {item.eccid}
+                {item.eccId}
             </td>
             <td className="py-3.5 border-y border-[#DDE7F0] text-xs text-[#7F96AD]">
                 {formattedDate(item.updatedAt)}

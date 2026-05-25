@@ -45,8 +45,8 @@ export function TabOverview({ caseData, localForm, onFieldChange }: Props) {
                         <input
                             className={`${FIELD_CLASS} font-mono uppercase`}
                             type="text"
-                            value={val("type")}
-                            onChange={(e) => onFieldChange("type", e.target.value.toUpperCase())}
+                            value={val("caseType")}
+                            onChange={(e) => onFieldChange("caseType", e.target.value.toUpperCase())}
                         />
                     </div>
                     <div>
@@ -54,8 +54,8 @@ export function TabOverview({ caseData, localForm, onFieldChange }: Props) {
                         <input
                             className={`${FIELD_CLASS} font-mono`}
                             type="text"
-                            value={val("eccid")}
-                            onChange={(e) => onFieldChange("eccid", e.target.value)}
+                            value={val("eccId")}
+                            onChange={(e) => onFieldChange("eccId", e.target.value)}
                         />
                     </div>
                 </div>

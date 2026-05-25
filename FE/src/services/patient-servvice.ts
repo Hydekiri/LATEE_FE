@@ -155,7 +155,7 @@ export const patientService = {
         if (options.search) q.set('search', options.search);
         if (options.occupation) q.set('occupation', options.occupation);
         if (options.sortBy) q.set('sortBy', options.sortBy);
-    
+
         try {
             const response = await serverApi.get<PaginatedRawResponse>(
                 `/virtual-patient/api/virtual-patients?${q.toString()}`

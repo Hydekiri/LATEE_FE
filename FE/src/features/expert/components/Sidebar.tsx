@@ -46,10 +46,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     const handleLogout = async () => {
         try {
             await logoutApi();
+            if (window.innerWidth < 1024) {
+                onClose();
+            }
+            router.replace("/login");
         } catch (error) {
             console.error("[LOGOUT] Failed:", error);
         }
-        router.replace("/login");
     };
 
     return (
@@ -66,17 +69,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             ${isOpen ? "translate-x-0" : "-translate-x-full"} 
             lg:translate-x-0
         `}>
-            <div className="shrink-0 mb-4 flex justify-center border-b-2 border-[#1BA7D9] pb-1"> 
-                <Link href="/expert" className="relative block w-full max-w-50 h-16">
-                    <Image
-                        src="/images/LATEE1.png"
-                        alt="LATEE Logo"
-                        fill
-                        className="object-contain" 
-                        priority
-                    />
-                </Link>
-            </div>
+                <div className="shrink-0 mb-4 flex justify-center border-b-2 border-[#1BA7D9] pb-1">
+                    <Link href="/expert" className="relative block w-full max-w-50 h-16">
+                        <Image
+                            src="/images/LATEE1.png"
+                            alt="LATEE Logo"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                    </Link>
+                </div>
 
             <div className="flex-1 overflow-y-auto pr-2 space-y-6"> 
                 {/* Menu Items */}

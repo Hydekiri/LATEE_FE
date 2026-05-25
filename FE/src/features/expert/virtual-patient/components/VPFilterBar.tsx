@@ -45,13 +45,14 @@ interface VPFilterBarProps {
     readonly onReset: () => void;
     readonly onCreate: () => void;
     readonly hasActiveFilters: boolean;
+    readonly onCaseIdChange: (v: string) => void;
 }
 
 export function VPFilterBar({
     filters, availableFilters,
     onSearchChange, onStatusChange, onLevelChange,
     onGenderChange, onSortByChange, onSortDirToggle,
-    onReset, onCreate, hasActiveFilters,
+    onReset, onCreate, hasActiveFilters, onCaseIdChange,
 }: VPFilterBarProps) {
     const searchRef = useRef<HTMLInputElement>(null);
 
@@ -159,9 +160,7 @@ export function VPFilterBar({
                 {(availableFilters?.availableCaseIds ?? []).length > 0 && (
                     <select
                         value={filters.caseId}
-                        onChange={(e) => {
-                            
-                        }}
+                        onChange={(e) => onCaseIdChange(e.target.value)}
                         className="text-xs font-semibold border border-slate-200 rounded-lg px-3 py-1.5
                                 text-slate-600 bg-slate-50 hover:bg-white transition-all
                                 focus:outline-none focus:border-[#235697] cursor-pointer"

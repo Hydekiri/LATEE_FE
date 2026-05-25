@@ -43,7 +43,7 @@ export const VPTableRow = memo(function VPTableRow({
             </td>
 
             {/* Chief Concern */}
-            <td className="px-4 py-3 max-w-[200px]">
+            <td className="px-4 py-3 max-w-50">
                 <p className="text-sm text-slate-600 truncate" title={item.chiefConcern}>
                     {item.chiefConcern}
                 </p>

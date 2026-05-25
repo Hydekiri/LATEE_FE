@@ -187,7 +187,12 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
 
                 {/* Right: Sidebar */}
                 <div className="lg:col-span-4">
-                    <VPDetailSidebar patient={patient} />
+                    <VPDetailSidebar
+                        key={patient.updatedAt}   
+                        patient={patient}
+                        onSave={savePatient}
+                        saving={saving}
+                    />
                 </div>
             </div>
         </section>

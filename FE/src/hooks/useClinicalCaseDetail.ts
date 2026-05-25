@@ -29,6 +29,7 @@ export function useClinicalCaseDetail(id: string): UseClinicalCaseDetailReturn {
         setError(null);
         try {
             const data = await clinicalCaseService.getById(id);
+            console.log("[CLINICAL CASE DETAIL] Fetched case detail:", data);
             setCaseData(data);
         } catch (err: unknown) {
             setError(err instanceof Error ? err.message : "Failed to load case");
@@ -37,7 +38,7 @@ export function useClinicalCaseDetail(id: string): UseClinicalCaseDetailReturn {
         }
     }, [id]);
 
-    useEffect(() => { 
+    useEffect(() => {
         const timer = setTimeout(() => {
             void fetchDetail();
         }, 0);
@@ -48,7 +49,7 @@ export function useClinicalCaseDetail(id: string): UseClinicalCaseDetailReturn {
         setSaving(true);
         try {
             await clinicalCaseService.update(id, payload);
-            await fetchDetail(); 
+            await fetchDetail();
         } finally {
             setSaving(false);
         }
@@ -62,7 +63,7 @@ export function useClinicalCaseDetail(id: string): UseClinicalCaseDetailReturn {
         try {
             await clinicalCaseService.updateLab(id, labId, value);
         } catch {
-            await fetchDetail(); 
+            await fetchDetail();
         }
     }, [id, caseData, fetchDetail]);
 

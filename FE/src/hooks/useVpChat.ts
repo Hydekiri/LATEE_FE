@@ -71,7 +71,6 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
     const [isValidating, setIsValidating] = useState<boolean>(false);
     const isSendingRef = useRef<boolean>(false);
 
-    // Dùng Ref giữ callback onWarning luôn có reference ổn định
     const onWarningRef = useRef(onWarning);
     useEffect(() => {
         onWarningRef.current = onWarning;

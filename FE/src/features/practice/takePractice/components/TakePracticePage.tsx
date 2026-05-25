@@ -63,7 +63,6 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         onExitAttempt: () => setIsExitModalOpen(true),
     });
 
-
     useEffect(() => {
         let cancelled = false;
         const fetchPatientDetails = async () => {
@@ -128,7 +127,7 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
     }, [params.id]);
 
     const resolvedAvatar = useMemo(() => {
-        if (!currentPatient) return '/images/VirtualPatient/ava1.jpg';
+        if (!currentPatient) return '/images/VirtualPatient/VP5.jpeg';
         return resolvePatientAvatar(
             currentPatient.img,
             currentPatient.id,

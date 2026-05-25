@@ -1,12 +1,16 @@
-import React from "react";
-import { Clock, Users, TrendingUp, Calendar, FileText } from "lucide-react";
-import type { VirtualPatientDetail } from "@/src/types/virtual-patient-expert";
+"use client";
 
+import React, { useState, useEffect } from "react";
+import { Clock, Users, TrendingUp, Calendar, FileText, Save, Plus, X, Loader2 } from "lucide-react";
+import type { VirtualPatientDetail, UpdateVPRequest } from "@/src/types/virtual-patient-expert";
+import { buildVPBasePayload } from "@/src/utils/vp-payload";
 interface VPDetailSidebarProps {
     readonly patient: VirtualPatientDetail;
+    readonly onSave:  (payload: UpdateVPRequest) => Promise<void>;
+    readonly saving:  boolean;
 }
 
-export function VPDetailSidebar({ patient }: VPDetailSidebarProps) {
+export function VPDetailSidebar({ patient, onSave, saving }: VPDetailSidebarProps) {
     const createdLabel = new Date(patient.createdAt).toLocaleDateString("en-US", {
         year: "numeric", month: "long", day: "numeric",
     });
@@ -14,18 +18,47 @@ export function VPDetailSidebar({ patient }: VPDetailSidebarProps) {
         year: "numeric", month: "long", day: "numeric",
     });
 
-    // ── Safe stat values — all can be null/undefined for new patients ─────────
     const totalAttempts  = patient.stats?.totalAttempts  ?? 0;
     const avgScore       = patient.stats?.avgScore       ?? 0;
     const completionRate = patient.stats?.completionRate ?? 0;
+    const [timingDirty, setTimingDirty] = useState(false);
+    const [newRule,    setNewRule]    = useState("");
+    const [rulesDirty, setRulesDirty] = useState(false);
 
-    // ── caseRule is nullable per the API ─────────────────────────────────────
-    const caseRules = patient.caseRule?.rules ?? [];
+    const [timeSetting,  setTimeSetting]  = useState(() => patient.timeSetting);
+    const [argumentTime, setArgumentTime] = useState(() => patient.argumentTime);
+    const [rules,        setRules]        = useState<string[]>(() => [...(patient.caseRule?.rules ?? [])]);
+
+    const handleTimingSave = async () => {
+        await onSave({ ...buildVPBasePayload(patient), timeSetting, argumentTime });
+        setTimingDirty(false);
+    };
+
+    const handleAddRule = () => {
+        const trimmed = newRule.trim();
+        if (!trimmed) return;
+        setRules((prev) => [...prev, trimmed]);
+        setNewRule("");
+        setRulesDirty(true);
+    };
+
+    const handleRemoveRule = (i: number) => {
+        setRules((prev) => prev.filter((_, idx) => idx !== i));
+        setRulesDirty(true);
+    };
+
+    // const handleRulesSave = async () => {
+    //     await onSave({
+    //         ...buildBasePayload(),
+    //         caseRule: rules.length > 0 ? { rules } : null,
+    //     });
+    //     setRulesDirty(false);
+    // };
 
     return (
         <div className="space-y-4 sticky top-6">
 
-            {/* Simulation Stats */}
+            {/* Simulation Stats — read only */}
             <div className="bg-white border border-[#DDE7F0] rounded-xl shadow-sm p-5">
                 <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <TrendingUp className="w-3.5 h-3.5 text-[#235697]" /> Simulation Stats
@@ -46,42 +79,68 @@ export function VPDetailSidebar({ patient }: VPDetailSidebarProps) {
                 </div>
             </div>
 
-            {/* Timing Config */}
+            {/* Timing Configuration — editable */}
             <div className="bg-white border border-[#DDE7F0] rounded-xl shadow-sm p-5">
                 <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
                     <Clock className="w-3.5 h-3.5 text-[#235697]" /> Timing Configuration
                 </h3>
                 <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                        <span className="text-xs font-semibold text-slate-400">VP Interaction</span>
-                        <span className="text-sm font-black text-slate-800">{patient.timeSetting} min</span>
+                    <div className="flex justify-between items-center gap-3">
+                        <span className="text-xs font-semibold text-slate-400 shrink-0">VP Interaction</span>
+                        <div className="flex items-center gap-1.5">
+                            <input
+                                type="number"
+                                min={1} max={120}
+                                value={timeSetting}
+                                onChange={(e) => { setTimeSetting(Number(e.target.value)); setTimingDirty(true); }}
+                                className="w-16 text-right text-sm font-black text-slate-800 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-[#235697]"
+                            />
+                            <span className="text-xs text-slate-400">min</span>
+                        </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-xs font-semibold text-slate-400">Reasoning Phase</span>
-                        <span className="text-sm font-black text-slate-800">{patient.argumentTime} min</span>
+                    <div className="flex justify-between items-center gap-3">
+                        <span className="text-xs font-semibold text-slate-400 shrink-0">Reasoning Phase</span>
+                        <div className="flex items-center gap-1.5">
+                            <input
+                                type="number"
+                                min={1} max={120}
+                                value={argumentTime}
+                                onChange={(e) => { setArgumentTime(Number(e.target.value)); setTimingDirty(true); }}
+                                className="w-16 text-right text-sm font-black text-slate-800 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-[#235697]"
+                            />
+                            <span className="text-xs text-slate-400">min</span>
+                        </div>
                     </div>
                     <div className="border-t border-slate-100 pt-3 flex justify-between items-center">
                         <span className="text-xs font-black text-slate-600">Total Session</span>
-                        <span className="text-sm font-black text-[#235697]">{patient.timeSetting + patient.argumentTime} min</span>
+                        <span className="text-sm font-black text-[#235697]">{timeSetting + argumentTime} min</span>
                     </div>
+                    {timingDirty && (
+                        <button
+                            onClick={handleTimingSave}
+                            disabled={saving}
+                            className="w-full flex items-center justify-center gap-1.5 mt-1 px-3 py-2 bg-[#235697] text-white text-xs font-bold rounded-lg hover:bg-[#1BA7D9] transition-all disabled:opacity-50"
+                        >
+                            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                            Save Timing
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* Case Rules — only rendered when caseRule is non-null and has entries */}
-            {caseRules.length > 0 && (
+            {(patient.caseRule?.rules?.length ?? 0) > 0 && (
                 <div className="bg-white border border-[#DDE7F0] rounded-xl shadow-sm p-5">
                     <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
                         <FileText className="w-3.5 h-3.5 text-[#235697]" /> Case Rules
                     </h3>
                     <ol className="space-y-2 list-decimal pl-4">
-                        {caseRules.map((rule, i) => (
+                        {patient.caseRule!.rules.map((rule, i) => (
                             <li key={i} className="text-xs text-slate-600 font-medium leading-relaxed">{rule}</li>
                         ))}
                     </ol>
                 </div>
             )}
 
-            {/* Experts */}
             {(patient.experts?.length ?? 0) > 0 && (
                 <div className="bg-white border border-[#DDE7F0] rounded-xl shadow-sm p-5">
                     <h3 className="text-xs font-black text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">

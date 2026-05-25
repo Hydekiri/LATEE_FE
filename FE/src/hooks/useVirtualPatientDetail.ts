@@ -52,7 +52,10 @@ export function useVirtualPatientDetail(id: string): UseVirtualPatientDetailRetu
         setSaving(true);
         try {
             await virtualPatientExpertService.update(id, payload);
+            await new Promise((r) => setTimeout(r, 300)); 
             await fetchDetail();
+        } catch (err) {
+            console.error("update error:", err);
         } finally {
             setSaving(false);
         }

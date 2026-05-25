@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { X, Loader2 } from "lucide-react";
 import { ClinicalCaseStatus } from "@/src/types/clinical-case";
 import type { CreateClinicalCaseRequest } from "@/src/types/clinical-case";
+import { getCookie } from "@/src/utils/cookies";
 
 interface CreateCaseModalProps {
     open: boolean;
@@ -12,23 +13,26 @@ interface CreateCaseModalProps {
     onSubmit: (payload: CreateClinicalCaseRequest) => void;
 }
 
-const INITIAL_FORM: CreateClinicalCaseRequest = {
-    title: "",
-    description: "",
-    type: "",
-    status: ClinicalCaseStatus.Draft,
-    pe: "",
-    symptom: "",
-    medicalhistory: "",
-    eccid: "",
-};
+function createInitialForm(): CreateClinicalCaseRequest {
+    return {
+        caseId: crypto.randomUUID(),
+        title: "",
+        description: "",
+        caseType: "",
+        status: ClinicalCaseStatus.Active,
+        pe: "",
+        symptom: "",
+        medicalHistory: "",
+        eccId: "CRIT-001",
+    };
+}
 
 const LABEL = "text-[10px] font-bold text-[#7F96AD] uppercase tracking-wider block mb-1";
 const INPUT =
     "w-full bg-[#F7FAFC] border border-[#DDE7F0] rounded-[10px] py-2 px-3 text-xs text-[#173B67] outline-none focus:border-[#1BA7D9] focus:bg-white transition-all";
 
 export function CreateCaseModal({ open, loading, onClose, onSubmit }: CreateCaseModalProps) {
-    const [form, setForm] = useState<CreateClinicalCaseRequest>(INITIAL_FORM);
+    const [form, setForm] = useState<CreateClinicalCaseRequest>(() => createInitialForm());
 
     if (!open) return null;
 
@@ -36,8 +40,26 @@ export function CreateCaseModal({ open, loading, onClose, onSubmit }: CreateCase
         setForm((f) => ({ ...f, [key]: value }));
 
     const handleSubmit = () => {
-        if (!form.title.trim() || !form.type.trim()) return;
-        onSubmit(form);
+        const createdBy = getCookie("userId") ?? "";
+        if (!createdBy) return;
+
+        const title = (form.title ?? "").trim();
+        const caseType = (form.caseType ?? "").trim();
+        if (!title || !caseType) return;
+        const payload: CreateClinicalCaseRequest = {
+            ...form,
+            createdBy,
+            title,
+            caseType,
+            description: (form.description ?? "").trim(),
+            pe: (form.pe ?? "").trim(),
+            symptom: (form.symptom ?? "").trim(),
+            medicalHistory: (form.medicalHistory ?? "").trim(),
+            eccId: (form.eccId ?? "").trim() || "CRIT-001",
+            status: form.status ?? ClinicalCaseStatus.Active,
+        };
+        console.log("[CREATE CASE] Submitting form:", payload);
+        onSubmit(payload);
     };
 
     return (
@@ -69,8 +91,8 @@ export function CreateCaseModal({ open, loading, onClose, onSubmit }: CreateCase
                             <input
                                 className={INPUT}
                                 placeholder="e.g. APPENDICITIS"
-                                value={form.type}
-                                onChange={(e) => set("type", e.target.value.toUpperCase())}
+                                value={form.caseType}
+                                onChange={(e) => set("caseType", e.target.value.toUpperCase())}
                             />
                         </div>
                         <div>
@@ -78,8 +100,8 @@ export function CreateCaseModal({ open, loading, onClose, onSubmit }: CreateCase
                             <input
                                 className={INPUT}
                                 placeholder="e.g. CRIT-001"
-                                value={form.eccid}
-                                onChange={(e) => set("eccid", e.target.value)}
+                                value={form.eccId}
+                                onChange={(e) => set("eccId", e.target.value)}
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -108,8 +130,8 @@ export function CreateCaseModal({ open, loading, onClose, onSubmit }: CreateCase
                                 className={INPUT}
                                 rows={2}
                                 placeholder="Past Medical History: ..."
-                                value={form.medicalhistory}
-                                onChange={(e) => set("medicalhistory", e.target.value)}
+                                value={form.medicalHistory}
+                                onChange={(e) => set("medicalHistory", e.target.value)}
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -134,7 +156,7 @@ export function CreateCaseModal({ open, loading, onClose, onSubmit }: CreateCase
                     </button>
                     <button
                         onClick={handleSubmit}
-                        disabled={loading || !form.title.trim() || !form.type.trim()}
+                        disabled={loading || !(form.title ?? "").trim() || !(form.caseType ?? "").trim()}
                         className="flex items-center gap-1.5 bg-[#1BA7D9] hover:bg-[#1487AE] disabled:opacity-50 text-white px-4 py-2 rounded-[10px] text-xs font-bold shadow-sm transition-all"
                     >
                         {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}

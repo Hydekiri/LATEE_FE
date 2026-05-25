@@ -53,7 +53,7 @@ export const virtualPatientExpertService = {
     },
 
     delete(id: string): Promise<DeleteVPResponse> {
-        return clientApi.delete<DeleteVPResponse>(`${BASE}/${id}`);
+        return clientApi.delete<DeleteVPResponse>(`${BASE}/${id}?confirm=true`);
     },
 
     duplicate(id: string): Promise<DuplicateVPResponse> {

@@ -1,17 +1,37 @@
 "use client";
 
-import React from "react";
-import {
-    Bars3Icon,
-    MagnifyingGlassIcon,
-    BellIcon
-} from "@heroicons/react/24/outline";
+import React, { useState, useEffect } from "react";
+import { Bars3Icon, MagnifyingGlassIcon, BellIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
+import { avatarURL } from "@/src/features/expert/components/UsersTable";
+import { getCookie } from "@/src/utils/cookies";
+
 interface TopbarProps {
     onMenuClick: () => void;
 }
 
 export default function Topbar({ onMenuClick }: TopbarProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setMounted(true);
+        }, 0);
+        return () => clearTimeout(timer); 
+    }, []);
+
+    const localUsername = mounted ? (getCookie("username") || "Default Expert") : "Expert";
+    const localUserImgURL = mounted ? (getCookie("avatarURL") || avatarURL.expert) : avatarURL.expert;
+    const dateLabel = mounted
+        ? new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            })
+        : "";
+
     return (
         <header className="flex justify-between items-center p-4 lg:p-6 bg-linear-to-l from-[#235697] to-[#1BA7D9] backdrop-blur-sm shadow-lg">
             <div className="flex items-center gap-4">
@@ -24,10 +44,10 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
 
                 <div className="hidden sm:block">
                     <h1 className="text-lg font-extrabold text-white leading-tight">
-                        Hello Nguyen&lsquo;s Tu
+                        Hello {mounted ? localUsername.split(" ")[0] : ""}!
                     </h1>
                     <p className="text-[10px] text-white/70 font-medium">
-                        3:15 pm 11 Jan 2026
+                        {dateLabel}
                     </p>
                 </div>
             </div>
@@ -45,25 +65,30 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
                     />
                 </div>
 
-                {/* Notification Bell */}
                 <button className="relative p-2 text-white hover:bg-white/10 rounded-full transition-all group">
                     <BellIcon className="w-6 h-6" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-[#FF1CF7] rounded-full border-2 border-[#235697] group-hover:scale-110 transition-transform"></span>
+                    <span className="absolute top-2 right-2 w-2 h-2 bg-[#FF1CF7] rounded-full border-2 border-[#235697] group-hover:scale-110 transition-transform" />
                 </button>
 
-                {/* Profile Pill */}
                 <div className="flex items-center gap-2 lg:gap-3 bg-white/10 p-1 lg:p-1.5 lg:pr-4 rounded-full border border-white/20 hover:bg-white/20 transition-all cursor-pointer">
                     <div className="w-8 h-8 rounded-full bg-white overflow-hidden shadow-inner shrink-0">
-                        <Image
-                            src="/images/doctorFEMALE.jpeg"
-                            alt="User"
-                            width={32}
-                            height={32}
-                            className="w-full h-full object-cover"
-                        />
+                        {mounted && (
+                            <Image
+                                src={localUserImgURL}
+                                alt="User"
+                                width={32}
+                                height={32}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                            />
+                        )}
                     </div>
                     <span className="text-xs font-bold text-white hidden lg:block">
-                        Nguyen&lsquo;s Tu
+                        {mounted
+                            ? localUsername.length > 15
+                                ? localUsername.slice(0, 12) + "..."
+                                : localUsername
+                            : ""}
                     </span>
                 </div>
             </div>

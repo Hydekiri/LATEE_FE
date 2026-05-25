@@ -27,25 +27,21 @@ export const clinicalCaseService = {
     // API-1: GET /clinical-case/api/expert/clinical-cases
     async list(params: ClinicalCaseListParams = {}): Promise<PaginatedResponse<ClinicalCaseSummary>> {
         const qs = buildQueryString({
-            page:     params.page     ?? 1,
+            page: params.page ?? 1,
             pageSize: params.pageSize ?? 12,
-            search:   params.search   ?? "",
-            status:   params.status   ?? "",
-            type:     params.type     ?? "",
-            eccid:    params.eccid    ?? "",
-            sortBy:   params.sortBy   ?? "",
-            sortDir:  params.sortDir  ?? "",
+            search: params.search ?? "",
+            status: params.status ?? "",
+            type: params.caseType ?? "",
+            eccid: params.eccId ?? "",
+            sortBy: params.sortBy ?? "",
+            sortDir: params.sortDir ?? "",
         });
         return clientApi.get<PaginatedResponse<ClinicalCaseSummary>>(`${BASE}${qs}`);
     },
 
     // API-2: GET /clinical-case/api/expert/clinical-cases/{id}
     async getById(id: string): Promise<ClinicalCaseDetail> {
-        const qs = buildQueryString({ id });
-        const res = await clientApi.get<{ items: ClinicalCaseDetail[] }>(`${BASE}${qs}`);
-        const item = res.items?.[0];
-        if (!item) throw new Error(`Case ${id} not found`);
-        return item;
+        return clientApi.get<ClinicalCaseDetail>(`${BASE}/${id}`);
     },
 
     // API-3: POST /clinical-case/api/expert/clinical-cases

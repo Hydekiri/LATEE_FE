@@ -3,7 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { Save, Loader2, Activity } from "lucide-react";
 import type { VirtualPatientDetail, UpdateVPRequest, VPVitalSigns } from "@/src/types/virtual-patient-expert";
-
+import { buildVPBasePayload } from "@/src/utils/vp-payload";
 interface TabVitalsProps {
     readonly patient: VirtualPatientDetail;
     readonly onSave:  (payload: UpdateVPRequest) => Promise<void>;
@@ -27,13 +27,17 @@ const VITALS_FIELDS: {
 export function TabVitals({ patient, onSave, saving }: TabVitalsProps) {
     const [vitals, setVitals] = useState<VPVitalSigns>({ ...patient.vitalSigns });
 
+    const [dirty, setDirty] = useState(false);
+
     const setVital = useCallback(<K extends keyof VPVitalSigns>(key: K, value: VPVitalSigns[K]) => {
         setVitals((prev) => ({ ...prev, [key]: value }));
+        setDirty(true);
     }, []);
 
     const handleSave = useCallback(async () => {
-        await onSave({ vitalSigns: vitals });
-    }, [onSave, vitals]);
+        await onSave({ ...buildVPBasePayload(patient), vitalSigns: vitals });
+        setDirty(false);
+    }, [onSave, patient, vitals]);
 
     return (
         <div className="space-y-6">
@@ -42,14 +46,13 @@ export function TabVitals({ patient, onSave, saving }: TabVitalsProps) {
                     <Activity className="w-5 h-5 text-[#235697]" />
                     <h3 className="text-base font-black text-slate-800">Vital Signs Configuration</h3>
                 </div>
-                <button
-                    onClick={() => void handleSave()}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#235697] text-white text-xs font-bold rounded-lg hover:bg-[#1BA7D9] transition-all disabled:opacity-50 shadow-sm"
-                >
-                    {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                    {saving ? "Saving..." : "Save Vitals"}
-                </button>
+                {dirty && (
+                    <button onClick={() => void handleSave()} disabled={saving}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#235697] text-white text-xs font-bold rounded-lg hover:bg-[#1BA7D9] transition-all disabled:opacity-50 shadow-sm">
+                        {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                        {saving ? "Saving..." : "Save Vitals"}
+                    </button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

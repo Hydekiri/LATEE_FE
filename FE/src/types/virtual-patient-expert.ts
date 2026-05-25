@@ -197,7 +197,7 @@ export interface CreateVPRequest {
     readonly caseRule?: VPCaseRule;
 }
 
-export type UpdateVPRequest = Partial<Omit<CreateVPRequest, "caseId">>;
+export type UpdateVPRequest = Partial<CreateVPRequest>;
 
 export interface UpdateVPStatusRequest {
     readonly status: VPStatus;

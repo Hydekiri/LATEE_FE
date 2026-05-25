@@ -8,7 +8,7 @@ import {
     BellIcon
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { avatarURL } from "./UsersTable";
+import { avatarURL } from "@/src/features/admin/components/UsersTable";
 
 interface TopbarProps {
     onMenuClick: () => void;

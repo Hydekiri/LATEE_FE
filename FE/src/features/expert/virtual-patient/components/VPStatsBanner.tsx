@@ -1,5 +1,6 @@
 import React from "react";
 import { UserCircle, Activity, BarChart2, Clock } from "lucide-react";
+import { useVPStats } from "@/src/hooks/useVPStats";
 
 interface VPStatsBannerProps {
     readonly total:   number;
@@ -7,11 +8,32 @@ interface VPStatsBannerProps {
 }
 
 export function VPStatsBanner({ total, loading }: VPStatsBannerProps) {
+    const { published, active, archived, avgScore, statsLoading } = useVPStats();
     const stats = [
-        { label: "Total Patients",  value: loading ? "—" : total, icon: UserCircle, color: "text-[#235697] bg-[#235697]/10" },
-        { label: "Active",          value: "—",                   icon: Activity,   color: "text-emerald-600 bg-emerald-50" },
-        { label: "Published",       value: "—",                   icon: BarChart2,  color: "text-blue-600 bg-blue-50" },
-        { label: "Avg Sim Score",   value: "—",                   icon: Clock,      color: "text-[#1BA7D9] bg-[#1BA7D9]/10" },
+        {
+            label: "Total Patients",
+            value: loading ? "—" : total,
+            icon: UserCircle,
+            color: "text-[#235697] bg-[#235697]/10",
+        },
+        {
+            label: "Active",
+            value: statsLoading ? "—" : active,
+            icon: Activity,
+            color: "text-emerald-600 bg-emerald-50",
+        },
+        {
+            label: "Published",
+            value: statsLoading ? "—" : published,
+            icon: BarChart2,
+            color: "text-blue-600 bg-blue-50",
+        },
+        {
+            label: "Archived",
+            value: statsLoading ? "—" : archived,
+            icon: Clock,
+            color: "text-amber-600 bg-amber-50",
+        },
     ];
 
     return (

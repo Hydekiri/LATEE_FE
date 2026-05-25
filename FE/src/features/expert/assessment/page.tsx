@@ -82,13 +82,13 @@ export default function LearnerProgressFeature() {
             <div className="absolute top-[18%] left-[12%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-[-8deg] animate-bounce" style={{ animationDuration: "3s" }}>
                 <FlaskConical className="w-5 h-5 text-[#1BA7D9]" />
             </div>
-            <div className="absolute top-[25%] right-[14%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-[6deg] animate-bounce" style={{ animationDuration: "4s", animationDelay: "0.5s" }}>
+            <div className="absolute top-[25%] right-[14%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-6 animate-bounce" style={{ animationDuration: "4s", animationDelay: "0.5s" }}>
                 <Stethoscope className="w-5 h-5 text-[#235697]" />
             </div>
-            <div className="absolute bottom-[22%] left-[16%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-[10deg] animate-bounce" style={{ animationDuration: "3.5s", animationDelay: "1s" }}>
+            <div className="absolute bottom-[22%] left-[16%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-10 animate-bounce" style={{ animationDuration: "3.5s", animationDelay: "1s" }}>
                 <Code2 className="w-5 h-5 text-[#1BA7D9]" />
             </div>
-            <div className="absolute bottom-[28%] right-[12%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-[-6deg] animate-bounce" style={{ animationDuration: "2.8s", animationDelay: "0.3s" }}>
+            <div className="absolute bottom-[28%] right-[12%] bg-white border border-[#DDE7F0] rounded-2xl p-3 shadow-lg opacity-60 rotate-6 animate-bounce" style={{ animationDuration: "2.8s", animationDelay: "0.3s" }}>
                 <Sparkles className="w-5 h-5 text-[#235697]" />
             </div>
 

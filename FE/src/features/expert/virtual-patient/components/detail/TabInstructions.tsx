@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from "react";
 import { Save, Loader2, Plus, Trash2 } from "lucide-react";
 import type { VirtualPatientDetail, UpdateVPRequest, VPInstructions } from "@/src/types/virtual-patient-expert";
+import { buildVPBasePayload } from "@/src/utils/vp-payload";
 
 interface TabInstructionsProps {
     readonly patient: VirtualPatientDetail;
@@ -13,25 +14,37 @@ interface TabInstructionsProps {
 export function TabInstructions({ patient, onSave, saving }: TabInstructionsProps) {
     const [inst, setInst] = useState<VPInstructions>({ ...patient.instructions });
     const [procedure, setProcedure] = useState<string[]>([...patient.instructions.procedure]);
-    const [caseRules, setCaseRules] = useState<string[]>([...patient.caseRule.rules]);
+    
+    // FIX TẠI ĐÂY: Dùng optional chaining để tránh lỗi trắng màn hình nếu caseRule bị null
+    const [caseRules, setCaseRules] = useState<string[]>(
+        patient.caseRule?.rules ? [...patient.caseRule.rules] : []
+    );
 
-    const updateInstField = <K extends keyof VPInstructions>(k: K, v: VPInstructions[K]) =>
+    const [dirty, setDirty] = useState(false);
+
+    const updateInstField = <K extends keyof VPInstructions>(k: K, v: VPInstructions[K]) => {
         setInst((prev) => ({ ...prev, [k]: v }));
+        setDirty(true);
+    };
 
-    const addProcedure   = () => setProcedure((p) => [...p, ""]);
-    const removeProcedure = (i: number) => setProcedure((p) => p.filter((_, idx) => idx !== i));
-    const setProcedureAt  = (i: number, v: string) => setProcedure((p) => p.map((item, idx) => idx === i ? v : item));
+    const addProcedure    = () => { setProcedure((p) => [...p, ""]);                                        setDirty(true); };
+    const removeProcedure = (i: number) => { setProcedure((p) => p.filter((_, idx) => idx !== i));          setDirty(true); };
+    const setProcedureAt  = (i: number, v: string) => { setProcedure((p) => p.map((item, idx) => idx === i ? v : item)); setDirty(true); };
 
-    const addRule   = () => setCaseRules((r) => [...r, ""]);
-    const removeRule = (i: number) => setCaseRules((r) => r.filter((_, idx) => idx !== i));
-    const setRuleAt  = (i: number, v: string) => setCaseRules((r) => r.map((item, idx) => idx === i ? v : item));
+    // Đã mở comment các hàm xử lý của caseRules
+    const addRule    = () => { setCaseRules((r) => [...r, ""]);                                             setDirty(true); };
+    const removeRule = (i: number) => { setCaseRules((r) => r.filter((_, idx) => idx !== i));               setDirty(true); };
+    const setRuleAt  = (i: number, v: string) => { setCaseRules((r) => r.map((item, idx) => idx === i ? v : item)); setDirty(true); };
 
     const handleSave = useCallback(async () => {
         await onSave({
+            ...buildVPBasePayload(patient),
             instructions: { ...inst, procedure },
-            caseRule:     { ...patient.caseRule, rules: caseRules },
+            // FIX TẠI ĐÂY: Fallback object rỗng nếu patient.caseRule bị null
+            caseRule: { ...(patient.caseRule || {}), rules: caseRules },
         });
-    }, [onSave, inst, procedure, caseRules, patient.caseRule]);
+        setDirty(false);
+    }, [onSave, patient, inst, procedure, caseRules]); // Đã cập nhật caseRules vào mảng dependency
 
     const inputClass = "w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#235697] focus:ring-2 focus:ring-[#235697]/10 transition-all";
 
@@ -39,14 +52,13 @@ export function TabInstructions({ patient, onSave, saving }: TabInstructionsProp
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h3 className="text-base font-black text-slate-800">Case Instructions</h3>
-                <button
-                    onClick={() => void handleSave()}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#235697] text-white text-xs font-bold rounded-lg hover:bg-[#1BA7D9] transition-all disabled:opacity-50 shadow-sm"
-                >
-                    {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                    {saving ? "Saving..." : "Save"}
-                </button>
+                {dirty && (
+                    <button onClick={() => void handleSave()} disabled={saving}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#235697] text-white text-xs font-bold rounded-lg hover:bg-[#1BA7D9] transition-all disabled:opacity-50 shadow-sm">
+                        {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                        {saving ? "Saving..." : "Save"}
+                    </button>
+                )}
             </div>
 
             {/* Role + Tone */}

@@ -14,9 +14,10 @@ import { TabOverview } from "./components/detail/tabs/TabOverview";
 import { TabPhysicalExam } from "./components/detail/tabs/TabPhysicalExam";
 import { TabLabs } from "./components/detail/tabs/TabLabs";
 import { TabRadiology } from "./components/detail/tabs/TabRadiology";
-import type { UpdateClinicalCaseRequest, FragmentedPhysicalExam } from "@/src/types/clinical-case";
+import type { UpdateClinicalCaseRequest, FragmentedPhysicalExam, ClinicalCaseDetail } from "@/src/types/clinical-case";
 import { CaseDetailTabNav } from "./components/detail/CaseDetailTabNav";
 import { TabSymptoms } from "./components/detail/tabs/TabSymptoms";
+import { getCookie } from "@/src/utils/cookies";
 
 
 type DetailTab = "overview" | "symptoms" | "exam" | "labs" | "radiology";
@@ -51,6 +52,26 @@ export function packPE(exam: FragmentedPhysicalExam): string {
     return `Admission Vitals: Temp: ${exam.temp} HR: ${exam.hr} Resp: ${exam.resp} O2Sat: ${exam.o2sat} General: ${exam.general} Cardiac: ${exam.cardiac} Pulmonary: ${exam.pulmonary} Abdomen: ${exam.abdomen} Extremities: ${exam.extremities}`;
 }
 
+function buildUpdatePayload(
+    caseData: ClinicalCaseDetail,
+    localForm: Partial<UpdateClinicalCaseRequest>
+): UpdateClinicalCaseRequest {
+    const createdBy = getCookie("userId") ?? caseData.createdBy;
+
+    return {
+        caseId: caseData.caseId,
+        title: localForm.title ?? caseData.title,
+        description: localForm.description ?? caseData.description,
+        caseType: localForm.caseType ?? caseData.caseType,
+        status: localForm.status ?? caseData.status,
+        pe: localForm.pe ?? caseData.pe,
+        symptom: localForm.symptom ?? caseData.symptom,
+        medicalHistory: localForm.medicalHistory ?? caseData.medicalHistory,
+        createdBy,
+        eccId: localForm.eccId ?? caseData.eccId,
+    };
+}
+
 interface Props {
     caseId: string;
 }
@@ -68,8 +89,9 @@ export default function ClinicalCaseDetailFeature({ caseId }: Props) {
     };
 
     const handleSave = async () => {
-        if (!isDirty) return;
-        await saveCase(localForm);
+        if (!isDirty || !caseData) return;
+        console.log("[LOCAL FORM]Saving case with changes:", localForm);
+        await saveCase(buildUpdatePayload(caseData, localForm));
         setLocalForm({});
     };
 
@@ -172,7 +194,7 @@ export default function ClinicalCaseDetailFeature({ caseId }: Props) {
                         {activeTab === "symptoms" && (
                             <TabSymptoms
                                 symptom={fieldValue("symptom")}
-                                medicalhistory={fieldValue("medicalhistory")}
+                                medicalHistory={fieldValue("medicalHistory")}
                                 onFieldChange={handleFieldChange}
                             />
                         )}

@@ -71,9 +71,9 @@ export interface ClinicalCaseSummary {
     caseId: string;
     title: string;
     description: string;
-    type: string;
+    caseType: string;
     status: ClinicalCaseStatus;
-    eccid: string;
+    eccId: string;
     createdBy: string;
     createdByName: string;
     createdAt: string;
@@ -87,16 +87,19 @@ export interface ClinicalCaseDetail {
     caseId: string;
     title: string;
     description: string;
-    type: string;
+    caseType: string;
     status: ClinicalCaseStatus;
     pe: string;
     symptom: string;
-    medicalhistory: string;
+    medicalHistory: string;
     createdBy: string;
     createdByName: string;
-    eccid: string;
+    eccId: string;
     createdAt: string;
     updatedAt: string;
+    virtualPatientCount: number;
+    attemptCount: number;
+    avgScore: number;
     labs: LabTestItemJoined[];
     radiology: RadiologyReportEntity[];
     virtualPatients: VirtualPatientSummary[];
@@ -126,8 +129,8 @@ export interface ClinicalCaseListParams {
     pageSize?: number;
     search?: string;
     status?: ClinicalCaseStatus | "";
-    type?: string;
-    eccid?: string;
+    caseType?: string;
+    eccId?: string;
     sortBy?: SortField;
     sortDir?: SortDirection;
 }
@@ -142,24 +145,29 @@ export interface PaginatedResponse<T> {
 }
 
 export interface CreateClinicalCaseRequest {
+    caseId: string;
     title: string;
-    description: string;
-    type: string;
-    status: ClinicalCaseStatus;
-    pe: string;
-    symptom: string;
-    medicalhistory: string;
-    eccid: string;
+    description?: string;
+    caseType?: string;
+    status?: ClinicalCaseStatus;
+    pe?: string;
+    symptom?: string;
+    medicalHistory?: string;
+    createdBy?: string;
+    eccId?: string;
 }
 
 export interface UpdateClinicalCaseRequest {
+    caseId: string;
     title?: string;
     description?: string;
-    type?: string;
+    caseType?: string;
+    status?: ClinicalCaseStatus;
     pe?: string;
     symptom?: string;
-    medicalhistory?: string;
-    eccid?: string;
+    medicalHistory?: string;
+    createdBy?: string;
+    eccId?: string;
 }
 
 export interface UpdateCaseStatusRequest {
