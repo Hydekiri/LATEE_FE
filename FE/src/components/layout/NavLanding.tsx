@@ -6,8 +6,6 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-
-
 type PageType = "Home" | "Module" | "Blog" | "About";
 
 interface NavbarProps {
@@ -38,11 +36,11 @@ export default function Navbar({ page }: NavbarProps) {
         <nav className="w-full top-0 left-0 bg-linear-to-r from-[#1ba7d9] to-[#235697] z-50 flex justify-center sticky">
             <div className="w-[86%] py-3 border-b-[3px] border-white flex justify-between items-center">
 
-                {/* --- PHẦN 1: LOGO (Luôn nằm bên trái) --- */}
-                <div className="flex-shrink-0 flex items-center">
-                    <Link href="/" className="relative w-[120px] h-10 sm:w-[150px] sm:h-12 lg:w-[180px] lg:h-14 block">
+                {/* --- PHẦN 1: LOGO  --- */}
+                <div className="shrink-0 flex items-center">
+                    <Link href="/" aria-label="Go to Latee Homepage" className="relative w-30 h-10 sm:w-37.5 sm:h-12 lg:w-45 lg:h-14 block">
                         <Image
-                            src="/images/LATEE2.png"
+                            src="/images/LATEE2.webp"
                             alt="LATEE Logo"
                             fill
                             sizes="(max-width: 768px) 120px, 180px"
@@ -52,34 +50,38 @@ export default function Navbar({ page }: NavbarProps) {
                     </Link>
                 </div>
 
-                {/* --- DESKTOP MENU (Ẩn trên mobile, hiện trên lg hoặc xl) --- */}
+                {/* --- DESKTOP MENU --- */}
                 <div className="hidden xl:flex flex-1 justify-end items-center">
 
                     {/* --- PHẦN 2: LINKS  --- */}
                     <div className="flex items-center gap-4 2xl:gap-8 mr-8 2xl:mr-16">
-                        <Link href="/home" className={getLinkClasses("/", "Home")}>Home</Link>
-                        <Link href="/module" className={getLinkClasses("/login", "Module")}>Module</Link>
-                        <Link href="/blog" className={getLinkClasses("/login", "Blog")}>Blog</Link>
-                        <Link href="/about" className={getLinkClasses("/login", "About")}>About us</Link>
+                        <Link href="/home" className={getLinkClasses("/home", "Home")}>Home</Link>
+                        <Link href="/coming-soon" className={getLinkClasses("/module", "Module")}>Module</Link>
+                        <Link href="/coming-soon" className={getLinkClasses("/blog", "Blog")}>Blog</Link>
+                        <Link href="/about" className={getLinkClasses("/about", "About")}>About us</Link>
                     </div>
 
-                    {/* --- PHẦN 3: AUTH BUTTONS (Căn phải ngoài cùng) --- */}
-                    <div className="flex items-center gap-4 flex-shrink-0">
+                    {/* --- PHẦN 3: AUTH BUTTONS  --- */}
+                    <div className="flex items-center gap-4 shrink-0">
                         <Link href="/login"
-                            className="text-base bg-white text-[#1BA7D9] px-5 py-2 rounded-[10px] font-inter-semibold hover:bg-gray-100 transition shadow-sm whitespace-nowrap"
+                            className="text-base bg-white text-[#13789b] px-5 py-2 rounded-[10px] font-inter-semibold hover:bg-gray-100 transition shadow-sm whitespace-nowrap"
                         >
                             Login
                         </Link>
-                        <Link href="/signup"
+                        <Link href="/admin"
                             className="text-base text-white bg-[#1BA7D9] px-5 py-2 rounded-[10px] font-inter-semibold border-[1.5px] border-white hover:bg-[#01C4FE] transition whitespace-nowrap"
                         >
-                            Sign up
+                            Admin Login
                         </Link>
                     </div>
                 </div>
 
-                {/* --- MOBILE MENU TRIGGER (Chỉ hiện khi < xl) --- */}
-                <button className="xl:hidden p-1" onClick={() => setIsOpen(true)}>
+                {/* --- MOBILE MENU TRIGGER  --- */}
+                <button
+                    aria-label="Open navigation menu"
+                    className="xl:hidden p-1"
+                    onClick={() => setIsOpen(true)}
+                >
                     <Menu className="w-8 h-8 text-white" />
                 </button>
             </div>
@@ -100,26 +102,26 @@ export default function Navbar({ page }: NavbarProps) {
                         </button>
 
                         <div className="flex flex-col gap-4 text-lg font-medium mt-8">
-                            <Link href="/" className={`text-white hover:translate-x-2 transition p-2 ${pathname === "/" ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
+                            <Link href="/home" className={`text-white hover:translate-x-2 transition p-2 ${pathname === "/home" || pathname === "/" ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
                                 Home
                             </Link>
-                            <Link href="/module" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/module") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
+                            <Link href="/coming-soon" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/module") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
                                 Module
                             </Link>
-                            <Link href="/blog" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/blog") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
+                            <Link href="/coming-soon" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/blog") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
                                 Blog
                             </Link>
-                            <Link href="/about" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/about") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
+                            <Link href="/coming-soon" className={`text-white font-lato-r hover:translate-x-2 transition p-2 ${pathname.startsWith("/about") ? "font-bold border-l-4 border-white pl-4 bg-white/10" : ""}`}>
                                 About us
                             </Link>
 
-                            <div className="h-[1px] w-full bg-white/20 my-4"></div>
+                            <div className="h-px w-full bg-white/20 my-4"></div>
 
                             <div className="flex flex-col gap-3">
                                 <Link href="/login" className="bg-white text-[#235697] rounded-xl text-center py-3 font-inter-semibold shadow-md hover:bg-gray-100">
                                     Login
                                 </Link>
-                                <Link href="/signup" className="border-2 border-white bg-[#1BA7D9] text-white rounded-xl text-center py-3 font-inter-semibold hover:bg-white/10">
+                                <Link href="/register" className="border-2 border-white bg-[#1BA7D9] text-white rounded-xl text-center py-3 font-inter-semibold hover:bg-white/10">
                                     Sign up
                                 </Link>
                             </div>

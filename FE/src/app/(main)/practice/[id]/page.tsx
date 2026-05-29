@@ -9,6 +9,10 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 
+export const metadata = {
+    title: "Practice Detail - Lavender Teeducation",
+    description: "Enhance your diagnostic skills with virtual patients.",
+};
 interface PageProps {
     params: Promise<{
         id: string;

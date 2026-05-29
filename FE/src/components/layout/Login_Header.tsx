@@ -26,14 +26,14 @@ export default function Login_Header() {
         </div>
 
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/')}
           className="
             border-2 border-white text-white 
             px-4 py-1.5 
             sm:px-6 sm:py-2 
             lg:px-8 lg:py-2 
             rounded-2xl font-semibold 
-            hover:bg-white hover:text-[#235697] 
+            hover:bg-white hover:text-[#1BA7D9] 
             transition duration-300 ease-in-out
             cursor-pointer
             text-sm sm:text-base lg:text-lg whitespace-nowrap

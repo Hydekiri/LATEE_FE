@@ -1,4 +1,3 @@
-
 export enum VPStatus {
     Active = "active",
     Draft = "draft",
@@ -28,7 +27,6 @@ export enum VPGender {
     Male = "MALE",
     Female = "FEMALE",
 }
-
 
 export interface VPVitalSigns {
     readonly bp: string;
@@ -69,12 +67,16 @@ export interface VPExpert {
     readonly location?: string;
 }
 
+export interface ExpertSearchResult {
+    readonly expertId: string;
+    readonly name: string;
+}
+
 export interface VPStats {
     readonly totalAttempts: number;
     readonly avgScore: number;
     readonly completionRate: number;
 }
-
 
 export interface VirtualPatientSummary {
     readonly patientId: string;
@@ -96,9 +98,9 @@ export interface VirtualPatientSummary {
     readonly expertCount: number;
 }
 
-
 export interface VirtualPatientDetail {
     readonly patientId: string;
+    readonly ownerExpertId: string | null;
     readonly caseId: string;
     readonly name: string;
     readonly age: number;
@@ -125,7 +127,6 @@ export interface VirtualPatientDetail {
     readonly experts: readonly VPExpert[];
     readonly stats: VPStats;
 }
-
 
 export interface VPFiltersAvailable {
     readonly availableStatuses: VPStatus[];
@@ -156,10 +157,6 @@ export interface VPActiveFilters {
     sortDir: VPSortDir;
 }
 
-// ─────────────────────────────────────────────
-// Paginated Response
-// ─────────────────────────────────────────────
-
 export interface VPPaginatedResponse<T> {
     readonly items: T[];
     readonly total: number;
@@ -168,10 +165,6 @@ export interface VPPaginatedResponse<T> {
     readonly totalPages: number;
     readonly filters?: VPFiltersAvailable;
 }
-
-// ─────────────────────────────────────────────
-// Request DTOs
-// ─────────────────────────────────────────────
 
 export interface CreateVPRequest {
     readonly name: string;
@@ -182,8 +175,8 @@ export interface CreateVPRequest {
     readonly ethnicity: string;
     readonly occupation: string;
     readonly chiefConcern: string;
-    readonly medicalHistory: string;
-    readonly symptom: string;
+    readonly medicalHistory?: string;
+    readonly symptom?: string;
     readonly level: VPLevel;
     readonly timeSetting: number;
     readonly argumentTime: number;
@@ -195,23 +188,26 @@ export interface CreateVPRequest {
     readonly behaviors?: string[];
     readonly learningObjectives?: string[];
     readonly caseRule?: VPCaseRule;
+    readonly expertIds?: string[];
 }
 
 export type UpdateVPRequest = Partial<CreateVPRequest>;
+
+export interface UpdateVPExpertsRequest {
+    readonly expertIds: string[];
+}
 
 export interface UpdateVPStatusRequest {
     readonly status: VPStatus;
 }
 
-// ─────────────────────────────────────────────
-// Response DTOs
-// ─────────────────────────────────────────────
-
 export interface CreateVPResponse {
     readonly patientId: string;
+    readonly ownerExpertId: string | null;
     readonly name: string;
     readonly status: VPStatus;
     readonly createdAt: string;
+    readonly expertIds: string[];
 }
 
 export interface UpdateVPResponse {
@@ -222,6 +218,12 @@ export interface UpdateVPResponse {
 export interface UpdateVPStatusResponse {
     readonly patientId: string;
     readonly status: VPStatus;
+    readonly updatedAt: string;
+}
+
+export interface UpdateVPExpertsResponse {
+    readonly patientId: string;
+    readonly expertIds: string[];
     readonly updatedAt: string;
 }
 
@@ -237,9 +239,13 @@ export interface DuplicateVPResponse {
     readonly createdAt: string;
 }
 
-// ─────────────────────────────────────────────
-// UI / Form Types
-// ─────────────────────────────────────────────
+export interface ClinicalCaseSummary {
+    readonly caseId: string;
+    readonly title: string;
+    readonly type: string;
+    readonly status: string;
+    readonly createdByName?: string;
+}
 
 export interface CreateVPFormState {
     name: string;

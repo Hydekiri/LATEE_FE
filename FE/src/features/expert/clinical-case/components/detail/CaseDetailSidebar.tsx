@@ -18,10 +18,10 @@ export function CaseDetailSidebar({ caseData }: Props) {
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-[#7F96AD]">Case Information</h3>
 
                 <SidebarRow icon={<Tag className="w-4 h-4" />} label="Type">
-                    <span className="font-mono font-bold text-[#235697]">{caseData.type}</span>
+                    <span className="font-mono font-bold text-[#235697]">{caseData.caseType}</span>
                 </SidebarRow>
                 <SidebarRow icon={<ClipboardCheck className="w-4 h-4" />} label="Criteria (ECCID)">
-                    <span className="font-mono text-slate-600">{caseData.eccid}</span>
+                    <span className="font-mono text-slate-600">{caseData.eccId}</span>
                 </SidebarRow>
                 <SidebarRow icon={<User className="w-4 h-4" />} label="Author">
                     <span className="font-semibold text-[#173B67]">{caseData.createdByName}</span>

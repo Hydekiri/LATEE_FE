@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import {
     MagnifyingGlassIcon,
     ArrowsUpDownIcon,
@@ -14,12 +15,16 @@ import { PracticeListPagination } from '@/src/features/practice/components/Pract
 import { PatientCardSkeleton } from '@/src/features/practice/components/PatientCardSkeleton';
 import { EmptyDiscoveryState } from '@/src/features/practice/components/EmptyDiscoveryState';
 import { DiscoveryGrid } from '@/src/features/practice/components/DiscoveryGrid';
-import { FetchCasesModal } from '@/src/features/practice/components/FetchCasesModal';
 
 import {
     DiscoverySortBy,
     FetchCasesFormState,
 } from '@/src/types/discovery';
+
+const FetchCasesModal = dynamic(
+    () => import('@/src/features/practice/components/FetchCasesModal').then(m => ({ default: m.FetchCasesModal })),
+    { ssr: false }
+);
 
 const SORT_OPTIONS: { value: DiscoverySortBy; label: string }[] = [
     { value: 'newest',      label: 'Newest' },
@@ -54,21 +59,10 @@ export function PracticeListContent() {
     } = usePracticeDiscovery();
 
     const [isFetchModalOpen, setIsFetchModalOpen] = useState(false);
-
     const isLoading = loadState === 'loading' || loadState === 'checking';
     const isPoolEmpty = loadState === 'empty' && !hasDiscovery;
     const hasActiveFilter =
         !!uiFilter.search || !!uiFilter.level || !!uiFilter.occupation || !!uiFilter.expert;
-
-    const handleFetchSubmit = useCallback(
-        async (form: FetchCasesFormState) => {
-            await fetchNewCases(form);
-            if (fetchState !== 'error') {
-                setIsFetchModalOpen(false);
-            }
-        },
-        [fetchNewCases, fetchState]
-    );
 
     const handleFetchSubmitWithClose = useCallback(
         async (form: FetchCasesFormState) => {
@@ -78,11 +72,12 @@ export function PracticeListContent() {
         [fetchNewCases]
     );
 
+    // Error state
     if (loadState === 'error' && error !== null) {
         return (
             <div className="w-full flex flex-col items-center justify-center py-20 gap-4">
                 <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
-                    <ExclamationCircleIcon className="w-8 h-8 text-red-400" />
+                    <ExclamationCircleIcon className="w-8 h-8 text-red-400" aria-hidden="true" />
                 </div>
                 <p className="text-red-600 font-semibold text-base text-center px-4">{error}</p>
                 <button
@@ -92,19 +87,6 @@ export function PracticeListContent() {
                 >
                     Retry
                 </button>
-            </div>
-        );
-    }
-
-    if (loadState === 'checking') {
-        return (
-            <div className="w-full flex justify-center items-center py-24 px-4">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#235697]" />
-                    <p className="text-[#235697] font-semibold text-sm animate-pulse text-center">
-                        Loading your practice cases...
-                    </p>
-                </div>
             </div>
         );
     }
@@ -126,7 +108,8 @@ export function PracticeListContent() {
                             text-[#235697] bg-transparent min-w-0"
                             aria-label="Search patients"
                         />
-                        <MagnifyingGlassIcon className="w-5 h-5 text-[#235697]/60 shrink-0 ml-2" />
+                        {/* FIX 4: aria-hidden cho icon trang trí */}
+                        <MagnifyingGlassIcon className="w-5 h-5 text-[#235697]/60 shrink-0 ml-2" aria-hidden="true" />
                     </div>
                 </div>
 
@@ -135,7 +118,7 @@ export function PracticeListContent() {
                     {/* Expert Filter */}
                     {availableExperts.length > 0 && (
                         <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
-                            <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                            <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" aria-hidden="true" />
                             <select
                                 value={uiFilter.expert || ''}
                                 onChange={(e) => setUIFilter('expert', e.target.value)}
@@ -155,14 +138,14 @@ export function PracticeListContent() {
 
                     {/* Level filter */}
                     <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
-                        <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                        <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" aria-hidden="true" />
                         <select
                             value={uiFilter.level}
                             onChange={(e) => setUIFilter('level', e.target.value)}
                             className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
                             text-[#235697] font-semibold text-sm truncate
                             hover:bg-[#235697] hover:text-white transition-all shadow-sm
-                            appearance-none cursor-pointer outline-none" 
+                            appearance-none cursor-pointer outline-none"
                             aria-label="Filter by level"
                         >
                             <option value="">All Levels</option>
@@ -175,7 +158,7 @@ export function PracticeListContent() {
                     {/* Occupation filter */}
                     {availableOccupations.length > 0 && (
                         <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-40">
-                            <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                            <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" aria-hidden="true" />
                             <select
                                 value={uiFilter.occupation}
                                 onChange={(e) => setUIFilter('occupation', e.target.value)}
@@ -195,7 +178,7 @@ export function PracticeListContent() {
 
                     {/* Sort */}
                     <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
-                        <ArrowsUpDownIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" />
+                        <ArrowsUpDownIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" aria-hidden="true" />
                         <select
                             value={uiFilter.sortBy}
                             onChange={(e) => setUIFilter('sortBy', e.target.value as DiscoverySortBy)}
@@ -213,7 +196,6 @@ export function PracticeListContent() {
 
                     {/* Button Group (Reset + New) */}
                     <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-                        {/* Reset filters */}
                         {hasActiveFilter && (
                             <button
                                 onClick={resetFilters}
@@ -226,7 +208,6 @@ export function PracticeListContent() {
                             </button>
                         )}
 
-                        {/* +New button */}
                         <button
                             onClick={() => setIsFetchModalOpen(true)}
                             className="flex justify-center items-center gap-2 border border-[#235697] px-5 py-2.5
@@ -235,7 +216,7 @@ export function PracticeListContent() {
                             whitespace-nowrap outline-none flex-1 sm:flex-none"
                             aria-label="Fetch new cases"
                         >
-                            <PlusIcon className="w-4 h-4" />
+                            <PlusIcon className="w-4 h-4" aria-hidden="true" />
                             New
                         </button>
                     </div>
@@ -248,16 +229,24 @@ export function PracticeListContent() {
                     <span className="text-xs text-gray-400 font-medium">
                         Your pool: <span className="text-[#235697] font-bold">{allPatients.length}</span> cases
                         {totalFiltered !== allPatients.length && (
-                            <> <span className="hidden sm:inline">·</span> <br className="sm:hidden" /> <span className="text-[#235697] font-bold">{totalFiltered}</span> match filters</>
+                            <>
+                                {' '}<span className="hidden sm:inline">·</span>{' '}
+                                <br className="sm:hidden" />
+                                <span className="text-[#235697] font-bold">{totalFiltered}</span> match filters
+                            </>
                         )}
                     </span>
                 </div>
             )}
 
             {/* ── Content ── */}
-            <div className="w-full min-h-125 mt-4 lg:mt-6">
+            <div className="w-full min-h-205 mt-4 lg:mt-6">
                 {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-7.5">
+                    <div
+                        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 lg:gap-7.5"
+                        aria-busy="true"
+                        aria-label="Loading practice cases"
+                    >
                         {Array.from({ length: 9 }).map((_, i) => (
                             <PatientCardSkeleton key={i} />
                         ))}
@@ -299,16 +288,18 @@ export function PracticeListContent() {
                 </div>
             )}
 
-            {/* ── +New modal ── */}
-            <FetchCasesModal
-                isOpen={isFetchModalOpen}
-                isLoading={fetchState === 'fetching'}
-                errorMessage={fetchError}
-                onSubmit={handleFetchSubmitWithClose}
-                onClose={() => {
-                    if (fetchState !== 'fetching') setIsFetchModalOpen(false);
-                }}
-            />
+            {/* ── +New modal (lazy loaded) ── */}
+            {isFetchModalOpen && (
+                <FetchCasesModal
+                    isOpen={isFetchModalOpen}
+                    isLoading={fetchState === 'fetching'}
+                    errorMessage={fetchError}
+                    onSubmit={handleFetchSubmitWithClose}
+                    onClose={() => {
+                        if (fetchState !== 'fetching') setIsFetchModalOpen(false);
+                    }}
+                />
+            )}
         </>
     );
 }

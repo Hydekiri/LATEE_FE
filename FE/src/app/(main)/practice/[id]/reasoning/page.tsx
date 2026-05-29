@@ -1,5 +1,11 @@
 import { checkIsLoggedInAndRedirectToLogin } from "@/src/app/authFilterChain";
 import { ReasoningPage } from "@/src/features/practice/takePractice/components/ReasoningPage";
+
+export const metadata = {
+    title: "Clinical Reasoning - Lavender Teeducation",
+    description: "Enhance your diagnostic skills with virtual patients.",
+};
+
 interface PageProps {
     params: Promise<{
         id: string;

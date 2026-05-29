@@ -12,6 +12,12 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { PatientData, Expert } from '@/src/types/practice';
 
+
+export const metadata = {
+    title: "Experts - Lavender Teeducation",
+    description: "Enhance your diagnostic skills with virtual patients.",
+};
+
 const SocialIcons = {
     Facebook: () => (
         <svg fill="currentColor" viewBox="0 0 24 24" className="w-6 h-6">

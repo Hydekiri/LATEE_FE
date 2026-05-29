@@ -1,10 +1,5 @@
 'use client';
 
-// ============================================================
-// FetchCasesModal.tsx
-// Opened by "+New" button — lets learner pull more VP from DB
-// ============================================================
-
 import { useState, ChangeEvent } from 'react';
 import {
     XMarkIcon,
@@ -58,7 +53,6 @@ export function FetchCasesModal({
 
     const handleSubmit = async (): Promise<void> => {
         await onSubmit(draft);
-        // Modal stays open while loading; parent closes it on success
     };
 
     const handleReset = (): void => {

@@ -24,9 +24,10 @@ import {
 } from '@/src/types/evaluation';
 import { getLearnerId } from '@/src/utils/cookies';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+export const metadata = {
+    title: "Results - Lavender Teeducation",
+    description: "Enhance your diagnostic skills with virtual patients.",
+};
 
 const EPA_TITLES: Record<string, string> = {
     EPA_1: 'Information Gathering',

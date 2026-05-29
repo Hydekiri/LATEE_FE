@@ -12,7 +12,7 @@ export default function SearchBar() {
 
     return (
         <section className="w-[86%] flex flex-col items-center">
-            <div className="w-full bg-white py-2 xl:py-2 rounded-[5px] xl:rounded-[8px]">
+            <div className="w-full bg-white py-2 xl:py-2 rounded-[5px] xl:rounded-lg">
 
                 {/* Container 97% căn giữa */}
                 <div className="w-[97%] mx-auto flex items-center">
@@ -25,7 +25,7 @@ export default function SearchBar() {
                             alt="searchicon"
                             width={24}
                             height={24}
-                            className="w-4 h-4 xl:w-[23px] xl:h-[23px]"
+                            className="w-4 h-4 xl:w-5.75 xl:h-5.75"
                         />
 
                         {/* input tự chiếm phần còn lại */}

@@ -8,18 +8,19 @@ import { PracticeListContent } from '@/src/features/practice/components/Practice
 
 export default function PracticePageFeature() {
     return (
+
         <main className="w-full flex flex-col items-center overflow-hidden bg-gray-50">
             <Home_Header page="Practice" />
-
             <HeroSection
                 image="/images/bgLearner2.jpg"
                 title="Lavender Teeducation"
-                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
+                content="Develop critical thinking, strengthen clinical reasoning, and enhance diagnostic accuracy through immersive clinical simulations designed to replicate real-world patient interactions and healthcare decision-making scenarios!"
             />
 
             <section
                 className="relative w-full flex flex-col items-center bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: "url('/images/bgLearner5.jpeg')" }}
+                aria-label="Practice cases"
             >
                 <div className="w-[90%] xl:w-[86%] flex flex-col items-center gap-8 xl:gap-12 pb-20">
                     <PracticeListContent />
