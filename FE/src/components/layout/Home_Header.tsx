@@ -19,12 +19,25 @@ export default function Navbar({ page }: NavbarProps) {
     const router = useRouter();
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
+    // Normalize avatar values coming from cookies. Some backends (or storage) may store
+    // the literal string "null" or an empty value; treat those as missing so the
+    // Next/Image fallback works reliably.
+    const getValidAvatar = (url?: string | null) => {
+        if (!url) return undefined;
+        const v = url.trim();
+        if (!v) return undefined;
+        const low = v.toLowerCase();
+        if (low === "null" || low === "undefined") return undefined;
+        return v;
+    };
+
     const [userInfo, setUserInfo] = useState<{ name: string; email: string; avatarUrl?: string } | null>(() => {
         const email = getCookie("userEmail");
         const userName = getCookie("username");
-        const avatarUrl = getCookie("avatarUrl");
+        const rawAvatar = getCookie("avatarUrl");
+        const avatarUrl = getValidAvatar(rawAvatar);
 
-        console.log("Loaded user info from cookies:", { email, userName, avatarUrl });
+        console.log("Loaded user info from cookies:", { email, userName, rawAvatar, avatarUrl });
         if (email && userName) {
             return {
                 email,
@@ -112,7 +125,7 @@ export default function Navbar({ page }: NavbarProps) {
 
                                 <div className="flex items-center gap-3 pl-2">
                                     <div className="w-10 h-10 rounded-full bg-white overflow-hidden relative border-2 border-white/50">
-                                        <Image src={userInfo.avatarUrl || "/images/ava1.jpg"} alt="Avatar" fill className="object-cover" />
+                                        <Image src={userInfo?.avatarUrl ?? "/images/ava1.jpg"} alt="Avatar" fill className="object-cover" />
                                     </div>
                                     <div className="flex flex-col text-white">
                                         <span className="font-bold text-sm max-w-25 truncate">{userInfo.name}</span>
@@ -158,7 +171,7 @@ export default function Navbar({ page }: NavbarProps) {
                         {userInfo && (
                             <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/20">
                                 <div className="w-12 h-12 rounded-full bg-white overflow-hidden relative border-2 border-white">
-                                    <Image src={userInfo.avatarUrl || "/images/LVP1.jpeg"} alt="Avatar" fill className="object-cover" />
+                                    <Image src={userInfo?.avatarUrl ?? "/images/LVP1.jpeg"} alt="Avatar" fill className="object-cover" />
                                 </div>
                                 <div className="text-white">
                                     <p className="font-bold text-lg">{userInfo.name}</p>
