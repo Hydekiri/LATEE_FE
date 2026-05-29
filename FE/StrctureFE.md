@@ -12,7 +12,7 @@ LATEE_FE
 │  │  │  ├─ (auth)
 │  │  │  │  ├─ login
 │  │  │  │  │  └─ page.tsx
-│  │  │  │  └─ resgister
+│  │  │  │  └─ register
 │  │  │  │     └─ page.tsx
 │  │  │  ├─ (main)
 │  │  │  │  ├─ aboutUs
@@ -39,6 +39,8 @@ LATEE_FE
 │  │  │  │  │        └─ page.tsx
 │  │  │  │  └─ progress
 │  │  │  │     └─ page.tsx
+│  │  │  ├─ about
+│  │  │  │  └─ page.tsx
 │  │  │  ├─ admin
 │  │  │  │  ├─ dashboard
 │  │  │  │  │  └─ page.tsx
@@ -48,9 +50,9 @@ LATEE_FE
 │  │  │  │  │  └─ page.tsx
 │  │  │  │  └─ users
 │  │  │  │     └─ page.tsx
-│  │  │  ├─ api
-│  │  │  │  └─ page.tsx
 │  │  │  ├─ authFilterChain.tsx
+│  │  │  ├─ coming-soon
+│  │  │  │  └─ page.tsx
 │  │  │  ├─ expert
 │  │  │  │  ├─ assessment
 │  │  │  │  │  └─ page.tsx
@@ -239,15 +241,18 @@ LATEE_FE
 │  │  │  │  │  │        ├─ TabRadiology.tsx
 │  │  │  │  │  │        └─ TabSymptoms.tsx
 │  │  │  │  │  ├─ detail.tsx
-│  │  │  │  │  └─ page.tsx
+│  │  │  │  │  ├─ page.tsx
+│  │  │  │  │  └─ pagination.tsx
 │  │  │  │  ├─ components
 │  │  │  │  │  ├─ ActivityCharts.tsx
+│  │  │  │  │  ├─ EditUserModal.tsx
 │  │  │  │  │  ├─ IssueManagement.tsx
 │  │  │  │  │  ├─ KPICard.tsx
 │  │  │  │  │  ├─ LearnerTable.tsx
 │  │  │  │  │  ├─ MainAnalytics.tsx
 │  │  │  │  │  ├─ Sidebar.tsx
-│  │  │  │  │  └─ Topbar.tsx
+│  │  │  │  │  ├─ Topbar.tsx
+│  │  │  │  │  └─ UsersTable.tsx
 │  │  │  │  ├─ feedback
 │  │  │  │  │  └─ page.tsx
 │  │  │  │  ├─ learner-progress
@@ -258,6 +263,26 @@ LATEE_FE
 │  │  │  │  ├─ types
 │  │  │  │  │  └─ dashboard.ts
 │  │  │  │  └─ virtual-patient
+│  │  │  │     ├─ components
+│  │  │  │     │  ├─ CreateVPModal.tsx
+│  │  │  │     │  ├─ DeleteVPModal.tsx
+│  │  │  │     │  ├─ detail
+│  │  │  │     │  │  ├─ TabExperts.tsx
+│  │  │  │     │  │  ├─ TabInstructions.tsx
+│  │  │  │     │  │  ├─ TabLearningObjectives.tsx
+│  │  │  │     │  │  ├─ TabPersona.tsx
+│  │  │  │     │  │  ├─ TabVitals.tsx
+│  │  │  │     │  │  ├─ VPDetailHeader.tsx
+│  │  │  │     │  │  └─ VPDetailSidebar.tsx
+│  │  │  │     │  ├─ VPEmptyState.tsx
+│  │  │  │     │  ├─ VPFilterBar.tsx
+│  │  │  │     │  ├─ VPLevelBadge.tsx
+│  │  │  │     │  ├─ VPRowActions.tsx
+│  │  │  │     │  ├─ VPSkeletonRow.tsx
+│  │  │  │     │  ├─ VPStatsBanner.tsx
+│  │  │  │     │  ├─ VPStatusBadge.tsx
+│  │  │  │     │  └─ VPTableRow.tsx
+│  │  │  │     ├─ detail.tsx
 │  │  │  │     └─ page.tsx
 │  │  │  ├─ home
 │  │  │  │  └─ homepage.tsx
@@ -329,7 +354,12 @@ LATEE_FE
 │  │  │  ├─ usePracticeSession.ts
 │  │  │  ├─ usePracticeTimer.ts
 │  │  │  ├─ useReasoningChat.ts
-│  │  │  └─ useVpChat.ts
+│  │  │  ├─ useVirtualPatientActions.ts
+│  │  │  ├─ useVirtualPatientDetail.ts
+│  │  │  ├─ useVirtualPatientFilters.ts
+│  │  │  ├─ useVirtualPatients.ts
+│  │  │  ├─ useVpChat.ts
+│  │  │  └─ useVPStats.ts
 │  │  ├─ services
 │  │  │  ├─ aiAssistant-service.tsx
 │  │  │  ├─ assessment-servvice.ts
@@ -338,6 +368,7 @@ LATEE_FE
 │  │  │  ├─ clinical-reasoning-service.ts
 │  │  │  ├─ discovery-service.ts
 │  │  │  ├─ evaluation-service.ts
+│  │  │  ├─ expert-clinicalcase-service.ts
 │  │  │  ├─ issue-service.ts
 │  │  │  ├─ knowledge-resources-service.ts
 │  │  │  ├─ patient-servvice.ts
@@ -345,7 +376,8 @@ LATEE_FE
 │  │  │  ├─ question-validation-service.ts
 │  │  │  ├─ roadmap-service.tsx
 │  │  │  ├─ user-service.ts
-│  │  │  └─ validate-question-service.ts
+│  │  │  ├─ validate-question-service.ts
+│  │  │  └─ virtual-patient-expert-service.ts
 │  │  ├─ stores
 │  │  │  └─ practiceSessionStore.ts
 │  │  ├─ types
@@ -353,16 +385,19 @@ LATEE_FE
 │  │  │  ├─ api.ts
 │  │  │  ├─ assessment.ts
 │  │  │  ├─ clinical-case.ts
+│  │  │  ├─ clinicalcase.ts
 │  │  │  ├─ discovery.ts
 │  │  │  ├─ evaluation.ts
 │  │  │  ├─ knowledge-resources.ts
 │  │  │  ├─ next-auth.d.ts
 │  │  │  ├─ practice.ts
-│  │  │  └─ submition.ts
+│  │  │  ├─ submition.ts
+│  │  │  └─ virtual-patient-expert.ts
 │  │  └─ utils
 │  │     ├─ api-client.ts
 │  │     ├─ cookies.tsx
-│  │     └─ patient-assets.ts
+│  │     ├─ patient-assets.ts
+│  │     └─ vp-payload.ts
 │  ├─ StrctureFE.md
 │  └─ tsconfig.json
 └─ README.md

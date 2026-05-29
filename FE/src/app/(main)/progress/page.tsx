@@ -1,6 +1,5 @@
-// /src/app/(main)/progress/page.tsx
 import ProgressPage from "@/src/features/progress/progressPage";
-import { checkIsLearnerLoggedIn } from "../../authFilterChain";
+import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 import { redirect } from "next/navigation";
 
 export const metadata = {
@@ -8,6 +7,7 @@ export const metadata = {
     description: "Track your learning journey and monitor your progress.",
 };
 
+export const dynamic = "force-dynamic";
 export default async function Progress() {
     const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
 

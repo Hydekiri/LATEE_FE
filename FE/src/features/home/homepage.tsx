@@ -22,8 +22,9 @@ export default function HomePage() {
                     alt="background"
                     width={1920}
                     height={1080}
+                    fetchPriority="high"
                     className="w-full h-auto pointer-events-none absolute top-0 left-0 -z-10"
-                    priority // Tải ngay lập tức vì là ảnh lớn nhất (LCP)
+                    priority 
                 />
             </section>
 
@@ -51,9 +52,9 @@ export default function HomePage() {
 
             {/* Learning Modules Section */}
             <section className="w-full flex flex-col items-center mt-10 xl:mt-16.25">
-                <div className="w-[86%] bg-white py-5 xl:py-[47px] rounded-[5px] xl:rounded-[8px]">
-                    <div className="w-[92.7%] mb-[31px] mx-auto flex items-center justify-between">
-                        <h2 className="relative text-[48px] font-semibold font-inter text-[#000000] w-full inline-block after:content-[''] after:absolute after:left-0 after:bottom-[-10px] after:w-full after:h-[5px] after:bg-gradient-to-r after:from-[#235697] after:to-[#1ba7d9] after:rounded-full">
+                <div className="w-[86%] bg-white py-5 xl:py-11.5 rounded-[5px] xl:rounded-lg">
+                    <div className="w-[92.7%] mb-7.75 mx-auto flex items-center justify-between">
+                        <h2 className="relative text-[48px] font-semibold font-inter text-[#000000] w-full inline-block after:content-[''] after:absolute after:left-0 after:-bottom-2.5 after:w-full after:h-1.25 after:bg-linear-to-r after:from-[#235697] after:to-[#1ba7d9] after:rounded-full">
                             Learning Modules
                         </h2>
                     </div>
@@ -97,7 +98,7 @@ export default function HomePage() {
                                     overflow-hidden 
                                     rounded-[20px] 
                                     border-transparent 
-                                    h-[600px] 
+                                    h-150
                                     w-full 
                                     group 
                                     cursor-pointer
@@ -128,7 +129,7 @@ export default function HomePage() {
                                         {m.desc}
                                     </p>
 
-                                    <button className="bg-[#1ba7d9] text-white w-auto h-[50px] px-[24px] py-3 rounded-md text-[16px] font-lato-black cursor-pointer hover:bg-[#158ab8] transition shadow-md hover:shadow-lg transform active:scale-95">
+                                    <button className="bg-[#1ba7d9] text-white w-auto h-12.5 px-6 py-3 rounded-md text-[16px] font-lato-black cursor-pointer hover:bg-[#158ab8] transition shadow-md hover:shadow-lg transform active:scale-95">
                                         {m.button}
                                     </button>
                                 </div>

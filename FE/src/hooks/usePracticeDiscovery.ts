@@ -95,7 +95,7 @@ export interface UsePracticeDiscoveryReturn {
     readonly patients: readonly DiscoveryPatientItem[];
     readonly availableOccupations: readonly string[];
     readonly availableLevels: readonly string[];
-    readonly availableExperts: readonly string[]; // <--- THÊM RETURN
+    readonly availableExperts: readonly string[]; 
     readonly totalFiltered: number;
     readonly totalPages: number;
     readonly currentPage: number;
@@ -281,7 +281,7 @@ export function usePracticeDiscovery(): UsePracticeDiscoveryReturn {
         patients,
         availableOccupations,
         availableLevels,
-        availableExperts, // <--- TRẢ VỀ STATE EXPERTS
+        availableExperts, 
         totalFiltered,
         totalPages,
         currentPage,

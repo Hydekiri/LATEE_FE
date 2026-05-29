@@ -12,19 +12,6 @@ import {
 import { getCookie } from "@/src/utils/cookies";
 import { AssessmentData } from "@/src/types/assessment";
 
-// interface AssessmentItem {
-//     assessmentId: string;
-//     title: string;
-//     descriptions?: string;
-//     topic?: string;
-//     specialty?: string;
-//     difficultyLevel: string;
-//     timeLimitMinutes?: number;
-//     numQuestions: number;
-//     isActive: boolean;
-//     createdAt: string;
-// }
-
 type SortOrder = "timeAsc" | "timeDesc" | "alphaAsc" | "alphaDesc";
 
 export default function AssessmentList() {
@@ -53,7 +40,6 @@ export default function AssessmentList() {
             const data: AssessmentData[] = await res.json();
 
             setAssessments(data);
-            //console.log("Fetched assessments:", data);
         } catch (err) {
             console.error("Error:", err);
         } finally {
@@ -105,7 +91,6 @@ export default function AssessmentList() {
     // ================= SPECIALTY OPTIONS =================
     const specialtyOptions = useMemo(() => {
         const specialties = assessments.map((a) => a.specialty).filter(Boolean);
-
         return ["All specialties", ...Array.from(new Set(specialties))];
     }, [assessments]);
 
@@ -189,91 +174,36 @@ export default function AssessmentList() {
                         type="text"
                         placeholder="Search assessment..."
                         value={search}
-                        onChange={(e) =>
-                            setSearch(e.target.value)
-                        }
+                        onChange={(e) => setSearch(e.target.value)}
                         className="
-                            w-full
-                            rounded-xl
-                            border-2
-                            border-[#235697]/30
-                            bg-white
-                            px-5
-                            py-3
-                            pr-14
-                            text-[#235697]
-                            font-semibold
-                            outline-none
-                            focus:border-[#1BA7D9]
-                            shadow-sm
+                            w-full rounded-xl border-2 border-[#235697]/30 bg-white
+                            px-5 py-3 pr-14 text-[#235697] font-semibold outline-none
+                            focus:border-[#1BA7D9] shadow-sm
                         "
                     />
                 </div>
 
                 {/* FILTERS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full xl:w-auto xl:min-w-[720px]">
-
-                    {/* LEVEL */}
-                    <div className="relative w-full transparent">
-                        <div
-                            className="
-                                disabled
-                                transparent
-                                bg-white
-                                bg-transparent
-                                text-transparent
-                            "
-                        >
-                        </div>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full xl:w-auto xl:min-w-180">
+                    <div className="relative w-full hidden sm:block xl:block transparent"></div>
 
                     {/* LEVEL */}
                     <div className="relative w-full">
                         <select
                             value={selectedLevel}
-                            onChange={(e) =>
-                                setSelectedLevel(
-                                    e.target.value
-                                )
-                            }
+                            onChange={(e) => setSelectedLevel(e.target.value)}
                             className="
-                                appearance-none
-                                rounded-xl
-                                border-2
-                                border-[#235697]/30
-                                bg-white
-                                px-5
-                                py-3
-                                pr-10
-                                text-[#235697]
-                                font-semibold
-                                outline-none
-                                w-full
-                                min-w-0
-                                whitespace-nowrap
+                                appearance-none rounded-xl border-2 border-[#235697]/30 bg-white
+                                px-5 py-3 pr-10 text-[#235697] font-semibold outline-none
+                                w-full min-w-0 whitespace-nowrap
                             "
                         >
-                            <option value="All">
-                                All Levels
-                            </option>
-
-                            <option value="Beginner">
-                                Beginner
-                            </option>
-
-                            <option value="Intermediate">
-                                Intermediate
-                            </option>
-
-                            <option value="Advanced">
-                                Advanced
-                            </option>
-
-                            <option value="Expert">
-                                Expert
-                            </option>
+                            <option value="All">All Levels</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                            <option value="Expert">Expert</option>
                         </select>
-
                         <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
                     </div>
 
@@ -281,39 +211,18 @@ export default function AssessmentList() {
                     <div className="relative w-full">
                         <select
                             value={selectedSpecialty}
-                            onChange={(e) =>
-                                setSelectedSpecialty(
-                                    e.target.value
-                                )
-                            }
+                            onChange={(e) => setSelectedSpecialty(e.target.value)}
                             className="
-                                appearance-none
-                                rounded-xl
-                                border-2
-                                border-[#235697]/30
-                                bg-white
-                                px-5
-                                py-3
-                                pr-10
-                                text-[#235697]
-                                font-semibold
-                                outline-none
-                                w-full
-                                min-w-0
-                                whitespace-nowrap
+                                appearance-none rounded-xl border-2 border-[#235697]/30 bg-white
+                                px-5 py-3 pr-10 text-[#235697] font-semibold outline-none
+                                w-full min-w-0 whitespace-nowrap
                             "
                         >
                             <option value="All specialties">All specialties</option>
-                            {assessments.map((x, index) => (
-                                <option
-                                    key={`${x.specialty}-${index}`}
-                                    value={x.specialty}
-                                >
-                                    {x.specialty}
-                                </option>
+                            {specialtyOptions.filter(x => x !== "All specialties").map((x, index) => (
+                                <option key={`${x}-${index}`} value={x}>{x}</option>
                             ))}
                         </select>
-
                         <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
                     </div>
 
@@ -321,44 +230,18 @@ export default function AssessmentList() {
                     <div className="relative w-full">
                         <select
                             value={sortOrder}
-                            onChange={(e) =>
-                                setSortOrder(e.target.value as SortOrder)
-                            }
+                            onChange={(e) => setSortOrder(e.target.value as SortOrder)}
                             className="
-                                appearance-none
-                                rounded-xl
-                                border-2
-                                border-[#235697]/30
-                                bg-white
-                                px-5
-                                py-3
-                                pr-10
-                                text-[#235697]
-                                font-semibold
-                                outline-none
-                                w-full
-                                min-w-0
-                                whitespace-nowrap
+                                appearance-none rounded-xl border-2 border-[#235697]/30 bg-white
+                                px-5 py-3 pr-10 text-[#235697] font-semibold outline-none
+                                w-full min-w-0 whitespace-nowrap
                             "
                         >
-
-                            <option value="timeAsc">
-                                Sort: Time Asc
-                            </option>
-
-                            <option value="timeDesc">
-                                Sort: Time Desc
-                            </option>
-
-                            <option value="alphaAsc">
-                                Sort: Alpha Asc
-                            </option>
-
-                            <option value="alphaDesc">
-                                Sort: Alpha Desc
-                            </option>
+                            <option value="timeAsc">Sort: Time Asc</option>
+                            <option value="timeDesc">Sort: Time Desc</option>
+                            <option value="alphaAsc">Sort: Alpha Asc</option>
+                            <option value="alphaDesc">Sort: Alpha Desc</option>
                         </select>
-
                         <ChevronDownIcon className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 text-[#235697] pointer-events-none" />
                     </div>
                 </div>
@@ -375,7 +258,7 @@ export default function AssessmentList() {
                         <div className="relative w-full lg:w-75 h-45 rounded-xl overflow-hidden shrink-0 shadow-inner">
                             <Image
                                 src="/images/quizz1.jpeg"
-                                alt={item.title}
+                                alt={item.title || "Assessment"}
                                 fill
                                 className="object-cover"
                             />
@@ -389,18 +272,15 @@ export default function AssessmentList() {
                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#235697]/10 rounded-lg text-[10px] font-bold text-[#235697]">
                                     <ChartBarIcon className="w-3.5 h-3.5" /> {item.difficultyLevel}
                                 </span>
-                                {/* <span className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#235697]/10 rounded-lg text-[10px] font-bold text-[#235697]">
-                                    {item.listAttempts ? (item.listAttempts.filter(a => a.isPassed).length > 0 ? "Passed" : "Not Passed Yet") : "Not Attempted"}
-                                </span> */}
                                 {item.listAttempts && item.listAttempts.filter(a => a.isPassed).length > 0 ?
                                     (
-                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#235697]/10 rounded-lg text-[10px] font-bold text-green-400">
+                                        <span className="flex items-center gap-1.5 px-3 py-1 border border-[#235697]/10 rounded-lg text-[10px] font-bold text-white bg-green-500">
                                             Passed
                                         </span>
                                     )
                                     :
                                     (
-                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-white border border-[#235697]/10 rounded-lg text-[10px] font-bold text-red-400">
+                                        <span className="flex items-center gap-1.5 px-3 py-1 bg-red-100 border border-[#235697]/10 rounded-lg text-[10px] font-bold text-red-500">
                                             Not Passed Yet
                                         </span>
                                     )}
@@ -428,35 +308,36 @@ export default function AssessmentList() {
                             </div>
                         </div>
 
-                        <div className="shrink-0 flex flex-col justify-between pl-4 py-1">
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleJoin(item);
-                                }}
-                                className="flex items-center gap-2 bg-[#69bfba] text-white px-7 py-3 rounded-xl font-bold text-sm hover:bg-[#3b7874] transition-all shadow-md active:scale-95"
-                            >
-                                Start Now
-                            </button>
+                        <div className="shrink-0 flex flex-col justify-between items-end lg:w-44 pt-2">
+                            <div className="flex flex-col gap-3 w-full">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleJoin(item);
+                                    }}
+                                    className="w-full flex justify-center items-center bg-[#235697] text-white px-5 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-[#1a4073] transition-all shadow-sm active:scale-95"
+                                >
+                                    Start Now
+                                </button>
 
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    goToDetail(item.assessmentId);
-                                }}
-                                className="flex items-center gap-2 bg-[#1BA7D9] text-white px-7 py-3 rounded-xl font-bold text-sm hover:bg-[#235697] transition-all shadow-md active:scale-95"
-                            >
-                                View Details
-                            </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        goToDetail(item.assessmentId);
+                                    }}
+                                    className="w-full flex justify-center items-center bg-[#1BA7D9] text-white px-5 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-[#158bb5] transition-all shadow-sm active:scale-95"
+                                >
+                                    View Details
+                                </button>
+                            </div>
 
-                            <span className="text-[11px] text-gray-500">
-                                {new Date(item.createdAt).toLocaleDateString()}
+                            <span className="text-[13px] text-gray-500 mt-6 lg:mt-0 font-medium">
+                                {new Date(item.createdAt).toLocaleDateString('en-GB')}
                             </span>
                         </div>
                     </div>
-                ))
-                }
-            </div >
-        </section >
+                ))}
+            </div>
+        </section>
     );
 }

@@ -12,11 +12,11 @@ interface TabDef {
 }
 
 const TAB_DEFS: TabDef[] = [
-    { id: "overview",   label: "Overview",           icon: <FileText   className="w-3.5 h-3.5" /> },
-    { id: "symptoms",   label: "Symptoms & History", icon: <User       className="w-3.5 h-3.5" /> },
-    { id: "exam",       label: "Physical Exam",      icon: <Stethoscope className="w-3.5 h-3.5" /> },
-    { id: "labs",       label: "Lab Tests",          icon: <FlaskConical className="w-3.5 h-3.5" /> },
-    { id: "radiology",  label: "Imaging",            icon: <Scan       className="w-3.5 h-3.5" /> },
+    { id: "overview", label: "Overview", icon: <FileText className="w-3.5 h-3.5" /> },
+    { id: "symptoms", label: "Symptoms & History", icon: <User className="w-3.5 h-3.5" /> },
+    { id: "exam", label: "Physical Exam", icon: <Stethoscope className="w-3.5 h-3.5" /> },
+    { id: "labs", label: "Lab Tests", icon: <FlaskConical className="w-3.5 h-3.5" /> },
+    { id: "radiology", label: "Imaging", icon: <Scan className="w-3.5 h-3.5" /> },
 ];
 
 interface CaseDetailTabNavProps {
@@ -39,9 +39,9 @@ export function CaseDetailTabNav({
 
         let nextIdx: number | null = null;
         if (e.key === "ArrowRight") nextIdx = (idx + 1) % ids.length;
-        if (e.key === "ArrowLeft")  nextIdx = (idx - 1 + ids.length) % ids.length;
-        if (e.key === "Home")       nextIdx = 0;
-        if (e.key === "End")        nextIdx = ids.length - 1;
+        if (e.key === "ArrowLeft") nextIdx = (idx - 1 + ids.length) % ids.length;
+        if (e.key === "Home") nextIdx = 0;
+        if (e.key === "End") nextIdx = ids.length - 1;
 
         if (nextIdx !== null) {
             e.preventDefault();
@@ -60,7 +60,7 @@ export function CaseDetailTabNav({
     }, [activeTab]);
 
     const getBadge = (tabId: DetailTab): number | undefined => {
-        if (tabId === "labs")      return labCount;
+        if (tabId === "labs") return labCount;
         if (tabId === "radiology") return radCount;
         return undefined;
     };

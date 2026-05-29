@@ -16,7 +16,7 @@ export default function AssessmentPageFeature({ learnerName }: { learnerName: st
             <HeroSection
                 image="/images/bgAssessment.jpeg"
                 title="Lavender Teeducation"
-                content="Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!Develop critical thinking and enhance your diagnostic skills through realistic clinical simulations!"
+                content="Develop critical thinking, strengthen clinical reasoning, and enhance diagnostic accuracy through immersive clinical simulations designed to replicate real-world patient interactions and healthcare decision-making scenarios!"
             />
 
             <section

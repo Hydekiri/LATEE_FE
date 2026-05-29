@@ -58,12 +58,12 @@ export function VPDetailHeader({ patient }: VPDetailHeaderProps) {
                         </span>
                         <span className="flex items-center gap-1">
                             <BarChart2 className="w-3.5 h-3.5 text-[#235697]" />
-                            {patient.stats.totalAttempts} attempts · Avg {patient.stats.avgScore.toFixed(1)}%
+                            {patient.stats?.totalAttempts} attempts · Avg {patient.stats?.avgScore?.toFixed(1)}%
                         </span>
                     </div>
 
                     {/* Chief Concern */}
-                    <div className="mt-3 px-3 py-2 bg-[#235697]/5 rounded-lg border border-[#235697]/10">
+                    <div className="mt-3 px-3 py-2 bg-[#235697]/8 rounded-lg border border-[#235697]/10">
                         <p className="text-xs font-black text-[#235697] uppercase tracking-wide mb-0.5">Chief Concern</p>
                         <p className="text-sm font-semibold text-slate-700">{patient.chiefConcern}</p>
                     </div>

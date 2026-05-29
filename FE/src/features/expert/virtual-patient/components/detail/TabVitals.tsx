@@ -1,14 +1,18 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { Save, Loader2, Activity } from "lucide-react";
-import type { VirtualPatientDetail, UpdateVPRequest, VPVitalSigns } from "@/src/types/virtual-patient-expert";
+import { Save, Loader2, Activity, Plus } from "lucide-react";
 import { buildVPBasePayload } from "@/src/utils/vp-payload";
+import type { VirtualPatientDetail, UpdateVPRequest, VPVitalSigns } from "@/src/types/virtual-patient-expert";
+
 interface TabVitalsProps {
     readonly patient: VirtualPatientDetail;
-    readonly onSave:  (payload: UpdateVPRequest) => Promise<void>;
-    readonly saving:  boolean;
+    readonly onSave: (payload: UpdateVPRequest) => Promise<void>;
+    readonly saving: boolean;
+    readonly readonly?: boolean;
 }
+
+const DEFAULT_VITALS: VPVitalSigns = { bp: "", hr: 0, temp: 0, spo2: "", rr: 0 };
 
 const VITALS_FIELDS: {
     key: keyof VPVitalSigns;
@@ -17,19 +21,21 @@ const VITALS_FIELDS: {
     placeholder: string;
     type: "text" | "number";
 }[] = [
-    { key: "bp",   label: "Blood Pressure",    unit: "mmHg",       placeholder: "114/91",  type: "text"   },
-    { key: "hr",   label: "Heart Rate",         unit: "bpm",        placeholder: "79",      type: "number" },
-    { key: "temp", label: "Temperature",        unit: "°C",         placeholder: "37.8",    type: "number" },
-    { key: "spo2", label: "Oxygen Saturation",  unit: "% SpO2",     placeholder: "98%",     type: "text"   },
-    { key: "rr",   label: "Respiratory Rate",   unit: "breaths/min",placeholder: "18",      type: "number" },
-];
+        { key: "bp", label: "Blood Pressure", unit: "mmHg", placeholder: "114/91", type: "text" },
+        { key: "hr", label: "Heart Rate", unit: "bpm", placeholder: "79", type: "number" },
+        { key: "temp", label: "Temperature", unit: "°C", placeholder: "37.8", type: "number" },
+        { key: "spo2", label: "Oxygen Saturation", unit: "% SpO2", placeholder: "98%", type: "text" },
+        { key: "rr", label: "Resp Rate", unit: "breaths/min", placeholder: "18", type: "number" },
+    ];
 
-export function TabVitals({ patient, onSave, saving }: TabVitalsProps) {
-    const [vitals, setVitals] = useState<VPVitalSigns>({ ...patient.vitalSigns });
-
+export function TabVitals({ patient, onSave, saving, readonly }: TabVitalsProps) {
+    const [vitals, setVitals] = useState<VPVitalSigns>(patient.vitalSigns ?? DEFAULT_VITALS);
     const [dirty, setDirty] = useState(false);
 
-    const setVital = useCallback(<K extends keyof VPVitalSigns>(key: K, value: VPVitalSigns[K]) => {
+    const hasVitals = !!patient.vitalSigns;
+
+    const setVital = useCallback(<K extends keyof VPVitalSigns>(key: K, raw: string, type: "text" | "number") => {
+        const value = type === "number" ? (parseFloat(raw) || 0) : raw;
         setVitals((prev) => ({ ...prev, [key]: value }));
         setDirty(true);
     }, []);
@@ -39,6 +45,23 @@ export function TabVitals({ patient, onSave, saving }: TabVitalsProps) {
         setDirty(false);
     }, [onSave, patient, vitals]);
 
+    if (!hasVitals && !dirty) {
+        return (
+            <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl">
+                <Activity className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm font-semibold text-slate-400">No vital signs configured</p>
+                <p className="text-xs text-slate-300 mt-1">Add baseline vital signs for this patient</p>
+                <button
+                    onClick={() => setDirty(true)}
+                    className="mt-4 flex items-center gap-1.5 px-4 py-2 border border-[#235697] text-[#235697] text-xs font-bold rounded-lg hover:bg-[#235697]/5 transition-all mx-auto"
+                >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Vital Signs
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -47,8 +70,11 @@ export function TabVitals({ patient, onSave, saving }: TabVitalsProps) {
                     <h3 className="text-base font-black text-slate-800">Vital Signs Configuration</h3>
                 </div>
                 {dirty && (
-                    <button onClick={() => void handleSave()} disabled={saving}
-                        className="flex items-center gap-2 px-4 py-2 bg-[#235697] text-white text-xs font-bold rounded-lg hover:bg-[#1BA7D9] transition-all disabled:opacity-50 shadow-sm">
+                    <button
+                        onClick={() => void handleSave()}
+                        disabled={saving}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#235697] text-white text-xs font-bold rounded-lg hover:bg-[#1BA7D9] transition-all disabled:opacity-50 shadow-sm"
+                    >
                         {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                         {saving ? "Saving..." : "Save Vitals"}
                     </button>
@@ -64,14 +90,11 @@ export function TabVitals({ patient, onSave, saving }: TabVitalsProps) {
                         <div className="flex items-center gap-2">
                             <input
                                 type={type}
-                                value={vitals[key]}
-                                onChange={(e) => {
-                                    const val = type === "number" ? Number(e.target.value) : e.target.value;
-                                    setVital(key, val as VPVitalSigns[typeof key]);
-                                }}
+                                value={vitals[key] ?? ""}
+                                onChange={(e) => setVital(key, e.target.value, type)}
                                 placeholder={placeholder}
                                 step={type === "number" ? "0.1" : undefined}
-                                className="flex-1 px-3 py-2 text-sm font-bold border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-[#235697] transition-all font-mono"
+                                className="flex-1 px-3 py-2 text-sm font-bold border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-[#235697] focus:ring-2 focus:ring-[#235697]/10 transition-all font-mono"
                             />
                             <span className="text-[11px] font-semibold text-slate-400 shrink-0 whitespace-nowrap">{unit}</span>
                         </div>

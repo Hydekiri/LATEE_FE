@@ -2,9 +2,10 @@
 
 import React, { useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Copy, Globe, ExternalLink, RefreshCw, Loader2 } from "lucide-react";
+import { ArrowLeft, Copy, Globe, ExternalLink, RefreshCw, Loader2, ShieldAlert } from "lucide-react";
 import { useVirtualPatientDetail } from "@/src/hooks/useVirtualPatientDetail";
 import { useVirtualPatientActions } from "@/src/hooks/useVirtualPatientActions";
+import { useVPPermission } from "@/src/hooks/useVPPermission";
 import { VPDetailHeader } from "@/src/features/expert/virtual-patient/components/detail/VPDetailHeader";
 import { VPDetailSidebar } from "@/src/features/expert/virtual-patient/components/detail/VPDetailSidebar";
 import { TabPersona } from "@/src/features/expert/virtual-patient/components/detail/TabPersona";
@@ -14,7 +15,6 @@ import { TabLearningObjectives } from "@/src/features/expert/virtual-patient/com
 import { TabExperts } from "@/src/features/expert/virtual-patient/components/detail/TabExperts";
 import { VPStatusBadge } from "@/src/features/expert/virtual-patient/components/VPStatusBadge";
 import { VPLevelBadge } from "@/src/features/expert/virtual-patient/components/VPLevelBadge";
-
 import { VPStatus } from "@/src/types/virtual-patient-expert";
 
 const TABS = [
@@ -36,13 +36,19 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
         useVirtualPatientDetail(patientId);
     const { actionLoading, duplicatePatient } = useVirtualPatientActions();
 
+    const {
+        canEdit,
+        canChangeStatus,
+        isReadonly,
+    } = useVPPermission(patient);
+
     const [activeTab, setActiveTab] = useState<TabSlug>("persona");
 
     const handlePublish = useCallback(async () => {
-        if (!patient) return;
+        if (!patient || !canChangeStatus) return;
         const next = patient.status === VPStatus.Published ? VPStatus.Active : VPStatus.Published;
         await updateStatus(next);
-    }, [patient, updateStatus]);
+    }, [patient, updateStatus, canChangeStatus]);
 
     const handleDuplicate = useCallback(() => {
         void duplicatePatient(patientId);
@@ -90,10 +96,12 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
     const isPublished = patient.status === VPStatus.Published;
 
     return (
-        <section className="p-6 space-y-5 min-h-screen bg-[#F4F7FB]">
+        <section className="p-6 space-y-5 min-h-screen bg-linear-to-b from-[#1BA7D9] to-[#235697]">
 
-            {/* ── Breadcrumb + Actions ── */}
-            <div className="flex items-center justify-between flex-wrap gap-3">
+           {/* ── Breadcrumb + Actions ── */}
+            <div className="flex items-center justify-between flex-wrap gap-3 bg-white/95 p-4 md:p-5 rounded-xl border border-[#DDE7F0] shadow-sm">
+                
+                {/* Left: Breadcrumb */}
                 <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold">
                     <Link
                         href="/expert/virtual-patient"
@@ -105,9 +113,17 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
                     <span className="text-slate-700 font-black font-mono">{patient.patientId}</span>
                 </div>
 
+                {/* Right: Actions */}
                 <div className="flex items-center gap-2">
                     <VPStatusBadge status={patient.status} size="md" />
                     <VPLevelBadge level={patient.level} size="md" />
+
+                    {isReadonly && (
+                        <span className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-600 text-xs font-bold">
+                            <ShieldAlert className="w-3.5 h-3.5" />
+                            Read Only
+                        </span>
+                    )}
 
                     <button
                         onClick={handleDuplicate}
@@ -117,21 +133,23 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
                         <Copy className="w-3.5 h-3.5" /> Duplicate
                     </button>
 
-                    <button
-                        onClick={() => void handlePublish()}
-                        disabled={actionLoading || saving}
-                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all disabled:opacity-50 ${isPublished
-                                ? "border border-amber-300 text-amber-700 hover:bg-amber-50"
-                                : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-                            }`}
-                    >
-                        {(actionLoading || saving) ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                            <Globe className="w-3.5 h-3.5" />
-                        )}
-                        {isPublished ? "Unpublish" : "Publish"}
-                    </button>
+                    {canChangeStatus && (
+                        <button
+                            onClick={() => void handlePublish()}
+                            disabled={actionLoading || saving}
+                            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-lg transition-all disabled:opacity-50 ${isPublished
+                                    ? "border border-amber-300 text-amber-700 hover:bg-amber-50"
+                                    : "bg-[#235697] text-white hover:bg-[#1BA7D9] shadow-sm"
+                                }`}
+                        >
+                            {(actionLoading || saving) ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                                <Globe className="w-3.5 h-3.5" />
+                            )}
+                            {isPublished ? "Unpublish" : "Publish"}
+                        </button>
+                    )}
 
                     <Link
                         href={`/practice/${patient.patientId}?tab=about`}
@@ -148,13 +166,9 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
 
                 {/* Left: Detail + Tabs */}
                 <div className="lg:col-span-8 space-y-5">
-
-                    {/* Summary header */}
                     <VPDetailHeader patient={patient} />
 
-                    {/* Tabs */}
                     <div className="bg-white border border-[#DDE7F0] rounded-xl shadow-sm overflow-hidden">
-                        {/* Tab nav */}
                         <div className="flex border-b border-slate-100 px-6 pt-4 gap-1 overflow-x-auto">
                             {TABS.map((tab) => (
                                 <button
@@ -174,13 +188,22 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
                             ))}
                         </div>
 
-                        {/* Tab content */}
                         <div className="px-6 py-6">
-                            {activeTab === "persona" && <TabPersona patient={patient} onSave={savePatient} saving={saving} />}
-                            {activeTab === "vitals" && <TabVitals patient={patient} onSave={savePatient} saving={saving} />}
-                            {activeTab === "instructions" && <TabInstructions patient={patient} onSave={savePatient} saving={saving} />}
-                            {activeTab === "objectives" && <TabLearningObjectives patient={patient} onSave={savePatient} saving={saving} />}
-                            {activeTab === "experts" && <TabExperts patient={patient} />}
+                            {activeTab === "persona" && (
+                                <TabPersona patient={patient} onSave={savePatient} saving={saving} readonly={!canEdit} />
+                            )}
+                            {activeTab === "vitals" && (
+                                <TabVitals patient={patient} onSave={savePatient} saving={saving} readonly={!canEdit} />
+                            )}
+                            {activeTab === "instructions" && (
+                                <TabInstructions patient={patient} onSave={savePatient} saving={saving} readonly={!canEdit} />
+                            )}
+                            {activeTab === "objectives" && (
+                                <TabLearningObjectives patient={patient} onSave={savePatient} saving={saving} readonly={!canEdit} />
+                            )}
+                            {activeTab === "experts" && (
+                                <TabExperts patient={patient} onRefresh={refetch} />
+                            )}
                         </div>
                     </div>
                 </div>
@@ -188,7 +211,7 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
                 {/* Right: Sidebar */}
                 <div className="lg:col-span-4">
                     <VPDetailSidebar
-                        key={patient.updatedAt}   
+                        key={patient.updatedAt}
                         patient={patient}
                         onSave={savePatient}
                         saving={saving}

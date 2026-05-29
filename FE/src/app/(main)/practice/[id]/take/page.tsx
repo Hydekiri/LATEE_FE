@@ -3,6 +3,10 @@ import { checkIsLearnerLoggedIn } from '@/src/app/authFilterChain';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
 
+export const metadata = {
+    title: "Take Practice - Lavender Teeducation",
+    description: "Enhance your diagnostic skills with virtual patients.",
+};
 interface PageProps {
     params: Promise<{
         id: string;
