@@ -10,10 +10,10 @@ import type {
 } from "@/src/types/virtual-patient-expert";
 
 interface UseVirtualPatientActionsReturn {
-    actionLoading:    boolean;
-    actionError:      string | null;
-    createPatient:    (payload: CreateVPRequest) => Promise<CreateVPResponse | null>;
-    deletePatient:    (id: string, onSuccess?: () => void) => Promise<void>;
+    actionLoading: boolean;
+    actionError: string | null;
+    createPatient: (payload: CreateVPRequest) => Promise<CreateVPResponse | null>;
+    deletePatient: (id: string, onSuccess?: () => void) => Promise<void>;
     duplicatePatient: (id: string, onSuccess?: () => void) => Promise<void>;
     updateStatus: (
         id: string,
@@ -27,7 +27,7 @@ interface UseVirtualPatientActionsReturn {
 
 export function useVirtualPatientActions(): UseVirtualPatientActionsReturn {
     const [actionLoading, setActionLoading] = useState(false);
-    const [actionError,   setActionError]   = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
 
     const clearError = useCallback(() => setActionError(null), []);
 
@@ -81,10 +81,7 @@ export function useVirtualPatientActions(): UseVirtualPatientActionsReturn {
     const updateStatus = useCallback(async (
         id: string,
         status: VPStatus,
-        // Optional optimistic updater — kept for list-page usage
         mutateItem?: (fn: (item: VirtualPatientSummary) => VirtualPatientSummary) => void,
-        // Called after the API resolves (success or failure) so the caller
-        // can trigger a refetch at the right moment — no more blind setTimeout
         onSettled?: () => void,
     ): Promise<void> => {
         mutateItem?.((item) => ({ ...item, status }));

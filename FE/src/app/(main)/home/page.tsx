@@ -1,6 +1,14 @@
 import HomePage from "@/src/features/home/homepage";
 import { redirect } from "next/navigation";
-import { checkIsLearnerLoggedIn, getCurrentUser } from "../../authFilterChain";
+import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
+
+export const dynamic = "force-dynamic";
+
+export const metadata = {
+    title: "Latee | Learner Home",
+    description: "Welcome to Latee. A smarter way to practice clinical decision-making.",
+};
+
 
 export default async function Home() {
     const isLearnerLoggedIn = await checkIsLearnerLoggedIn();
@@ -9,7 +17,6 @@ export default async function Home() {
         console.log("Learner has not been logged in. Redirect to login page....");
         redirect('/login');
     }
-    // COMMENT HERE IF WOULD LIKE TO PASS USER ATTRIBUTES TO LOWER COMPONENTS
     //const currentLearner = await getCurrentUser();
     
     return (

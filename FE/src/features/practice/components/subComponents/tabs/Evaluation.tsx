@@ -16,9 +16,10 @@ import { getLearnerId } from '@/src/utils/cookies';
 import { usePathname } from 'next/navigation';
 import { patientService } from '@/src/services/patient-servvice';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
+export const metadata = {
+    title: "Evaluation - Lavender Teeducation",
+    description: "Enhance your diagnostic skills with virtual patients.",
+};
 
 function formatDuration(minutes: number): string {
     const m = Math.floor(minutes);

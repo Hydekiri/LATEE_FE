@@ -85,7 +85,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 {/* Menu Items */}
                 <nav className="space-y-2">
                     {menuItems.map((item) => {
-                        const isActive = pathname === item.href;
+                        // Logic mới: Trang chủ dùng ===, các trang con dùng startsWith
+                        const isActive = item.href === "/expert" 
+                            ? pathname === "/expert" 
+                            : pathname.startsWith(item.href);
+
                         const Icon = isActive ? item.solid : item.outline;
 
                         return (

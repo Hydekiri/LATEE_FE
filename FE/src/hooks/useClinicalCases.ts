@@ -94,7 +94,7 @@ export function useClinicalCases(params: ClinicalCaseListParams): UseClinicalCas
                 const sp = new URLSearchParams(searchParams.toString());
                 if (debouncedSearch) sp.set("search", debouncedSearch); else sp.delete("search");
                 if (params.status) sp.set("status", params.status); else sp.delete("status");
-                if (params.type) sp.set("type", params.type); else sp.delete("type");
+                if (params.caseType) sp.set("type", params.caseType); else sp.delete("type");
                 sp.set("page", String(result.page));
                 router.replace(`${pathname}?${sp.toString()}`, { scroll: false });
             } catch (err: unknown) {
@@ -103,7 +103,7 @@ export function useClinicalCases(params: ClinicalCaseListParams): UseClinicalCas
                 setState((prev) => ({ ...prev, loading: false, error: message }));
             }
         },
-        [debouncedSearch, params.status, params.type, params.eccid, params.sortBy, params.sortDir]
+        [debouncedSearch, params.status, params.caseType, params.eccId, params.sortBy, params.sortDir]
     );
 
     useEffect(() => {
@@ -111,7 +111,7 @@ export function useClinicalCases(params: ClinicalCaseListParams): UseClinicalCas
             void fetchData(1);
         }, 0);
         return () => clearTimeout(timer);
-    }, [debouncedSearch, params.status, params.type, params.eccid, params.sortBy, params.sortDir]);
+    }, [debouncedSearch, params.status, params.caseType, params.eccId, params.sortBy, params.sortDir]);
     
     const setPage = useCallback((page: number) => {
         setState((prev) => ({ ...prev, page }));

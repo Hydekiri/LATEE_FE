@@ -21,7 +21,7 @@ export default function AssessmentDetail({ data }: { data: AssessmentData }) {
         { name: 'Experts', slug: 'experts' },
         { name: 'Insights', slug: 'insights' },
         { name: 'Results', slug: 'results' },
-        { name: 'FAQ', slug: 'faq' }
+        { name: 'Support', slug: 'faq' }
     ];
 
     const handleTabChange = (slug: string) => {

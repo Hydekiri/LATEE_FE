@@ -13,6 +13,8 @@ import { VPEmptyState } from "./components/VPEmptyState";
 import { CreateVPModal } from "./components/CreateVPModal";
 import { DeleteVPModal } from "./components/DeleteVPModal";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { RefreshCw } from "lucide-react";
+import { getCurrentExpertId } from "@/src/utils/cookies";
 import type {
     VirtualPatientSummary,
     VPStatus,
@@ -20,7 +22,6 @@ import type {
     VPSortDir,
 } from "@/src/types/virtual-patient-expert";
 import { VPSortDir as VPSortDirEnum } from "@/src/types/virtual-patient-expert";
-import { RefreshCw } from "lucide-react";
 
 const TABLE_HEADERS = [
     { key: "patientId", label: "Patient ID", className: "w-36" },
@@ -41,26 +42,22 @@ interface DeleteTarget {
 export default function VirtualPatientFeature() {
     const router = useRouter();
 
-    // Filters
     const {
         filters, setSearch, setStatus, setLevel, setGender, setCaseId,
         setSortBy, setSortDir, resetFilters, toParams,
     } = useVirtualPatientFilters();
 
-    // Data
     const params = useMemo(() => toParams(), [toParams]);
     const {
         items, total, page, pageSize, totalPages,
         availableFilters, loading, error, refetch, setPage,
     } = useVirtualPatients(params);
 
-    // Actions
     const {
         actionLoading, actionError, createPatient, deletePatient,
         duplicatePatient, updateStatus, clearError,
     } = useVirtualPatientActions();
 
-    // Modal states
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
 
@@ -73,6 +70,8 @@ export default function VirtualPatientFeature() {
     }, [filters.sortDir, setSortDir]);
 
     const handleCreate = useCallback(async (form: CreateVPFormState) => {
+        const currentExpertId = getCurrentExpertId();
+
         const result = await createPatient({
             name: form.name,
             caseId: form.caseId,
@@ -88,7 +87,9 @@ export default function VirtualPatientFeature() {
             timeSetting: typeof form.timeSetting === "number" ? form.timeSetting : 30,
             argumentTime: typeof form.argumentTime === "number" ? form.argumentTime : 15,
             status: form.status,
+            expertIds: currentExpertId ? [currentExpertId] : [],
         });
+
         if (result) {
             setIsCreateOpen(false);
             refetch();
@@ -105,9 +106,7 @@ export default function VirtualPatientFeature() {
     }, [deleteTarget, deletePatient, refetch]);
 
     const handleStatusChange = useCallback((id: string, status: VPStatus) => {
-        void updateStatus(id, status, (fn) => {
-            void fn;
-        });
+        void updateStatus(id, status, (fn) => { void fn; });
         setTimeout(() => refetch(), 400);
     }, [updateStatus, refetch]);
 
@@ -124,7 +123,6 @@ export default function VirtualPatientFeature() {
     return (
         <section className="p-6 space-y-5 min-h-screen bg-linear-to-r from-[#1BA7D9] to-[#235697]">
 
-            {/* ── Page Header ── */}
             <div className="flex items-start justify-between">
                 <div>
                     <h1 className="text-2xl font-black text-white tracking-tight">
@@ -143,10 +141,8 @@ export default function VirtualPatientFeature() {
                 </button>
             </div>
 
-            {/* ── Stats Banner ── */}
             <VPStatsBanner total={total} loading={loading} />
 
-            {/* ── Action Error ── */}
             {actionError && (
                 <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-600 text-sm font-medium flex items-center justify-between">
                     <span>{actionError}</span>
@@ -154,7 +150,6 @@ export default function VirtualPatientFeature() {
                 </div>
             )}
 
-            {/* ── Filter Bar ── */}
             <VPFilterBar
                 filters={filters}
                 availableFilters={availableFilters}
@@ -170,10 +165,7 @@ export default function VirtualPatientFeature() {
                 hasActiveFilters={hasActiveFilters}
             />
 
-            {/* ── Table Container ── */}
             <div className="bg-white border border-[#DDE7F0] rounded-xl shadow-sm overflow-hidden">
-
-                {/* Table */}
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm" role="table" aria-label="Virtual patients table">
                         <thead>
@@ -189,12 +181,10 @@ export default function VirtualPatientFeature() {
                             </tr>
                         </thead>
                         <tbody>
-                            {/* Loading */}
                             {loading && Array.from({ length: pageSize }).map((_, i) => (
                                 <VPSkeletonRow key={i} />
                             ))}
 
-                            {/* Error */}
                             {!loading && error && (
                                 <tr>
                                     <td colSpan={8}>
@@ -214,7 +204,6 @@ export default function VirtualPatientFeature() {
                                 </tr>
                             )}
 
-                            {/* Empty */}
                             {!loading && !error && items.length === 0 && (
                                 <VPEmptyState
                                     hasFilters={hasActiveFilters}
@@ -223,7 +212,6 @@ export default function VirtualPatientFeature() {
                                 />
                             )}
 
-                            {/* Rows */}
                             {!loading && !error && items.map((item: VirtualPatientSummary) => (
                                 <VPTableRow
                                     key={item.patientId}
@@ -237,7 +225,6 @@ export default function VirtualPatientFeature() {
                     </table>
                 </div>
 
-                {/* ── Pagination ── */}
                 {!loading && !error && totalPages > 1 && (
                     <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-[#F8FAFC]">
                         <p className="text-xs text-slate-400 font-medium">
@@ -277,7 +264,6 @@ export default function VirtualPatientFeature() {
                 )}
             </div>
 
-            {/* ── Modals ── */}
             <CreateVPModal
                 isOpen={isCreateOpen}
                 isLoading={actionLoading}

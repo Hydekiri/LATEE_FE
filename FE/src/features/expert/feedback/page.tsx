@@ -18,7 +18,6 @@ import {
     TrashIcon
 } from "@heroicons/react/24/solid";
 
-// Dữ liệu mẫu khởi tạo chuẩn hóa theo Interface IssueItem của hệ thống
 const INITIAL_ISSUES: IssueItem[] = [
     { 
         id: "ISS-402", 

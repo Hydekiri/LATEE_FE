@@ -34,7 +34,7 @@ export interface IssueItem {
     id: string;
     user: string;
     itemType: ItemType;
-    contextId: string; 
+    contextId: string;
     content: string;
     status: IssueStatus;
     date: string;

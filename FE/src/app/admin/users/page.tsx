@@ -1,8 +1,13 @@
 import UserPage from "@/src/features/admin/components/UserPage";
-import { checkIsAdminLoggedIn, getCurrentUser } from "../../authFilterChain";
+import { checkIsAdminLoggedIn, getCurrentUser } from "@/src/app/authFilterChain";
 import { redirect } from 'next/navigation';
 
-export default async function UsersPagez() {
+
+export const metadata = {
+    title: "Latee | Admin Users",
+    description: "Welcome to Latee. A smarter way to practice clinical decision-making.",
+};
+export default async function UsersPage() {
     const isAdminLoggedIn = await checkIsAdminLoggedIn();
 
     if (!isAdminLoggedIn) {

@@ -65,8 +65,8 @@ export function useClinicalCaseFilters(): UseClinicalCaseFiltersReturn {
     const toParams = useCallback((): ClinicalCaseListParams => ({
         search: filters.search || undefined,
         status: filters.status || undefined,
-        type: filters.type || undefined,
-        eccid: filters.eccid || undefined,
+        caseType: filters.type || undefined,
+        eccId: filters.eccid || undefined,
         sortBy: filters.sortBy,
         sortDir: filters.sortDir,
     }), [filters]);

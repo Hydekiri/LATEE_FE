@@ -18,6 +18,11 @@ import { PatientData } from '@/src/types/practice';
 import { issueService, IssueItem, IssueStatus } from '@/src/services/issue-service';
 import { getCookie } from '@/src/utils/cookies';
 
+export const metadata = {
+    title: "FAQ - Lavender Teeducation",
+    description: "Enhance your diagnostic skills with virtual patients.",
+};
+
 interface FAQItem {
     id: number;
     question: string;

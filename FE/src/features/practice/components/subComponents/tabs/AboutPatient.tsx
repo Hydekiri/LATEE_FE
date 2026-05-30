@@ -5,6 +5,12 @@ import Image from 'next/image';
 import React from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
+
+export const metadata = {
+    title: "About Patient - Lavender Teeducation",
+    description: "Enhance your diagnostic skills with virtual patients.",
+};
+
 interface AboutPatientProps {
     data: PatientData;
 }
@@ -133,6 +139,7 @@ export const AboutPatient = ({ data }: AboutPatientProps) => {
                                     src={expert.img}
                                     alt={expert.name}
                                     fill
+                                    sizes="96px"
                                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                             </div>

@@ -3,15 +3,15 @@
 import React, { memo } from "react";
 import Link from "next/link";
 import { VPStatusBadge } from "@/src/features/expert/virtual-patient/components/VPStatusBadge";
-import { VPLevelBadge }  from "@/src/features/expert/virtual-patient/components/VPLevelBadge";
-import { VPRowActions }  from "@/src/features/expert/virtual-patient/components/VPRowActions";
+import { VPLevelBadge } from "@/src/features/expert/virtual-patient/components/VPLevelBadge";
+import { VPRowActions } from "@/src/features/expert/virtual-patient/components/VPRowActions";
 import type { VirtualPatientSummary, VPStatus } from "@/src/types/virtual-patient-expert";
 
 interface VPTableRowProps {
-    readonly item:          VirtualPatientSummary;
-    readonly onDelete:      (id: string) => void;
-    readonly onDuplicate:   (id: string) => void;
-    readonly onStatusChange:(id: string, status: VPStatus) => void;
+    readonly item: VirtualPatientSummary;
+    readonly onDelete: (id: string) => void;
+    readonly onDuplicate: (id: string) => void;
+    readonly onStatusChange: (id: string, status: VPStatus) => void;
 }
 
 export const VPTableRow = memo(function VPTableRow({
@@ -72,7 +72,7 @@ export const VPTableRow = memo(function VPTableRow({
 
             {/* Actions */}
             <td className="px-4 py-3">
-                <div className="flex justify-end"> 
+                <div className="flex justify-end">
                     <VPRowActions
                         item={item}
                         onDelete={onDelete}

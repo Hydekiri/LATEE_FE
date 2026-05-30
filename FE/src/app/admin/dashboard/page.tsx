@@ -1,7 +1,13 @@
 import DashboardPage from "@/src/features/admin/components/DashboardPage";
-import { checkIsAdminLoggedIn, getCurrentUser } from "../../authFilterChain";
+import { checkIsAdminLoggedIn, getCurrentUser } from "@/src/app/authFilterChain";
 import { redirect } from "next/navigation";
 
+
+export const dynamic = "force-dynamic";
+export const metadata = {
+    title: "Latee | Admin Dashboard",
+    description: "Welcome to Latee. A smarter way to practice clinical decision-making.",
+};
 export default async function AdminDashboardPage() {
     const isAdminLoggedIn = await checkIsAdminLoggedIn();
 

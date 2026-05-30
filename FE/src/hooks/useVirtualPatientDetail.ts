@@ -16,6 +16,8 @@ interface UseVirtualPatientDetailReturn {
     refetch: () => void;
     savePatient: (payload: UpdateVPRequest) => Promise<void>;
     updateStatus: (status: VPStatus) => Promise<void>;
+    addExperts: (expertIds: string[]) => Promise<void>;
+    removeExpert: (expertId: string) => Promise<void>;
 }
 
 export function useVirtualPatientDetail(id: string): UseVirtualPatientDetailReturn {
@@ -36,26 +38,21 @@ export function useVirtualPatientDetail(id: string): UseVirtualPatientDetailRetu
             setLoading(false);
         }
     }, [id]);
-    
+
     useEffect(() => {
-        const timer = setTimeout(() => {
-            void fetchDetail();
-        }, 0);
+        const timer = setTimeout(() => { void fetchDetail(); }, 0);
         return () => clearTimeout(timer);
     }, [fetchDetail]);
 
-    const refetch = useCallback(() => {
-        void fetchDetail();
-    }, [fetchDetail]);
+    const refetch = useCallback(() => { void fetchDetail(); }, [fetchDetail]);
 
     const savePatient = useCallback(async (payload: UpdateVPRequest) => {
         setSaving(true);
         try {
             await virtualPatientExpertService.update(id, payload);
-            await new Promise((r) => setTimeout(r, 300)); 
             await fetchDetail();
         } catch (err) {
-            console.error("update error:", err);
+            console.error("VP update error:", err);
         } finally {
             setSaving(false);
         }
@@ -66,9 +63,35 @@ export function useVirtualPatientDetail(id: string): UseVirtualPatientDetailRetu
         try {
             await virtualPatientExpertService.updateStatus(id, status);
         } catch {
-            await fetchDetail(); 
+            await fetchDetail();
         }
     }, [id, fetchDetail]);
 
-    return { patient, loading, error, saving, refetch, savePatient, updateStatus };
+    const addExperts = useCallback(async (expertIds: string[]) => {
+        setSaving(true);
+        try {
+            await virtualPatientExpertService.addExperts(id, expertIds);
+            await fetchDetail();
+        } catch (err) {
+            console.error("VP addExperts error:", err);
+            throw err;
+        } finally {
+            setSaving(false);
+        }
+    }, [id, fetchDetail]);
+
+    const removeExpert = useCallback(async (expertId: string) => {
+        setSaving(true);
+        try {
+            await virtualPatientExpertService.removeExpert(id, expertId);
+            await fetchDetail();
+        } catch (err) {
+            console.error("VP removeExpert error:", err);
+            throw err;
+        } finally {
+            setSaving(false);
+        }
+    }, [id, fetchDetail]);
+
+    return { patient, loading, error, saving, refetch, savePatient, updateStatus, addExperts, removeExpert };
 }

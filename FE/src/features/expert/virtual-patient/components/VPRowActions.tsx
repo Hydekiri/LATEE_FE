@@ -10,9 +10,9 @@ import type { VirtualPatientSummary, VPStatus } from "@/src/types/virtual-patien
 import { VPStatus as VPStatusEnum } from "@/src/types/virtual-patient-expert";
 
 interface VPRowActionsProps {
-    readonly item:           VirtualPatientSummary;
-    readonly onDelete:       (id: string) => void;
-    readonly onDuplicate:    (id: string) => void;
+    readonly item: VirtualPatientSummary;
+    readonly onDelete: (id: string) => void;
+    readonly onDuplicate: (id: string) => void;
     readonly onStatusChange: (id: string, status: VPStatus) => void;
 }
 
@@ -31,7 +31,7 @@ export function VPRowActions({ item, onDelete, onDuplicate, onStatusChange }: VP
     }, [open, close]);
 
     const isPublished = item.status === VPStatusEnum.Published;
-    const isArchived  = item.status === VPStatusEnum.Archived;
+    const isArchived = item.status === VPStatusEnum.Archived;
 
     return (
         <div className="relative" ref={ref}>
@@ -42,7 +42,7 @@ export function VPRowActions({ item, onDelete, onDuplicate, onStatusChange }: VP
                 aria-haspopup="true"
                 aria-expanded={open}
                 className={[
-                    "p-1.5 rounded-[8px] transition-all outline-none",
+                    "p-1.5 rounded-lg transition-all outline-none",
                     "focus-visible:ring-2 focus-visible:ring-[#1BA7D9]",
                     open
                         ? "bg-[#235697]/10 text-[#235697]"
