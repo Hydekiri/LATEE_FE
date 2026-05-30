@@ -20,9 +20,6 @@ export default function Home_Header({ page }: NavbarProps) {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-    // Normalize avatar values coming from cookies. Some backends (or storage) may store
-    // the literal string "null" or an empty value; treat those as missing so the
-    // Next/Image fallback works reliably.
     const getValidAvatar = (url?: string | null) => {
         if (!url) return undefined;
         const v = url.trim();

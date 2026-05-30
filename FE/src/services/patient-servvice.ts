@@ -74,11 +74,12 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
     const timeSetting = item.timeSetting || 30;
     const argumentTime = item.argumentTime || 15;
 
-    const instructions: PatientInstructions = item.instructions ?? {
-        role: 'Medical Learner',
-        task: 'Take a focused clinical history from this patient.',
-        tone: 'Professional',
-        procedure: [
+    // ✅ BẢO VỆ 1: Xử lý instructions an toàn tuyệt đối
+    const safeInstructions: PatientInstructions = {
+        role: item.instructions?.role || 'Medical Learner',
+        task: item.instructions?.task || 'Take a focused clinical history from this patient.',
+        tone: item.instructions?.tone || 'Professional',
+        procedure: item.instructions?.procedure || [
             'Introduce yourself',
             'Take a focused history',
             'Identify key findings',
@@ -86,13 +87,16 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
         ],
     };
 
-    const safeInstructions: PatientInstructions = {
-        ...instructions,
-        procedure: instructions.procedure ?? [],
-        task: instructions.task || 'Take a focused clinical history from this patient.',
+    // ✅ BẢO VỆ 2: Xử lý vitalSigns an toàn tuyệt đối
+    const safeVitalSigns: VitalSigns = {
+        bp: item.vitalSigns?.bp || 'N/A',
+        hr: item.vitalSigns?.hr || 0,
+        temp: item.vitalSigns?.temp || 'N/A',
+        spo2: item.vitalSigns?.spo2 || 'N/A',
+        rr: item.vitalSigns?.rr || 0,
     };
 
-    const experts: Expert[] = (item.experts ?? []).map((e: RawExpert) => ({
+    const experts: Expert[] = (item.experts || []).map((e: RawExpert) => ({
         expertId: e.expertId,
         name: e.name,
         role: e.role ?? e.titlePosition ?? 'Expert',
@@ -120,23 +124,25 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
         img: item.avatarImage || '/images/VP7.jpeg',
         level: item.level,
         time: `${timeSetting} min`,
+        // ✅ THÊM TRƯỜNG NÀY VÌ UI CỦA BẠN ĐANG CẦN GỌI ĐẾN NÓ
+        timeSetting: timeSetting,
+        argumentTime: argumentTime,
         date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
         feedback: item.feedbackCount ?? 0,
         timesPracticed: item.timesPracticed ?? 0,
         description: item.medicalHistory || '',
         chiefConcern: item.chiefConcern || '',
-        vitalSigns: item.vitalSigns ?? { bp: 'N/A', hr: 0 },
+        vitalSigns: safeVitalSigns,
         instructions: safeInstructions,
         caseRules: {
-            rules: item.caseRule?.rules ?? [],
-            totalTime:
-                item.caseRule?.totalTime ?? `${timeSetting + argumentTime} min`,
-            timeBreakdown: item.caseRule?.timeBreakdown ?? [
+            rules: item.caseRule?.rules || [],
+            totalTime: item.caseRule?.totalTime || `${timeSetting + argumentTime} min`,
+            timeBreakdown: item.caseRule?.timeBreakdown || [
                 `${timeSetting} minutes for patient interaction`,
                 `${argumentTime} minutes for explanation and reasoning`,
             ],
         },
-        learningObjectives: item.learningObjectives ?? [],
+        learningObjectives: item.learningObjectives || [],
         experts,
     };
 }
@@ -167,7 +173,7 @@ export const patientService = {
         } catch (error) {
             console.error('[PATIENT SERVICE ERROR] getVirtualPatients', error);
             return { items: [], total: 0, page, pageSize, totalPages: 0 };
-        };
+        } // ✅ Fix: Xóa dấu chấm phẩy thừa ở đây
     },
 
     async getVirtualPatientById(id: string): Promise<PatientData> {
@@ -176,9 +182,17 @@ export const patientService = {
                 `/virtual-patient/api/virtual-patients/${id}`
             );
             return mapRawToPatientData(item);
-        } catch (error) {
-            console.error('[PATIENT SERVICE ERROR] getVirtualPatientById', { id, error });
-            throw error;
+        } catch (error: any) {
+            // ✅ FIX LỖI SCOPE: Không gọi biến "item" ở đây vì nó nằm trong try
+            // ✅ FIX LỖI IN: In chi tiết lỗi backend trả về thay vì [object Error]
+            console.error(
+                '[PATIENT SERVICE ERROR] getVirtualPatientById', 
+                { 
+                    id, 
+                    errorMessage: error?.response?.data || error?.message || error 
+                }
+            );
+            throw error; // ✅ FIX LỖI CODE: Đã xóa dòng throw error bị lặp lần 2
         }
     },
 
