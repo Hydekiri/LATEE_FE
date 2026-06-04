@@ -9,14 +9,22 @@ export const getKnowledgeResources = async () => {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
-                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                "ngrok-skip-browser-warning": "true"
             },
         });
 
         if (!res.ok) throw new Error("Failed to fetch knowledge resources");
         return res.json();
     } catch (error) {
-        console.error("Error fetching knowledge resources:", error);
+        console.error("Error fetching knowledge resources:");
+        console.error(error);
+
+        if (error instanceof Error) {
+            console.error("Message:", error.message);
+            console.error("Stack:", error.stack);
+        }
+
         throw error;
     }
 };
@@ -29,7 +37,8 @@ export const getKnowledgeResourceById = async (id: string) => {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
-                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                "ngrok-skip-browser-warning": "true"
             },
         });
         console.log("Fetch response:", res);

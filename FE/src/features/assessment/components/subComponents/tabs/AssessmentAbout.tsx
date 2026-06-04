@@ -5,6 +5,7 @@ import { ArrowRightIcon, DocumentTextIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { AssessmentData } from '@/src/types/assessment';
 import { getCookie } from '@/src/utils/cookies';
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 
 interface AssessmentAboutProps {
     data: AssessmentData;
@@ -25,9 +26,10 @@ export const AssessmentAbout = ({ data }: AssessmentAboutProps) => {
             }
 
             const response = await fetch(
-                `http://localhost:5000/assessment/api/assessments/${assessmentId}/learner/${learnerId}/attempts`,
+                `${API_BASE_URL}/assessment/api/assessments/${assessmentId}/learner/${learnerId}/attempts`,
                 {
                     headers: {
+                        ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                         accept: '*/*',
                         Authorization: `Bearer ${accessToken}`
                     }

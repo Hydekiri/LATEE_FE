@@ -1,9 +1,9 @@
 'use client';
-import { useState, useCallback, useRef, useMemo, useEffect } from 'react'; 
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { getCookie } from '@/src/utils/cookies';
-import { API_BASE_URL } from '@/src/config/env';
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/config/env';
 import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
-import { PatientData } from '@/src/types/practice'; 
+import { PatientData } from '@/src/types/practice';
 import { ValidateQuestion } from '@/src/services/validate-question-service';
 import { resolvePatientAvatar } from "@/src/utils/patient-assets";
 
@@ -20,7 +20,7 @@ interface StreamData {
 }
 
 interface UseVpChatOptions {
-    patientData: PatientData; 
+    patientData: PatientData;
     sessionId: string;
     onWarning?: (warning: {
         noteId: string;
@@ -41,7 +41,7 @@ interface FlexiblePatientData extends Partial<PatientData> {
 
 export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOptions) {
     const flexiblePatient = patientData as FlexiblePatientData;
-    
+
     const patientAvatar = useMemo(
         () => resolvePatientAvatar(patientData.img, patientData.id, patientData.age, patientData.gender),
         [patientData.id, patientData.age, patientData.gender, patientData.img]
@@ -66,7 +66,7 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
             avatar: m.role === 'patient' ? patientAvatar : '/images/doctor1.png',
         }));
     }, [messages, patientAvatar]);
-    
+
     const [isSending, setIsSending] = useState<boolean>(false);
     const [isValidating, setIsValidating] = useState<boolean>(false);
     const isSendingRef = useRef<boolean>(false);
@@ -75,7 +75,7 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
     useEffect(() => {
         onWarningRef.current = onWarning;
     }, [onWarning]);
-    
+
     const sendMessage = useCallback(
         async (text: string) => {
             if (!text.trim() || isSendingRef.current) return;
@@ -112,7 +112,7 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                         learner_question: text,
                         conversation_context: chatHistoryForAi,
                     });
-                    
+
                     if (!validation.isValid && onWarningRef.current) {
                         const generatedNoteId = `NOTE_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
                         onWarningRef.current({
@@ -136,15 +136,17 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
 
                 const streamRes = await fetch(`${API_BASE_URL}/virtual-patient/ai/stream`, {
                     method: 'POST',
-                    headers: { 
+                    headers: {
+
                         'Content-Type': 'application/json',
-                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                        ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                     },
                     body: JSON.stringify({
                         doctor_id: getCookie('userId') || 'DR-001',
-                        patient_id: String(finalPatientId), 
+                        patient_id: String(finalPatientId),
                         question: text,
-                        chat_history: chatHistoryForAi, 
+                        chat_history: chatHistoryForAi,
                     }),
                 });
 

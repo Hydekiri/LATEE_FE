@@ -3,6 +3,7 @@ import { getCookie } from '@/src/utils/cookies';
 import { CheckBadgeIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { removePausedAssessment } from '@/src/features/assessment/takeAssessment/utils/pauseAssessmentStorage';
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 
 interface SubmitResponse {
     data?: {
@@ -65,12 +66,13 @@ export const SubmitModalContent = ({
 
             console.log("Payload being sent to backend:", payload);
 
-            const response = await fetch(`http://localhost:5000/assessment/api/assessments/api/attempts/submit`, {
+            const response = await fetch(`${API_BASE_URL}/assessment/api/assessments/api/attempts/submit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
+                    'Authorization': `Bearer ${accessToken}`,
+                    ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 },
                 body: JSON.stringify(payload),
             });

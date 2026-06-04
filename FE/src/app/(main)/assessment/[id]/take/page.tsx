@@ -2,16 +2,18 @@ import TakeAssessmentFeature from "@/src/features/assessment/takeAssessment/Take
 import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 
 async function getFullAssessmentDetails(id: string) {
     console.log('[INFO]: Learner is logged in, fetching assessment data for id:', id);
     const cookieStore = await cookies();
     const token = cookieStore.get("accessToken")?.value;
 
-    const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/assessment/api/assessments/${id}`, {
         method: 'GET',
         headers: { "Authorization": `Bearer ${token}` },
-        cache: 'no-store'
+        cache: 'no-store',
+        ...NGROK_SKIP_BROWSER_WARNING_HEADER,
     });
 
     if (!res.ok) return null;

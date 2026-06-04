@@ -1,4 +1,4 @@
-import { API_BASE_URL } from '@/src/config/env';
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/config/env';
 import { deleteCookie, getCookie, setCookie } from '@/src/utils/cookies';
 
 export interface LoginResponse {
@@ -18,7 +18,8 @@ export const loginApi = async (email: string, password: string, accessDays: numb
         const data = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER
             },
             body: JSON.stringify({
                 email,

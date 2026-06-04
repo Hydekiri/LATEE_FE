@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import AssessmentCreateForm from "@/src/features/assessment/components/subComponents/AssessmentCreateForm";
 import { getCookie } from "@/src/utils/cookies";
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 
 interface AssessmentActivityItem {
     time: string;
@@ -31,7 +32,7 @@ export default function AssessmentOverview({ learnerName }: { learnerName: strin
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [analytics, setAnalytics] = useState<AssessmentOverviewAnalytics | null>(null);
 
-    const handleSuccess = (id: string) => {
+    const handleSuccess = () => {
         alert("Create successful!");
         setIsModalOpen(false);
 
@@ -44,8 +45,9 @@ export default function AssessmentOverview({ learnerName }: { learnerName: strin
                 const accessToken = getCookie("accessToken");
                 const learnerId = getCookie("userId");
 
-                const response = await fetch(`http://localhost:5000/assessment/api/assessments/learner/${learnerId}/analytics`, {
+                const response = await fetch(`${API_BASE_URL}/assessment/api/assessments/learner/${learnerId}/analytics`, {
                     headers: {
+                        ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                         Authorization: `Bearer ${accessToken}`
                     }
                 });

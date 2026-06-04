@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { getCookie } from "@/src/utils/cookies";
 import { AssessmentData } from "@/src/types/assessment";
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 
 type SortOrder = "timeAsc" | "timeDesc" | "alphaAsc" | "alphaDesc";
 
@@ -30,8 +31,9 @@ export default function AssessmentList() {
             const accessToken = getCookie("accessToken");
             const learnerId = getCookie("userId");
 
-            const res = await fetch(`http://localhost:5000/assessment/api/assessments/learner/${learnerId}`, {
+            const res = await fetch(`${API_BASE_URL}/assessment/api/assessments/learner/${learnerId}`, {
                 headers: {
+                    ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                     'Authorization': `Bearer ${accessToken}`
                 }
             });

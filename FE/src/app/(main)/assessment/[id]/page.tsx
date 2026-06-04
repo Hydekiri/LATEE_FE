@@ -9,6 +9,7 @@ import { notFound, redirect } from "next/navigation";
 import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 import { cookies } from "next/headers";
 import { AssessmentData } from "@/src/types/assessment";
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 
 interface PageProps {
     params: Promise<{
@@ -32,11 +33,12 @@ async function getAssessmentData(id: string) {
 
     console.log('[INFO]: Fetching assessment data for id:', id);
 
-    const res = await fetch(`http://localhost:5000/assessment/api/assessments/${id}/learner/${learnerId}`, {
+    const res = await fetch(`${API_BASE_URL}/assessment/api/assessments/${id}/learner/${learnerId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            "Authorization": `Bearer ${token}`,
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
         },
         cache: 'no-store'
     });

@@ -1,4 +1,5 @@
 import { getCookie } from "@/src/utils/cookies";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 import { env } from "@/src/config/env";
 import { API_BASE_URL } from "@/src/config/env";
 import axios from "axios";
@@ -11,6 +12,7 @@ const RETRY_DELAY = 800; // ms
 const COMMON_HEADERS: Record<string, string> = {
     "Content-Type": "application/json",
     accept: "*/*",
+    ...NGROK_SKIP_BROWSER_WARNING_HEADER,
 };
 
 export const AUTH_ENV = {
@@ -232,6 +234,7 @@ export const ApiClient2 = axios.create({
     headers: {
         "Content-Type": "application/json",
         accept: "*/*",
+        ...NGROK_SKIP_BROWSER_WARNING_HEADER,
     },
 });
 

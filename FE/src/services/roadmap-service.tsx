@@ -1,5 +1,5 @@
 import { getCookie } from "../utils/cookies";
-import { API_BASE_URL } from '@/src/config/env';
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/config/env';
 import { RoadmapData } from "@/src/features/progress/roadmap";
 
 export interface RoadmapItem {
@@ -33,6 +33,7 @@ export default async function generateRoadmap(historyPractice: string, userTarge
         const response = await fetch(`${API_BASE_URL}/roadmap/api/roadmap/generate-roadmap`, {
             method: 'POST',
             headers: {
+                    ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
@@ -64,6 +65,7 @@ export default async function generateRoadmap(historyPractice: string, userTarge
         const saveRoadmapResponse = await fetch(`${API_BASE_URL}/roadmap/api/roadmap`, {
             method: 'POST',
             headers: {
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
@@ -96,6 +98,7 @@ export async function getLatestRoadmap() {
         const response = await fetch(`${API_BASE_URL}/roadmap/api/roadmap/latest/${userId}`, {
             method: 'GET',
             headers: {
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             }
@@ -130,6 +133,7 @@ export async function updateRoadmapWithId(roadmapId: string, updatedRoadmapConte
         const response = await fetch(`${API_BASE_URL}/roadmap/api/roadmap/${roadmapId}/content`, {
             method: 'PUT',
             headers: {
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },

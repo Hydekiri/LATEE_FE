@@ -15,6 +15,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { getCookie } from '@/src/utils/cookies';
 import { AssessmentData } from '@/src/types/assessment';
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 
 interface OptionResult {
     id: string;
@@ -90,9 +91,9 @@ function ResultsContent({ data }: { data: AssessmentData }) {
                 const accessToken = getCookie('accessToken');
                 const learnerId = getCookie('userId');
                 const response = await fetch(
-                    `http://localhost:5000/assessment/api/assessments/${data.assessmentId}/learner/${learnerId}/attempts`,
+                    `${API_BASE_URL}/assessment/api/assessments/${data.assessmentId}/learner/${learnerId}/attempts`,
                     {
-                        headers: { accept: '*/*', Authorization: `Bearer ${accessToken}` }
+                        headers: { ...NGROK_SKIP_BROWSER_WARNING_HEADER, accept: '*/*', Authorization: `Bearer ${accessToken}` }
                     }
                 );
 
@@ -133,9 +134,9 @@ function ResultsContent({ data }: { data: AssessmentData }) {
             try {
                 const accessToken = getCookie('accessToken');
                 const response = await fetch(
-                    `http://localhost:5000/assessment/api/assessments/attempts/${selectedAttemptId}`,
+                    `${API_BASE_URL}/assessment/api/assessments/attempts/${selectedAttemptId}`,
                     {
-                        headers: { accept: '*/*', Authorization: `Bearer ${accessToken}` }
+                        headers: { ...NGROK_SKIP_BROWSER_WARNING_HEADER, accept: '*/*', Authorization: `Bearer ${accessToken}` }
                     }
                 );
 

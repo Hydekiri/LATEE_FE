@@ -4,6 +4,7 @@ import React, { useState, ChangeEvent } from "react";
 import { X, Loader2, ChevronDown, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "@/src/utils/cookies";
+import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
 
 interface AssessmentFormData {
     moduleId: string;
@@ -87,9 +88,10 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
 
         setIsLoading(true);
         try {
-            const createRes = await fetch("http://localhost:5000/assessment/api/assessments", {
+            const createRes = await fetch(`${API_BASE_URL}/assessment/api/assessments`, {
                 method: "POST",
                 headers: {
+                    ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                     "accept": "*/*",
                     "Content-Type": "application/json" ,
                     "Authorization": `Bearer ${token}`
@@ -116,9 +118,10 @@ export default function AssessmentCreateForm({ onClose, onSuccess }: AssessmentC
             const newId = createData.assessmentId;
 
             if (newId) {
-                const genRes = await fetch(`http://localhost:5000/assessment/api/assessments/${newId}/generate-questions`, {
+                const genRes = await fetch(`${API_BASE_URL}/assessment/api/assessments/${newId}/generate-questions`, {
                     method: "POST",
                     headers: { 
+                        ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                         "Content-Type": "application/json", 
                         "Authorization": `Bearer ${token}` 
                     },

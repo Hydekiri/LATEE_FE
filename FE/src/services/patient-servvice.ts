@@ -172,7 +172,8 @@ export const patientService = {
 
     async getVirtualPatientById(id: string): Promise<PatientData> {
         try {
-            const item = await serverApi.get<PatientApiResponse>(
+            const api = typeof window === 'undefined' ? serverApi : clientApi;
+            const item = await api.get<PatientApiResponse>(
                 `/virtual-patient/api/virtual-patients/${id}`
             );
             return mapRawToPatientData(item);
