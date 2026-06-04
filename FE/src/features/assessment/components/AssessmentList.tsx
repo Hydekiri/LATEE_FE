@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { getCookie } from "@/src/utils/cookies";
 import { AssessmentData } from "@/src/types/assessment";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/utils/api-client";
 
 type SortOrder = "timeAsc" | "timeDesc" | "alphaAsc" | "alphaDesc";
 
@@ -32,7 +33,8 @@ export default function AssessmentList() {
 
             const res = await fetch(`http://localhost:5000/assessment/api/assessments/learner/${learnerId}`, {
                 headers: {
-                    'Authorization': `Bearer ${accessToken}`
+                    'Authorization': `Bearer ${accessToken}`,
+                    ...NGROK_SKIP_BROWSER_WARNING_HEADER
                 }
             });
             if (!res.ok) throw new Error("Failed to fetch assessments");

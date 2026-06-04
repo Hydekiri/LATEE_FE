@@ -1,5 +1,6 @@
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export type IssueStatus = 'Open' | 'InReview' | 'Resolved' | 'Rejected';
 
@@ -36,6 +37,7 @@ function getAuthHeaders(): HeadersInit {
     const token = getCookie('accessToken');
     return {
         'Content-Type': 'application/json',
+        ...NGROK_SKIP_BROWSER_WARNING_HEADER,
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
 }
@@ -43,12 +45,12 @@ function getAuthHeaders(): HeadersInit {
 export const issueService = {
     async getIssuesBySession(practiceSessionId: string): Promise<IssueItem[]> {
         const res = await fetch(
-        `${API_BASE_URL}/evaluation/api/issues?practiceSessionId=${practiceSessionId}`,
-        { headers: getAuthHeaders() }
+            `${API_BASE_URL}/evaluation/api/issues?practiceSessionId=${practiceSessionId}`,
+            { headers: getAuthHeaders() }
         );
         if (!res.ok) {
-        if (res.status === 404 || res.status === 501) return [];
-        throw new Error(`Failed to fetch issues: ${res.status}`);
+            if (res.status === 404 || res.status === 501) return [];
+            throw new Error(`Failed to fetch issues: ${res.status}`);
         }
         const json = await res.json() as { items: IssueItem[] };
         return json.items ?? [];
@@ -56,12 +58,12 @@ export const issueService = {
 
     async createIssue(dto: CreateIssueDTO): Promise<IssueItem> {
         const res = await fetch(
-        `${API_BASE_URL}/evaluation/api/issues`,
-        {
-            method: 'POST',
-            headers: getAuthHeaders(),
-            body: JSON.stringify(dto),
-        }
+            `${API_BASE_URL}/evaluation/api/issues`,
+            {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(dto),
+            }
         );
         if (!res.ok) throw new Error(`Failed to create issue: ${res.status}`);
         return res.json() as Promise<IssueItem>;
@@ -69,12 +71,12 @@ export const issueService = {
 
     async updateIssue(issueId: string, dto: UpdateIssueDTO): Promise<IssueItem> {
         const res = await fetch(
-        `${API_BASE_URL}/evaluation/api/issues/${issueId}`,
-        {
-            method: 'PATCH',
-            headers: getAuthHeaders(),
-            body: JSON.stringify(dto),
-        }
+            `${API_BASE_URL}/evaluation/api/issues/${issueId}`,
+            {
+                method: 'PATCH',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(dto),
+            }
         );
         if (!res.ok) throw new Error(`Failed to update issue: ${res.status}`);
         return res.json() as Promise<IssueItem>;
@@ -82,8 +84,8 @@ export const issueService = {
 
     async deleteIssue(issueId: string): Promise<void> {
         const res = await fetch(
-        `${API_BASE_URL}/evaluation/api/issues/${issueId}`,
-        { method: 'DELETE', headers: getAuthHeaders() }
+            `${API_BASE_URL}/evaluation/api/issues/${issueId}`,
+            { method: 'DELETE', headers: getAuthHeaders() }
         );
         if (!res.ok) throw new Error(`Failed to delete issue: ${res.status}`);
     },

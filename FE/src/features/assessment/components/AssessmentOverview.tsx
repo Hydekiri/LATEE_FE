@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import AssessmentCreateForm from "@/src/features/assessment/components/subComponents/AssessmentCreateForm";
 import { getCookie } from "@/src/utils/cookies";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/utils/api-client";
 
 interface AssessmentActivityItem {
     time: string;
@@ -46,7 +47,8 @@ export default function AssessmentOverview({ learnerName }: { learnerName: strin
 
                 const response = await fetch(`http://localhost:5000/assessment/api/assessments/learner/${learnerId}/analytics`, {
                     headers: {
-                        Authorization: `Bearer ${accessToken}`
+                        Authorization: `Bearer ${accessToken}`,
+                        ...NGROK_SKIP_BROWSER_WARNING_HEADER
                     }
                 });
 

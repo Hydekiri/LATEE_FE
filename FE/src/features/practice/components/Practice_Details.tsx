@@ -24,10 +24,10 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
 
     const tabs = [
         { name: 'About Patient', slug: 'about' },
-        { name: 'Experts',       slug: 'experts' },
-        { name: 'Insights',      slug: 'insights' },
-        { name: 'Results',       slug: 'results' },
-        { name: 'Support',       slug: 'faq' },
+        { name: 'Experts', slug: 'experts' },
+        { name: 'Insights', slug: 'insights' },
+        { name: 'Results', slug: 'results' },
+        { name: 'Support', slug: 'faq' },
     ];
 
     const handleTabChange = (slug: string) => {
@@ -38,12 +38,12 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'about':    return <AboutPatient data={data} />;
-            case 'experts':  return <Experts data={data} key={data.id} />;
+            case 'about': return <AboutPatient data={data} />;
+            case 'experts': return <Experts data={data} key={data.id} />;
             case 'insights': return <Evaluation sessionId={sessionId} />;
-            case 'results':  return <Results />;
-            case 'faq':      return <FAQ data={data} sessionId={sessionId} />;
-            default:         return <AboutPatient data={data} />;
+            case 'results': return <Results />;
+            case 'faq': return <FAQ data={data} sessionId={sessionId} />;
+            default: return <AboutPatient data={data} />;
         }
     };
 
@@ -63,19 +63,17 @@ export default function PracticeDetail({ data }: PracticeDetailProps) {
                                 id={`tab-${tab.slug}`}
                                 aria-selected={activeTab === tab.slug}
                                 onClick={() => handleTabChange(tab.slug)}
-                                className={`pb-4 flex-1 text-base font-bold transition-all relative whitespace-nowrap ${
-                                    activeTab === tab.slug
+                                className={`pb-4 flex-1 text-base font-bold transition-all relative whitespace-nowrap ${activeTab === tab.slug
                                         ? 'text-[#235697]'
                                         : 'text-gray-500 hover:text-gray-700'
-                                }`}
+                                    }`}
                             >
                                 {tab.name}
                                 <span
-                                    className={`absolute bottom-0 left-0 w-full h-1 rounded-full transition-all duration-300 ${
-                                        activeTab === tab.slug
+                                    className={`absolute bottom-0 left-0 w-full h-1 rounded-full transition-all duration-300 ${activeTab === tab.slug
                                             ? 'bg-[#235697] opacity-100'
                                             : 'bg-transparent opacity-0'
-                                    }`}
+                                        }`}
                                     aria-hidden="true"
                                 />
                             </button>

@@ -1,5 +1,6 @@
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export interface ValidationResult {
     isValid: boolean;
@@ -19,14 +20,15 @@ export async function validateLearnerQuestion(params: {
     const res = await fetch(`${API_BASE_URL}/assistant/validate_question/hf`, {
         method: 'POST',
         headers: {
-        'Content-Type': 'application/json',
-        'x-auth-env': 'client', 
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+            'Content-Type': 'application/json',
+            'x-auth-env': 'client',
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({
-        doctor_id: params.doctorId,
-        learner_question: params.question,
-        conversation_context: params.context,
+            doctor_id: params.doctorId,
+            learner_question: params.question,
+            conversation_context: params.context,
         }),
     });
     if (!res.ok) throw new Error(`Validation failed: ${res.status}`);

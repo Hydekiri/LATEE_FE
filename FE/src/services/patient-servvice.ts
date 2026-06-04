@@ -4,7 +4,6 @@ import {
     Expert,
     VitalSigns,
     PatientInstructions,
-    CaseRules,
     AttemptCountData,
 } from '@/src/types/practice';
 import { PaginatedResponse } from '@/src/types/api';
@@ -73,8 +72,6 @@ export interface PatientQueryOptions {
 function mapRawToPatientData(item: PatientApiResponse): PatientData {
     const timeSetting = item.timeSetting || 30;
     const argumentTime = item.argumentTime || 15;
-
-    // ✅ BẢO VỆ 1: Xử lý instructions an toàn tuyệt đối
     const safeInstructions: PatientInstructions = {
         role: item.instructions?.role || 'Medical Learner',
         task: item.instructions?.task || 'Take a focused clinical history from this patient.',
@@ -87,7 +84,6 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
         ],
     };
 
-    // ✅ BẢO VỆ 2: Xử lý vitalSigns an toàn tuyệt đối
     const safeVitalSigns: VitalSigns = {
         bp: item.vitalSigns?.bp || 'N/A',
         hr: item.vitalSigns?.hr || 0,
@@ -124,7 +120,6 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
         img: item.avatarImage || '/images/VP7.jpeg',
         level: item.level,
         time: `${timeSetting} min`,
-        // ✅ THÊM TRƯỜNG NÀY VÌ UI CỦA BẠN ĐANG CẦN GỌI ĐẾN NÓ
         timeSetting: timeSetting,
         argumentTime: argumentTime,
         date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
@@ -147,6 +142,10 @@ function mapRawToPatientData(item: PatientApiResponse): PatientData {
     };
 }
 
+function getPatientApi() {
+    return typeof window === 'undefined' ? serverApi : clientApi;
+}
+
 export const patientService = {
     async getVirtualPatients(
         page = 1,
@@ -163,7 +162,7 @@ export const patientService = {
         if (options.sortBy) q.set('sortBy', options.sortBy);
 
         try {
-            const response = await serverApi.get<PaginatedRawResponse>(
+            const response = await getPatientApi().get<PaginatedRawResponse>(
                 `/virtual-patient/api/virtual-patients?${q.toString()}`
             );
             return {
@@ -173,26 +172,26 @@ export const patientService = {
         } catch (error) {
             console.error('[PATIENT SERVICE ERROR] getVirtualPatients', error);
             return { items: [], total: 0, page, pageSize, totalPages: 0 };
-        } // ✅ Fix: Xóa dấu chấm phẩy thừa ở đây
+        }
     },
 
     async getVirtualPatientById(id: string): Promise<PatientData> {
         try {
-            const item = await serverApi.get<PatientApiResponse>(
+            const item = await getPatientApi().get<PatientApiResponse>(
                 `/virtual-patient/api/virtual-patients/${id}`
             );
             return mapRawToPatientData(item);
-        } catch (error: any) {
-            // ✅ FIX LỖI SCOPE: Không gọi biến "item" ở đây vì nó nằm trong try
-            // ✅ FIX LỖI IN: In chi tiết lỗi backend trả về thay vì [object Error]
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: unknown }; message?: string };
+
             console.error(
-                '[PATIENT SERVICE ERROR] getVirtualPatientById', 
-                { 
-                    id, 
-                    errorMessage: error?.response?.data || error?.message || error 
+                '[PATIENT SERVICE ERROR] getVirtualPatientById',
+                {
+                    id,
+                    errorMessage: err?.response?.data || err?.message || error
                 }
             );
-            throw error; // ✅ FIX LỖI CODE: Đã xóa dòng throw error bị lặp lần 2
+            throw error;
         }
     },
 
@@ -200,7 +199,7 @@ export const patientService = {
         learnerId: string,
         patientId: string
     ): Promise<AttemptCountData> {
-        return clientApi.get<AttemptCountData>(
+        return getPatientApi().get<AttemptCountData>(
             `/practice-session/api/practice-sessions/attempt-count?learnerId=${encodeURIComponent(learnerId)}&patientId=${encodeURIComponent(patientId)}`
         );
     },

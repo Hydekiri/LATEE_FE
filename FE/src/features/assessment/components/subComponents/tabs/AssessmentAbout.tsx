@@ -5,6 +5,7 @@ import { ArrowRightIcon, DocumentTextIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { AssessmentData } from '@/src/types/assessment';
 import { getCookie } from '@/src/utils/cookies';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 interface AssessmentAboutProps {
     data: AssessmentData;
@@ -29,7 +30,8 @@ export const AssessmentAbout = ({ data }: AssessmentAboutProps) => {
                 {
                     headers: {
                         accept: '*/*',
-                        Authorization: `Bearer ${accessToken}`
+                        Authorization: `Bearer ${accessToken}`,
+                        ...NGROK_SKIP_BROWSER_WARNING_HEADER
                     }
                 }
             );

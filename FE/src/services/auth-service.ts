@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/src/config/env';
 import { deleteCookie, getCookie, setCookie } from '@/src/utils/cookies';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export interface LoginResponse {
     accessToken: string;
@@ -15,10 +16,12 @@ export interface LoginResponse {
 
 export const loginApi = async (email: string, password: string, accessDays: number, refreshDays: number) => {
     try {
+        // const base = API_BASE_URL.replace(/\/+$/g, '');
         const data = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
             },
             body: JSON.stringify({
                 email,
@@ -27,15 +30,20 @@ export const loginApi = async (email: string, password: string, accessDays: numb
         });
 
         if (!data.ok) {
-            //throw new Error('Login failed');
-            console.error('[WARN] Login failed with status:', data.status);
+            const text = await data.text();
+            try {
+                const parsed = JSON.parse(text);
+                console.error('[WARN] Login failed with status:', data.status, parsed);
+            } catch {
+                console.error('[WARN] Login failed with status:', data.status, 'response text:', text);
+            }
+            throw new Error(`Login failed with status ${data.status}`);
         }
 
         const loginResponse = await data.json() as LoginResponse;
 
         setCookie('isLoggedIn', 'true', { days: refreshDays });
 
-        // Debug: log server-provided expiry and parsed ISO
         try {
             const parsed = new Date(loginResponse.accessTokenExpiresAt);
             console.log('[AUTH] server accessTokenExpiresAt:', loginResponse.accessTokenExpiresAt, 'parsed:', parsed.toISOString());
@@ -43,11 +51,9 @@ export const loginApi = async (email: string, password: string, accessDays: numb
             const msLeft = parsed.getTime() - Date.now();
             console.log('[AUTH] accessToken expires in ms:', msLeft);
             if (msLeft > 0) {
-                // prefer max-age to avoid client/server parsing ambiguity
                 setCookie('accessToken', loginResponse.accessToken, { maxAge: Math.floor(msLeft / 1000) });
                 setCookie('accessTokenExpiresAt', loginResponse.accessTokenExpiresAt, { maxAge: Math.floor(msLeft / 1000) });
             } else {
-                // fallback: set by explicit expires date
                 setCookie('accessToken', loginResponse.accessToken, { expires: new Date(loginResponse.accessTokenExpiresAt) });
                 setCookie('accessTokenExpiresAt', loginResponse.accessTokenExpiresAt, { expires: new Date(loginResponse.accessTokenExpiresAt) });
             }
@@ -80,6 +86,7 @@ export const logoutApi = async () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
             body: JSON.stringify({ refreshToken })

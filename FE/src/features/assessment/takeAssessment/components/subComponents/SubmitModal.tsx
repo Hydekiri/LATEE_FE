@@ -3,6 +3,7 @@ import { getCookie } from '@/src/utils/cookies';
 import { CheckBadgeIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 import { removePausedAssessment } from '@/src/features/assessment/takeAssessment/utils/pauseAssessmentStorage';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 interface SubmitResponse {
     data?: {
@@ -70,7 +71,8 @@ export const SubmitModalContent = ({
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
+                    'Authorization': `Bearer ${accessToken}`,
+                    ...NGROK_SKIP_BROWSER_WARNING_HEADER
                 },
                 body: JSON.stringify(payload),
             });

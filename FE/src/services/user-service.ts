@@ -1,6 +1,7 @@
 import { User, UserUpdate, CreateUserRequest } from "@/src/features/admin/types/user";
 import { API_BASE_URL } from "@/src/config/env";
 import { getCookie } from "@/src/utils/cookies";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/utils/api-client";
 
 export async function fetchUsers(): Promise<User[]> {
     try {
@@ -10,6 +11,7 @@ export async function fetchUsers(): Promise<User[]> {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
         });
@@ -28,6 +30,7 @@ export async function getUserById(userId: string) {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
         });
@@ -59,6 +62,7 @@ export async function createUser(user: Omit<User, "userId" | "createdAt" | "upda
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
         },
         body: JSON.stringify({
@@ -89,6 +93,7 @@ export async function updateUser(userid: string, data: Partial<User>) {
         method: "PUT",
         headers: {
             'Content-Type': 'application/json',
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
         },
         body: JSON.stringify(updateData),
@@ -109,6 +114,7 @@ export async function adminDashboardStats() {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
         });
