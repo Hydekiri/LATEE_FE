@@ -82,6 +82,10 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
             if (!text.trim() || isSendingRef.current) return;
             isSendingRef.current = true;
             setIsSending(true);
+            const chatHistoryForAi = messagesRef.current.map((m) => ({
+                role: m.role === 'user' ? 'doctor' as const : 'patient' as const,
+                content: m.message,
+            }));
 
             const userMsgId = Number(`${Date.now()}${Math.floor(Math.random() * 1000)}`);
             const userMsg = {
@@ -98,13 +102,6 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                 createdAt: Date.now(),
             }).catch(console.error);
 
-            // Tạo chat history an toàn từ Ref tĩnh không gây loop render
-            const chatHistoryForAi = messagesRef.current.map((m) => ({
-                role: m.role === 'user' ? 'doctor' as const : 'patient' as const,
-                content: m.message,
-            }));
-
-            // Chạy Validation ngầm song song
             void (async () => {
                 try {
                     setIsValidating(true);
@@ -147,6 +144,7 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                     body: JSON.stringify({
                         doctor_id: getCookie('userId') || 'DR-001',
                         patient_id: String(finalPatientId),
+                        session_id: sessionId,   
                         question: text,
                         chat_history: chatHistoryForAi,
                     }),

@@ -37,12 +37,6 @@ type SubmitPhase =
     | 'done'
     | 'error';
 
-/**
- * Xóa toàn bộ dữ liệu IndexedDB liên quan đến session.
- * Dùng clearBySession để đúng scope — tránh xóa nhầm session khác.
- * Dùng Promise.allSettled để đảm bảo mọi table đều được clear
- * kể cả khi một trong số chúng bị lỗi.
- */
 async function clearSessionCache(sessionId: string): Promise<void> {
     const results = await Promise.allSettled([
         VPChatMessageTable.clearBySession(sessionId),
@@ -52,7 +46,6 @@ async function clearSessionCache(sessionId: string): Promise<void> {
         AIAssistantChatMessageTable.clearBySession(sessionId),
     ]);
 
-    // Log lỗi nếu có table nào fail — không throw để tránh block navigation
     results.forEach((result, idx) => {
         if (result.status === 'rejected') {
             console.warn(`[clearSessionCache] Table ${idx} failed to clear:`, result.reason);

@@ -14,7 +14,7 @@ import {
 } from '@/src/types/evaluation';
 import { getLearnerId } from '@/src/utils/cookies';
 import { usePathname } from 'next/navigation';
-import { patientService } from '@/src/services/patient-servvice';
+import { DEFAULT_PRACTICE_MAX_ATTEMPTS } from '@/src/types/practice';
 
 export const metadata = {
     title: "Evaluation - Lavender Teeducation",
@@ -143,21 +143,19 @@ function AttemptTabs({
                                         onClick={() =>
                                             onSelect(slotIdx)
                                         }
-                                        className={`pb-4 w-full text-base font-bold transition-colors relative text-center whitespace-nowrap ${
-                                            isActive
+                                        className={`pb-4 w-full text-base font-bold transition-colors relative text-center whitespace-nowrap ${isActive
                                                 ? 'text-[#235697]'
                                                 : 'text-gray-400 hover:text-gray-600'
-                                        }`}
+                                            }`}
                                     >
                                         {attemptNumber}
                                         {suffix} attempt feedback
 
                                         <span
-                                            className={`absolute -bottom-px left-0 w-full h-1 rounded-full transition-all duration-300 ${
-                                                isActive
+                                            className={`absolute -bottom-px left-0 w-full h-1 rounded-full transition-all duration-300 ${isActive
                                                     ? 'bg-[#235697] z-20'
                                                     : 'bg-gray-300'
-                                            }`}
+                                                }`}
                                         />
                                     </button>
                                 ) : (
@@ -235,9 +233,8 @@ export default function Evaluation({
             : '';
     }, [pathname]);
 
-    // maxAttempts: tổng số slot tab cho phép
     const [maxAttempts, setMaxAttempts] =
-        useState<number>(3);
+        useState<number>(DEFAULT_PRACTICE_MAX_ATTEMPTS);
 
     // attempts: danh sách attempt hợp lệ đã sort chronological
     const [attempts, setAttempts] = useState<
@@ -335,32 +332,9 @@ export default function Evaluation({
             setAttemptsError(null);
 
             try {
-                // 1. Lấy maxAttempts
-                let resolvedMaxAttempts = 3;
+                setMaxAttempts(DEFAULT_PRACTICE_MAX_ATTEMPTS);
 
-                try {
-                    const attemptData =
-                        await patientService.getAttemptCount(
-                            learnerId,
-                            patientId
-                        );
-
-                    resolvedMaxAttempts =
-                        attemptData.maxAttempts ?? 3;
-                } catch (e) {
-                    console.warn(
-                        'Failed to fetch attempt-count, defaulting to 3',
-                        e
-                    );
-                }
-
-                if (cancelled) return;
-
-                setMaxAttempts(
-                    resolvedMaxAttempts
-                );
-
-                // 2. Lấy practice history
+                // 1. Lấy practice history
                 const result =
                     await evaluationService.getPracticeHistory(
                         learnerId,
@@ -369,7 +343,7 @@ export default function Evaluation({
 
                 if (cancelled) return;
 
-                // 3. Build chronological attempts
+                // 2. Build chronological attempts
                 const ordered =
                     buildOrderedAttempts(
                         result.items ?? []
@@ -381,10 +355,10 @@ export default function Evaluation({
                     // Ưu tiên attempt khớp sessionId
                     const matchIdx = sessionId
                         ? ordered.findIndex(
-                              (item) =>
-                                  item.practiceSessionId ===
-                                  sessionId
-                          )
+                            (item) =>
+                                item.practiceSessionId ===
+                                sessionId
+                        )
                         : -1;
 
                     const targetIdx =
@@ -616,20 +590,20 @@ export default function Evaluation({
                                 <ul className="space-y-1 text-md">
                                     {currentAttempt.score !=
                                         null && (
-                                        <li>
-                                            <span className="font-bold text-[#235697]">
-                                                Final
-                                                Score:
-                                            </span>
+                                            <li>
+                                                <span className="font-bold text-[#235697]">
+                                                    Final
+                                                    Score:
+                                                </span>
 
-                                            <span className="text-[#0E2A46] ml-1">
-                                                {currentAttempt.score.toFixed(
-                                                    1
-                                                )}
-                                                /100
-                                            </span>
-                                        </li>
-                                    )}
+                                                <span className="text-[#0E2A46] ml-1">
+                                                    {currentAttempt.score.toFixed(
+                                                        1
+                                                    )}
+                                                    /100
+                                                </span>
+                                            </li>
+                                        )}
 
                                     <li>
                                         <span className="font-bold text-[#235697]">
@@ -645,34 +619,34 @@ export default function Evaluation({
 
                                     {currentAttempt.duration !=
                                         null && (
-                                        <li>
-                                            <span className="font-bold text-[#235697]">
-                                                Duration:
-                                            </span>
+                                            <li>
+                                                <span className="font-bold text-[#235697]">
+                                                    Duration:
+                                                </span>
 
-                                            <span className="text-[#0E2A46] ml-1">
-                                                {formatDuration(
-                                                    currentAttempt.duration
-                                                )}
-                                            </span>
-                                        </li>
-                                    )}
+                                                <span className="text-[#0E2A46] ml-1">
+                                                    {formatDuration(
+                                                        currentAttempt.duration
+                                                    )}
+                                                </span>
+                                            </li>
+                                        )}
 
                                     {currentAttempt.entrustmentLevel !=
                                         null && (
-                                        <li>
-                                            <span className="font-bold text-[#235697]">
-                                                Entrustment
-                                                Level:
-                                            </span>
+                                            <li>
+                                                <span className="font-bold text-[#235697]">
+                                                    Entrustment
+                                                    Level:
+                                                </span>
 
-                                            <span className="text-[#0E2A46] ml-1">
-                                                {
-                                                    currentAttempt.entrustmentLevel
-                                                }
-                                            </span>
-                                        </li>
-                                    )}
+                                                <span className="text-[#0E2A46] ml-1">
+                                                    {
+                                                        currentAttempt.entrustmentLevel
+                                                    }
+                                                </span>
+                                            </li>
+                                        )}
                                 </ul>
                             </div>
                         </div>

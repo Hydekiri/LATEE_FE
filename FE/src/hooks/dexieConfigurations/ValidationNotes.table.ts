@@ -24,6 +24,7 @@ export const ValidationNoteTable = {
     async clearBySession(sessionId: string) {
         return await db.table('ValidationNotes').where('sessionId').equals(sessionId).delete();
     },
+    
     async getAll() {
         return await db.table('ValidationNotes')
             .orderBy('id')

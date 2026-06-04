@@ -108,7 +108,6 @@ export function PracticeListContent() {
                             text-[#235697] bg-transparent min-w-0"
                             aria-label="Search patients"
                         />
-                        {/* FIX 4: aria-hidden cho icon trang trí */}
                         <MagnifyingGlassIcon className="w-5 h-5 text-[#235697]/60 shrink-0 ml-2" aria-hidden="true" />
                     </div>
                 </div>

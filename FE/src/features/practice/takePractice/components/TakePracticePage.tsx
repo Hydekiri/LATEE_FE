@@ -16,6 +16,8 @@ import { getPatientById } from '@/src/services/patient-servvice';
 import { resolvePatientAvatar } from '@/src/utils/patient-assets';
 import { practiceSessionService } from '@/src/services/practice-session-service';
 import { clientApi } from '@/src/utils/api-client';
+import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
+import { ValidationNoteTable } from '@/src/hooks/dexieConfigurations/ValidationNotes.table';
 
 interface TakePracticePageProps {
     readonly params: { id: string };
@@ -39,6 +41,8 @@ interface RawPatientApiResponse {
     readonly learningObjectives: string[];
 }
 
+const TERMINAL_STATUSES: string[] = ['Completed', 'Abandoned', 'Submitted'];
+
 export const TakePracticePage = ({ params }: TakePracticePageProps) => {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -58,9 +62,53 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         storageKey: `vp_timer_${params.id}`,
     });
 
+    const handleConfirmExit = async (): Promise<void> => {
+        setIsExiting(true);
+
+        try {
+            stopTimer();
+            localStorage.removeItem(`vp_timer_${params.id}`);
+            sessionStorage.removeItem(`vp_timer_${params.id}`);
+        } catch (timerErr) {
+            console.error('[TakePracticePage] Failed to stop timer:', timerErr);
+        }
+
+        if (sessionId) {
+            try {
+                await Promise.all([
+                    VPChatMessageTable.clearBySession(sessionId),
+                    ValidationNoteTable.clearBySession(sessionId),
+                ]);
+                console.log('[TakePracticePage] Session cache cleared:', sessionId);
+            } catch (dbErr) {
+                console.warn('[TakePracticePage] Dexie clear failed (non-critical):', dbErr);
+            }
+        }
+
+        if (sessionId) {
+            try {
+                await practiceSessionService.patchStatus(sessionId, 'Abandoned');
+                console.log('[TakePracticePage] Session marked Abandoned:', sessionId);
+            } catch (apiErr) {
+                console.error(
+                    '[TakePracticePage] CRITICAL: patchStatus Abandoned failed — attempt may not be counted:',
+                    apiErr
+                );
+            }
+        }
+
+        setIsExiting(false);
+        router.replace('/practice');
+    };
+
     useExitProtection({
         enabled: !isExiting,
         onExitAttempt: () => setIsExitModalOpen(true),
+        onHardExit: () => {
+            if (sessionId) {
+                practiceSessionService.markAbandonedOnUnload(sessionId);
+            }
+        },
     });
 
     useEffect(() => {
@@ -155,16 +203,39 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
 
         const setupSession = async () => {
             if (sessionIdFromQuery) {
-                initSession(sessionIdFromQuery, 'EPA_STANDARD_V1');
-                resumeTimer();
-                setSessionId((prev) => prev !== sessionIdFromQuery ? sessionIdFromQuery : prev);
-                return;
-            }
+                try {
+                    const sessionData = await practiceSessionService.getById(sessionIdFromQuery);
 
+                    if (TERMINAL_STATUSES.includes(sessionData.status)) {
+                        console.warn(
+                            `[TakePracticePage] Session ${sessionIdFromQuery} is ${sessionData.status}, clearing and creating new.`
+                        );
+                        localStorage.removeItem(`vp_timer_${params.id}`);
+                        sessionStorage.removeItem(`vp_timer_${params.id}`);
+                        await Promise.all([
+                            VPChatMessageTable.clearBySession(sessionIdFromQuery),
+                            ValidationNoteTable.clearBySession(sessionIdFromQuery),
+                        ]).catch(() => { /* non-critical */ });
+                    } else {
+                        initSession(sessionIdFromQuery, 'EPA_STANDARD_V1');
+                        resumeTimer();
+                        setSessionId(sessionIdFromQuery);
+                        return;
+                    }
+                } catch {
+                    initSession(sessionIdFromQuery, 'EPA_STANDARD_V1');
+                    resumeTimer();
+                    setSessionId(sessionIdFromQuery);
+                    return;
+                }
+            }
             const learnerId = getCookie('userId') || 'USR001';
             try {
                 const active = await practiceSessionService.getActive(learnerId, params.id);
-                if (active?.sessionId && active.status !== 'Completed') {
+                if (active?.sessionId && !TERMINAL_STATUSES.includes(active.status)) {
+                    console.log(
+                        `[TakePracticePage] Resuming active session ${active.sessionId} (status: ${active.status})`
+                    );
                     initSession(active.sessionId, 'EPA_STANDARD_V1');
                     resumeTimer();
                     setSessionId((prev) => prev !== active.sessionId ? active.sessionId : prev);
@@ -178,7 +249,6 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
                     patientId: params.id,
                     moduleId: 'EPA_STANDARD_V1',
                     discussionType: 'Message Type',
-                    guidelinesId: null,
                     status: 'Practicing',
                 });
                 initSession(newId, 'EPA_STANDARD_V1');
@@ -201,25 +271,6 @@ export const TakePracticePage = ({ params }: TakePracticePageProps) => {
         router.push(
             `/practice/${params.id}/reasoning?sessionId=${sessionId}&vpDuration=${vpDuration}`
         );
-    };
-
-    const handleConfirmExit = async (): Promise<void> => {
-        setIsExiting(true);
-        try {
-            stopTimer();
-        } catch (timerErr) {
-            console.error('[TakePracticePage] Failed to stop timer:', timerErr);
-        }
-
-        if (sessionId) {
-            try {
-                await practiceSessionService.patchStatus(sessionId, 'Abandoned');
-            } catch (apiErr) {
-                console.warn('[TakePracticePage] Backend session sync skipped or failed (404/500):', apiErr);
-            }
-        }
-        setIsExiting(false);
-        router.push('/practice');
     };
 
     if (!currentPatient) {

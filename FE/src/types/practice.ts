@@ -63,9 +63,10 @@ export interface AttemptCountData {
     readonly learnerId: string;
     readonly patientId: string;
     readonly attemptCount: number;
-    readonly maxAttempts: number;
     readonly canAttempt: boolean;
 }
+
+export const DEFAULT_PRACTICE_MAX_ATTEMPTS = 3;
 
 export type PracticeStatus =
     | 'Practicing'

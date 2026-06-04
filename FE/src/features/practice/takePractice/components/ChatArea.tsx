@@ -199,7 +199,7 @@ export const ChatArea = ({
                         onChange={(e) => setInput(e.target.value)}
                         placeholder={isSending ? 'Waiting for response...' : 'Ask the patient about symptoms, history...'}
                         disabled={isSending}
-                        className={`w-full pl-5 pr-14 py-4 border border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 select-text pointer-events-auto ${
+                        className={`w-full pl-5 pr-14 py-4 border-[#235697] border-[1.5px] focus:outline-none focus:border-[#235697] text-sm shadow-sm transition-all duration-300 select-text pointer-events-auto ${
                             isPanelExpanded ? 'rounded-b-xl' : 'rounded-tr-xl rounded-br-xl rounded-bl-xl'
                         } ${isSending ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-800'}`}
                     />

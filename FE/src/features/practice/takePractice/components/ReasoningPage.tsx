@@ -58,6 +58,11 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
     useExitProtection({
         enabled: !isExiting,
         onExitAttempt: () => setIsExitModalOpen(true),
+        onHardExit: () => {
+            if (sessionId) {
+                practiceSessionService.markAbandonedOnUnload(sessionId);
+            }
+        },
     });
 
     const timer = usePracticeTimer({
