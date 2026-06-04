@@ -2,6 +2,7 @@
 
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 import {
     EvaluationReportResponse,
     EvaluationHistoryItem,
@@ -33,6 +34,7 @@ function getAuthHeaders(): HeadersInit {
         'Content-Type': 'application/json',
         'x-auth-env': 'client',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...NGROK_SKIP_BROWSER_WARNING_HEADER,
     };
 }
 
@@ -87,7 +89,7 @@ export function mapEvaluationReportToResultsData(
 
 export function mapToEvaluationTabData(
     feedback: PracticeFeedbackResponse,
-    report?: EvaluationReportResponse 
+    report?: EvaluationReportResponse
 ): EvaluationTabData {
     const epaScores: ResultsEpaScore[] = (report?.epaScores ?? []).map(
         (epa: EpaScoreResponse) => ({

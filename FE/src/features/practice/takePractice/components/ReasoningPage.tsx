@@ -24,6 +24,9 @@ interface ReasoningPageProps {
 }
 
 interface PatientApiResponse {
+    name?: string;
+    age?: number;
+    gender?: string;
     chiefConcern?: string;
     description?: string;
     medicalHistory?: string;
@@ -100,6 +103,7 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
                 );
                 if (res.ok && !cancelled) {
                     const data = (await res.json()) as PatientApiResponse;
+                    console.log('[ReasoningPage] Fetched patient data:', data);
                     setPatientData(data);
                 }
             } catch (e) {
@@ -118,10 +122,12 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
 
     const patientCase = useMemo(() => {
         if (!patientData) return `Clinical case for session ${sessionId}`;
-        const concern = patientData.chiefConcern ?? patientData.symptom ?? 'Unknown concern';
-        const history =
-            patientData.medicalHistory ?? patientData.description ?? 'Not available';
-        return `${concern}. Medical history: ${history}`;
+
+        const patientCaseInfo = `Patient's name: ${patientData.name ?? 'Unknown'}. The patient is a ${patientData.age ?? 'unknown age'}-year-old ${patientData.gender ?? 'unknown gender'}.`;
+
+        const description = `Chief concern: ${patientData.chiefConcern ?? ''}. Symptom: ${patientData.symptom ?? ''}`.trim();
+        const history = patientData.medicalHistory ?? patientData.description ?? 'Not available';
+        return `${patientCaseInfo}. ${description}. Medical history: ${history}`;
     }, [patientData, sessionId]);
 
     const { messages, isSending, isComplete, sendAnswer, startReasoning, loadFromDexie } =

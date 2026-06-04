@@ -198,8 +198,8 @@ export function useReasoningChat({ patientCase, sessionId }: UseReasoningChatOpt
                     dimension: historyEntry.dimension,
                     question: historyEntry.question,
                     answer: historyEntry.answer,
-                    sessionId,      
-                    createdAt: Date.now(), 
+                    sessionId,
+                    createdAt: Date.now(),
                 }).catch(console.error);
             }
 
