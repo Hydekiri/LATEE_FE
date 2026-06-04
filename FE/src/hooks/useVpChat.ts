@@ -1,11 +1,12 @@
 'use client';
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { getCookie } from '@/src/utils/cookies';
-import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/config/env';
+import { API_BASE_URL } from '@/src/config/env';
 import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
 import { PatientData } from '@/src/types/practice';
 import { ValidateQuestion } from '@/src/services/validate-question-service';
 import { resolvePatientAvatar } from "@/src/utils/patient-assets";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export interface VpChatMessage {
     id: number;
@@ -137,10 +138,11 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                 const streamRes = await fetch(`${API_BASE_URL}/virtual-patient/ai/stream`, {
                     method: 'POST',
                     headers: {
-
                         'Content-Type': 'application/json',
-                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+                        Accept: 'text/event-stream',
+                        'x-auth-env': 'client',
                         ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+                        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
                     },
                     body: JSON.stringify({
                         doctor_id: getCookie('userId') || 'DR-001',
@@ -217,7 +219,7 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
                 setIsSending(false);
             }
         },
-        [sessionId, flexiblePatient.id, flexiblePatient.patientId, patientAvatar]
+        [sessionId, flexiblePatient.id, flexiblePatient.patientId]
     );
 
     return { messages: synchronizedMessages, isSending, isValidating, sendMessage };

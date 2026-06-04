@@ -15,7 +15,8 @@ import {
 import { Loader2 } from 'lucide-react';
 import { getCookie } from '@/src/utils/cookies';
 import { AssessmentData } from '@/src/types/assessment';
-import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
+import { API_BASE_URL } from "@/src/config/env";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 interface OptionResult {
     id: string;
@@ -93,7 +94,7 @@ function ResultsContent({ data }: { data: AssessmentData }) {
                 const response = await fetch(
                     `${API_BASE_URL}/assessment/api/assessments/${data.assessmentId}/learner/${learnerId}/attempts`,
                     {
-                        headers: { ...NGROK_SKIP_BROWSER_WARNING_HEADER, accept: '*/*', Authorization: `Bearer ${accessToken}` }
+                        headers: { accept: '*/*', Authorization: `Bearer ${accessToken}`, ...NGROK_SKIP_BROWSER_WARNING_HEADER }
                     }
                 );
 
@@ -136,7 +137,7 @@ function ResultsContent({ data }: { data: AssessmentData }) {
                 const response = await fetch(
                     `${API_BASE_URL}/assessment/api/assessments/attempts/${selectedAttemptId}`,
                     {
-                        headers: { ...NGROK_SKIP_BROWSER_WARNING_HEADER, accept: '*/*', Authorization: `Bearer ${accessToken}` }
+                        headers: { accept: '*/*', Authorization: `Bearer ${accessToken}`, ...NGROK_SKIP_BROWSER_WARNING_HEADER }
                     }
                 );
 

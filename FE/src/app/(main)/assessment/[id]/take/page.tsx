@@ -2,7 +2,8 @@ import TakeAssessmentFeature from "@/src/features/assessment/takeAssessment/Take
 import { checkIsLearnerLoggedIn } from "@/src/app/authFilterChain";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
+import { API_BASE_URL } from "@/src/config/env";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/utils/api-client";
 
 async function getFullAssessmentDetails(id: string) {
     console.log('[INFO]: Learner is logged in, fetching assessment data for id:', id);

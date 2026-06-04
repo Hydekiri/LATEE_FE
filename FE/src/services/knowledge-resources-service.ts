@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "@/src/config/env";
 import { getCookie } from "@/src/utils/cookies";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/utils/api-client";
 
 export const getKnowledgeResources = async () => {
     try {
@@ -9,8 +10,8 @@ export const getKnowledgeResources = async () => {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
-                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-                "ngrok-skip-browser-warning": "true"
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
         });
 
@@ -37,8 +38,8 @@ export const getKnowledgeResourceById = async (id: string) => {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json',
-                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-                "ngrok-skip-browser-warning": "true"
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
         });
         console.log("Fetch response:", res);

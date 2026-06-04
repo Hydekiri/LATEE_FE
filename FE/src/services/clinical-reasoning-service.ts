@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/src/config/env';
 import { getCookie } from '@/src/utils/cookies';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export const ALL_DIMENSIONS = [
     'Cơ sở bằng chứng',
@@ -70,7 +71,8 @@ const requestClinicalReasoning = async (
         headers: {
             'Content-Type': 'application/json',
             Accept: 'text/event-stream',
-            'x-auth-env': 'client', 
+            'x-auth-env': 'client',
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify(payload),

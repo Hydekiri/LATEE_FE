@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/src/config/env';
 import { getCookie } from '../utils/cookies';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export interface ValidationMessageItem {
     role: 'doctor' | 'patient' | 'system';
@@ -30,6 +31,7 @@ export async function ValidateQuestion(
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
         },
         body: JSON.stringify({

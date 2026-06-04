@@ -13,7 +13,8 @@ import { useReasoningChat, ReasoningMessage } from '@/src/hooks/useReasoningChat
 import { usePracticeTimer } from '@/src/hooks/usePracticeTimer';
 import { practiceSessionStore } from '@/src/stores/practiceSessionStore';
 import { getCookie } from '@/src/utils/cookies';
-import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/config/env';
+import { API_BASE_URL } from '@/src/config/env';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 import { useExitProtection } from '@/src/hooks/useExitProtection';
 import { ApiHttpError, practiceSessionService } from '@/src/services/practice-session-service';
 import { ExitConfirmModal } from "@/src/features/practice/takePractice/components/ExitConfirmModal";

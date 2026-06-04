@@ -1,8 +1,9 @@
-import { clientApi  } from '@/src/utils/api-client';
+import { clientApi } from '@/src/utils/api-client';
 import { PracticeSessionSubmitDTO } from '@/src/types/submition';
 import { PracticeStatus } from '@/src/types/practice';
 import { getCookie } from '@/src/utils/cookies';
 import { API_BASE_URL } from '@/src/config/env';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export interface PracticeSessionDto {
     readonly sessionId: string;
@@ -65,6 +66,7 @@ async function patchJson<T>(
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(body),

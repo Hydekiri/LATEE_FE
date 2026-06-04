@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import AssessmentCreateForm from "@/src/features/assessment/components/subComponents/AssessmentCreateForm";
 import { getCookie } from "@/src/utils/cookies";
-import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/config/env";
+import { API_BASE_URL } from "@/src/config/env";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/utils/api-client";
 
 interface AssessmentActivityItem {
     time: string;

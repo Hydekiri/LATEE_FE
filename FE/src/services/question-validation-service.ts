@@ -1,5 +1,6 @@
 import { API_BASE_URL } from '@/src/config/env';
 import { getCookie } from '@/src/utils/cookies';
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export interface ConversationContextMessage {
     role: string;
@@ -32,6 +33,7 @@ export async function validateQuestionStream(
             'Content-Type': 'application/json',
             Accept: 'text/event-stream',
             // FIX: inject token để BE auth middleware không reject
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
             ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify(payload),

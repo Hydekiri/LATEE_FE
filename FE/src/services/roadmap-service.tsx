@@ -1,6 +1,7 @@
 import { getCookie } from "../utils/cookies";
-import { API_BASE_URL, NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/config/env';
+import { API_BASE_URL } from '@/src/config/env';
 import { RoadmapData } from "@/src/features/progress/roadmap";
+import { NGROK_SKIP_BROWSER_WARNING_HEADER } from "@/src/utils/api-client";
 
 export interface RoadmapItem {
     order_id: number;
@@ -35,6 +36,7 @@ export default async function generateRoadmap(historyPractice: string, userTarge
             headers: {
                     ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
             body: JSON.stringify({
@@ -67,6 +69,7 @@ export default async function generateRoadmap(historyPractice: string, userTarge
             headers: {
                 ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
             body: JSON.stringify({
@@ -100,6 +103,7 @@ export async function getLatestRoadmap() {
             headers: {
                 ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             }
         });
@@ -135,6 +139,7 @@ export async function updateRoadmapWithId(roadmapId: string, updatedRoadmapConte
             headers: {
                 ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
             body: JSON.stringify({
