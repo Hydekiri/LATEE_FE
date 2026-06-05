@@ -54,9 +54,12 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
     const [reasoningError, setReasoningError] = useState<string | null>(null);
     const [isExitModalOpen, setIsExitModalOpen] = useState<boolean>(false);
     const [isExiting, setIsExiting] = useState<boolean>(false);
+    // FIX: track xem có đang time-out không để disable chat và hiển thị timeout banner
+    const [isTimedOut, setIsTimedOut] = useState<boolean>(false);
 
     const hasStarted = useRef<boolean>(false);
     const hasPatchedStatus = useRef<boolean>(false);
+    const hasAutoSubmitted = useRef<boolean>(false);
     const lastAiMsgRef = useRef<ReasoningMessage | null>(null);
 
     useExitProtection({
@@ -116,9 +119,7 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
             }
         };
         void fetchPatient();
-        return () => {
-            cancelled = true;
-        };
+        return () => { cancelled = true; };
     }, [id]);
 
     useEffect(() => {
@@ -146,14 +147,7 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
     useEffect(() => {
         if (!patientData || hasStarted.current || !sessionId) return;
         hasStarted.current = true;
-
-        const stored = practiceSessionStore.load();
-        const storedDiagnosis =
-            stored?.sessionId === sessionId && stored.phase === 'reasoning'
-                ? 'To be determined'
-                : 'To be determined';
-
-        void startReasoning(storedDiagnosis);
+        void startReasoning('To be determined');
     }, [patientData, sessionId, startReasoning]);
 
     useEffect(() => {
@@ -163,14 +157,45 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
         }
     }, [messages]);
 
+    const maxTimeArgument = useMemo(
+        () => (patientData?.argumentTime ? patientData.argumentTime * 60 : 1800),
+        [patientData]
+    );
+
+    const remainingSeconds = useMemo(
+        () => Math.max(0, maxTimeArgument - timer.elapsed),
+        [maxTimeArgument, timer.elapsed]
+    );
+
+    // FIX: Auto open SubmitModal khi hết time reasoning — chỉ trigger 1 lần
+    useEffect(() => {
+        if (remainingSeconds === 0 && timer.elapsed > 0 && !hasAutoSubmitted.current) {
+            hasAutoSubmitted.current = true;
+            timer.stop();
+            setIsTimedOut(true);
+            setIsConfirmModalOpen(true);
+        }
+    }, [remainingSeconds, timer.elapsed, timer]);
+
+    const countdownDisplay = useMemo(() => {
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }, [remainingSeconds]);
+
+    const progressPercent = useMemo(
+        () => Math.max(0, (remainingSeconds / maxTimeArgument) * 100),
+        [remainingSeconds, maxTimeArgument]
+    );
+
     const handleSendMessage = async (answer: string): Promise<void> => {
+        // FIX: Không cho chat khi đã hết time
+        if (isTimedOut) return;
         setReasoningError(null);
         try {
             await sendAnswer(answer, lastAiMsgRef.current ?? undefined);
         } catch {
-            setReasoningError(
-                'An error occurred while processing your answer. Please try again.'
-            );
+            setReasoningError('An error occurred while processing your answer. Please try again.');
         }
     };
 
@@ -187,37 +212,14 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
         } catch (timerErr) {
             console.error('[ReasoningPage] Failed to stop timer:', timerErr);
         }
-
         try {
             await practiceSessionService.patchStatus(sessionId, 'Abandoned');
         } catch (apiErr) {
             console.warn('[ReasoningPage] Backend session sync skipped or failed (404/500):', apiErr);
         }
-
         setIsExiting(false);
         router.push(`/practice/${id}`);
     };
-
-    const maxTimeArgument = useMemo(
-        () => (patientData?.argumentTime ? patientData.argumentTime * 60 : 1800),
-        [patientData]
-    );
-
-    const remainingSeconds = useMemo(
-        () => Math.max(0, maxTimeArgument - timer.elapsed),
-        [maxTimeArgument, timer.elapsed]
-    );
-
-    const countdownDisplay = useMemo(() => {
-        const minutes = Math.floor(remainingSeconds / 60);
-        const seconds = remainingSeconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }, [remainingSeconds]);
-
-    const progressPercent = useMemo(
-        () => Math.max(0, (remainingSeconds / maxTimeArgument) * 100),
-        [remainingSeconds, maxTimeArgument]
-    );
 
     return (
         <div className="h-screen flex flex-col bg-[#F8FAFC] font-sans overflow-hidden">
@@ -233,23 +235,38 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
                     onEndConversationClick={() => setIsConfirmModalOpen(true)}
                     countdownDisplay={countdownDisplay}
                     progressPercent={progressPercent}
+                    isTimedOut={isTimedOut}
                 />
 
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <div className="px-6 py-2 border-b border-gray-100 flex justify-between items-center text-sm text-gray-500 shrink-0">
                         <span className="font-medium">Clinical Reasoning Phase</span>
-                        <span className="font-mono font-bold text-[#235697]">
+                        <span className={`font-mono font-bold transition-colors ${
+                            remainingSeconds <= 60 && remainingSeconds > 0
+                                ? 'text-red-500 animate-pulse'
+                                : remainingSeconds === 0
+                                ? 'text-red-600'
+                                : 'text-[#235697]'
+                        }`}>
                             {timer.formatted}
                         </span>
                     </div>
 
+                    {/* FIX: Banner timeout */}
+                    {isTimedOut && (
+                        <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 text-amber-700 text-sm font-semibold text-center shrink-0">
+                            Time is up! Please submit your reasoning now.
+                        </div>
+                    )}
+
                     <ReasoningChat
                         messages={messages}
                         isSending={isSending}
-                        isComplete={isComplete}
+                        isComplete={isComplete || isTimedOut}
                         errorMessage={reasoningError}
                         onSendMessage={handleSendMessage}
                         onRetry={handleRetry}
+                        disabled={isTimedOut}
                     />
                 </div>
 
@@ -258,7 +275,9 @@ const ReasoningContent = ({ id }: ReasoningPageProps) => {
 
             <SubmitModal
                 isOpen={isConfirmModalOpen}
-                onClose={() => setIsConfirmModalOpen(false)}
+                onClose={() => {
+                    if (!isTimedOut) setIsConfirmModalOpen(false);
+                }}
                 patientId={id}
                 sessionId={sessionId}
                 vpDuration={vpDuration}

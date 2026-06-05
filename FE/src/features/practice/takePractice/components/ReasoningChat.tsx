@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { Send } from 'lucide-react';
 import { ReasoningMessage } from '@/src/hooks/useReasoningChat';
+import { getCookie } from '@/src/utils/cookies';
 
 interface ReasoningChatProps {
     readonly messages: ReasoningMessage[];
@@ -12,6 +13,7 @@ interface ReasoningChatProps {
     readonly errorMessage?: string | null;
     readonly onSendMessage: (message: string) => Promise<void>;
     readonly onRetry?: () => Promise<void>;
+    readonly disabled?: boolean; 
 }
 
 export const ReasoningChat = ({
@@ -21,10 +23,15 @@ export const ReasoningChat = ({
     errorMessage,
     onSendMessage,
     onRetry,
+    disabled = false,
 }: ReasoningChatProps) => {
     const [inputMessage, setInputMessage] = useState<string>('');
     const [isSendingLocal, setIsSendingLocal] = useState<boolean>(false);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const doctorAvatar = useMemo(() => {
+        const raw = getCookie('avatarUrl');
+        return raw && raw !== 'null' ? raw : '/images/ava1.jpg';
+    }, []);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,7 +39,7 @@ export const ReasoningChat = ({
 
     const handleSend = useCallback(async () => {
         const trimmed = inputMessage.trim();
-        if (!trimmed || isSending || isSendingLocal || isComplete) return;
+        if (!trimmed || isSending || isSendingLocal || isComplete || disabled) return;
 
         setIsSendingLocal(true);
         setInputMessage('');
@@ -41,9 +48,9 @@ export const ReasoningChat = ({
         } finally {
             setIsSendingLocal(false);
         }
-    }, [inputMessage, isSending, isSendingLocal, isComplete, onSendMessage]);
+    }, [inputMessage, isSending, isSendingLocal, isComplete, disabled, onSendMessage]);
 
-    const isDisabled = isSending || isSendingLocal || isComplete;
+    const isDisabled = isSending || isSendingLocal || isComplete || disabled;
 
     return (
         <main className="flex-1 flex flex-col h-full min-h-0 bg-white relative transition-all duration-300 overflow-hidden">
@@ -52,8 +59,7 @@ export const ReasoningChat = ({
                 {messages.map((chat) => (
                     <div
                         key={chat.id}
-                        className={`flex gap-4 ${chat.role === 'user' ? 'justify-end' : 'justify-start'
-                            }`}
+                        className={`flex gap-4 ${chat.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         {chat.role === 'assistant' && (
                             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
@@ -67,10 +73,11 @@ export const ReasoningChat = ({
                             </div>
                         )}
                         <div
-                            className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${chat.role === 'user'
+                            className={`max-w-[70%] px-5 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                                chat.role === 'user'
                                     ? 'bg-[#D1EFF9] text-gray-800 rounded-tr-none'
                                     : 'bg-white border border-gray-200 text-gray-700 rounded-tl-none'
-                                }`}
+                            }`}
                         >
                             {chat.dimension && (
                                 <span className="text-xs font-bold text-[#1BA7D9] block mb-1 uppercase">
@@ -84,7 +91,7 @@ export const ReasoningChat = ({
                         {chat.role === 'user' && (
                             <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-200">
                                 <Image
-                                    src="/images/VirtualPatient/VP3.jpeg"
+                                    src={doctorAvatar}
                                     width={40}
                                     height={40}
                                     alt="Doctor"
@@ -101,9 +108,15 @@ export const ReasoningChat = ({
                     </div>
                 )}
 
-                {isComplete && (
+                {isComplete && !disabled && (
                     <div className="text-center text-sm text-[#10B981] font-bold py-2">
                         Reasoning session complete. Ready to submit.
+                    </div>
+                )}
+
+                {disabled && (
+                    <div className="text-center text-sm text-red-600 font-bold py-2 bg-red-50 rounded-xl mx-4">
+                        Time is up! Please submit your diagnosis now.
                     </div>
                 )}
 
@@ -115,8 +128,8 @@ export const ReasoningChat = ({
                                 onClick={() => void onRetry()}
                                 disabled={isSending}
                                 className="px-3 py-1.5 rounded-md border border-red-200 bg-white text-red-700
-                            text-xs font-medium hover:bg-red-50 disabled:opacity-60
-                            disabled:cursor-not-allowed"
+                                text-xs font-medium hover:bg-red-50 disabled:opacity-60
+                                disabled:cursor-not-allowed"
                             >
                                 Try again
                             </button>
@@ -142,14 +155,18 @@ export const ReasoningChat = ({
                         }}
                         disabled={isDisabled}
                         placeholder={
-                            isComplete
-                                ? 'Reasoning complete — submit your diagnosis'
+                            disabled
+                                ? 'Time is up now!! please submit your diagnosis'
+                                : isComplete
+                                ? 'Reasoning complete, please submit your diagnosis'
                                 : 'Type your reasoning here...'
                         }
-                        className="w-full pl-5 pr-14 py-4 border-[#235697] border-[1.5px]
-                        focus:outline-none focus:border-[#235697] text-sm shadow-sm
+                        className="w-full pl-5 pr-14 py-4 border-[1.5px] border-gray-300
+                        focus:outline-none focus:border-[#235697] focus:ring-1 focus:ring-[#235697]
+                        hover:border-gray-400 text-sm shadow-sm
                         transition-all duration-300 rounded-xl
-                        disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        disabled:cursor-not-allowed
+                        disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-400"
                     />
                     <button
                         onClick={() => void handleSend()}

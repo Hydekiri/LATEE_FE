@@ -8,6 +8,8 @@ import { ValidateQuestion } from '@/src/services/validate-question-service';
 import { resolvePatientAvatar } from "@/src/utils/patient-assets";
 import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
+
+
 export interface VpChatMessage {
     id: number;
     role: 'user' | 'patient';
@@ -42,6 +44,15 @@ interface FlexiblePatientData extends Partial<PatientData> {
 
 export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOptions) {
     const flexiblePatient = patientData as FlexiblePatientData;
+    const doctorAvatar = useMemo(() => {
+    
+    const rawAvatar = getCookie('avatarUrl');
+        console.log('[ReasoningChat] avatarUrl cookie:', rawAvatar); 
+        if (rawAvatar && rawAvatar !== 'null' && rawAvatar !== 'undefined') {
+            return rawAvatar;
+        }
+        return '/images/ava1.jpg';
+    }, []);
 
     const patientAvatar = useMemo(
         () => resolvePatientAvatar(patientData.img, patientData.id, patientData.age, patientData.gender),
@@ -64,9 +75,9 @@ export function useVpChat({ patientData, sessionId, onWarning }: UseVpChatOption
     const synchronizedMessages = useMemo<VpChatMessage[]>(() => {
         return messages.map((m) => ({
             ...m,
-            avatar: m.role === 'patient' ? patientAvatar : '/images/doctor1.png',
+            avatar: m.role === 'patient' ? patientAvatar : doctorAvatar,
         }));
-    }, [messages, patientAvatar]);
+    }, [messages, patientAvatar, doctorAvatar]);
 
     const [isSending, setIsSending] = useState<boolean>(false);
     const [isValidating, setIsValidating] = useState<boolean>(false);

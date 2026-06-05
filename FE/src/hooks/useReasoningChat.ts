@@ -1,5 +1,5 @@
-// src/hooks/useReasoningChat.ts
 'use client';
+
 import { useState, useCallback, useRef } from 'react';
 import {
     fetchClinicalReasoningQuestion,
@@ -31,7 +31,7 @@ export function useReasoningChat({ patientCase, sessionId }: UseReasoningChatOpt
     const isSendingRef = useRef<boolean>(false);
     const diagnosisRef = useRef<string>('');
     const interactionHistory = useRef<ClinicalReasoningHistoryItem[]>([]);
-
+    
     const addDexieMessage = useCallback(
         async (role: 'user' | 'assistant', content: string, dimension?: string): Promise<number> => {
             const id = await ClinicalReasoningChatMessageTable.add({
