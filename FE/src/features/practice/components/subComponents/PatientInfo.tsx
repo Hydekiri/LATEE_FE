@@ -2,21 +2,25 @@
 
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { PatientData } from '@/src/types/practice';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import { getAvatarByAge, resolvePatientAvatar } from '@/src/utils/patient-assets';
 import { getLearnerId } from '@/src/utils/cookies';
 import { patientService } from '@/src/services/patient-servvice';
 import { practiceSessionService } from '@/src/services/practice-session-service';
+import { DEFAULT_PRACTICE_MAX_ATTEMPTS } from '@/src/types/practice';
+import { VPChatMessageTable } from '@/src/hooks/dexieConfigurations/VPChatMessages.table';
+import { ValidationNoteTable } from '@/src/hooks/dexieConfigurations/ValidationNotes.table';
 
 export const PatientInfo = ({ data }: { data: PatientData }) => {
     const router = useRouter();
+    const pathname = usePathname();
     const [imgSrc, setImgSrc] = useState<string | null>(null);
     const [isStarting, setIsStarting] = useState<boolean>(false);
     const [startError, setStartError] = useState<string | null>(null);
     const [attemptsUsed, setAttemptsUsed] = useState<number>(data.timesPracticed ?? 0);
-    const [attemptsMax, setAttemptsMax] = useState<number>(3);
+    const [attemptsMax, setAttemptsMax] = useState<number>(DEFAULT_PRACTICE_MAX_ATTEMPTS);
     const [attemptsLoading, setAttemptsLoading] = useState<boolean>(true);
 
     const displayImage = useMemo(() => {
@@ -35,28 +39,36 @@ export const PatientInfo = ({ data }: { data: PatientData }) => {
         return `A ${age}-year-old ${gender} ${occupation} comes to the ${setting} for evaluation of a recent health concern.`;
     }, [data.age, data.gender, data.occupation, data.setting]);
 
-    useEffect(() => {
-        let cancelled = false;
-        const fetchAttemptCount = async () => {
-            setAttemptsLoading(true);
-            try {
-                const learnerId = getLearnerId();
-                const result = await patientService.getAttemptCount(learnerId, data.id);
-                if (!cancelled) {
-                    setAttemptsUsed(result.attemptCount);
-                    setAttemptsMax(result.maxAttempts);
-                }
-            } catch {
-                if (!cancelled) {
-                    setAttemptsUsed(data.timesPracticed ?? 0);
-                }
-            } finally {
-                if (!cancelled) setAttemptsLoading(false);
-            }
-        };
-        void fetchAttemptCount();
-        return () => { cancelled = true; };
+    const fetchAttemptCount = useCallback(async () => {
+        try {
+            const learnerId = getLearnerId();
+            const result = await patientService.getAttemptCount(learnerId, data.id);
+            setAttemptsUsed(result.attemptCount);
+            setAttemptsMax(DEFAULT_PRACTICE_MAX_ATTEMPTS);
+        } catch {
+            setAttemptsUsed(data.timesPracticed ?? 0);
+            setAttemptsMax(DEFAULT_PRACTICE_MAX_ATTEMPTS);
+        } finally {
+            setAttemptsLoading(false);
+        }
     }, [data.id, data.timesPracticed]);
+
+    useEffect(() => {
+        const initFetch = async () => {
+            setAttemptsLoading(true);
+            await fetchAttemptCount();
+        };
+        void initFetch();
+    }, [fetchAttemptCount, pathname]);
+
+    useEffect(() => {
+        const handleFocus = () => {
+            setAttemptsLoading(true);
+            void fetchAttemptCount();
+        };
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, [fetchAttemptCount]);
 
     const attemptsRemaining = attemptsMax - attemptsUsed;
     const canAttempt = attemptsRemaining > 0;
@@ -67,15 +79,42 @@ export const PatientInfo = ({ data }: { data: PatientData }) => {
         setStartError(null);
         try {
             const learnerId = getLearnerId();
+
+            if (typeof window !== 'undefined') {
+                sessionStorage.removeItem(`vp_timer_${data.id}`);
+                localStorage.removeItem(`vp_timer_${data.id}`);
+            }
+
+            try {
+                const active = await practiceSessionService.getActive(learnerId, data.id);
+                if (active?.sessionId) {
+                    await Promise.all([
+                        VPChatMessageTable.clearBySession(active.sessionId),
+                        ValidationNoteTable.clearBySession(active.sessionId),
+                    ]);
+                }
+            } catch {
+            }
+            const payload = {
+                id: `SESS_${data.id}_${Date.now()}`,
+                learnerId,
+                patientId: data.id,
+                moduleId: 'EPA_STANDARD_V1',
+                discussionType: 'Message Type',
+                status: 'Practicing',
+            };
+            console.log('🔴 CREATE SESSION PAYLOAD:', JSON.stringify(payload, null, 2));
+            console.log('🔴 learnerId value:', learnerId, '| type:', typeof learnerId);
+            console.log('🔴 patientId value:', data.id, '| type:', typeof data.id);
             const response = await practiceSessionService.create({
                 id: `SESS_${data.id}_${Date.now()}`,
                 learnerId,
                 patientId: data.id,
                 moduleId: 'EPA_STANDARD_V1',
                 discussionType: 'Message Type',
-                guidelinesId: null,
                 status: 'Practicing',
             });
+
             if (response?.id) {
                 router.push(`/practice/${data.id}/take?sessionId=${response.id}`);
             }

@@ -12,7 +12,7 @@ interface PatientSidebarProps {
     timerFormatted: string; 
     elapsed: number;       
     maxTime: number;        
-    avatarUrl?: string; // Thêm prop nhận đường dẫn ảnh động từ trang cha
+    avatarUrl?: string; 
 }
 
 export const PatientSidebar = ({ 

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     ChartBarIcon,
     ClockIcon,
@@ -12,6 +12,9 @@ import {
     StarIcon,
 } from '@heroicons/react/24/solid';
 import { DiscoveryPatientItem } from '@/src/types/discovery';
+import { DEFAULT_PRACTICE_MAX_ATTEMPTS } from '@/src/types/practice';
+import { patientService } from '@/src/services/patient-servvice';
+import { getLearnerId } from '@/src/utils/cookies';
 import { resolvePatientAvatar, getAvatarByAge } from '@/src/utils/patient-assets';
 
 interface DiscoveryPatientCardProps {
@@ -21,6 +24,8 @@ interface DiscoveryPatientCardProps {
 export default function DiscoveryPatientCard({ item }: DiscoveryPatientCardProps) {
     const router = useRouter();
     const [imgError, setImgError] = useState<boolean>(false);
+    const [attemptCount, setAttemptCount] = useState<number>(item.attemptSummary?.attemptCount ?? 0);
+    const [attemptsLoading, setAttemptsLoading] = useState<boolean>(true);
 
     const displayImage = useMemo<string>(() => {
         if (imgError) return getAvatarByAge(item.patientId, item.age, item.gender);
@@ -42,12 +47,42 @@ export default function DiscoveryPatientCard({ item }: DiscoveryPatientCardProps
         return `A ${age}-year-old ${gender} ${occupation} presents for evaluation of a recent health concern.`;
     }, [item.age, item.gender, item.occupation]);
 
-    const attemptsLeft =
-        item.attemptSummary
-            ? item.attemptSummary.maxAttempts - item.attemptSummary.attemptCount
-            : null;
+    useEffect(() => {
+        let cancelled = false;
 
-    const isMaxAttempts = attemptsLeft === 0;
+        const loadAttemptCount = async () => {
+            try {
+                const learnerId = getLearnerId();
+                if (!learnerId) return;
+
+                const result = await patientService.getAttemptCount(learnerId, item.patientId);
+                if (!cancelled) {
+                    setAttemptCount(result.attemptCount);
+                }
+            } catch {
+                if (!cancelled) {
+                    setAttemptCount(item.attemptSummary?.attemptCount ?? 0);
+                }
+            } finally {
+                if (!cancelled) {
+                    setAttemptsLoading(false);
+                }
+            }
+        };
+
+        void loadAttemptCount();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [item.patientId, item.attemptSummary?.attemptCount]);
+
+    const attemptsLeft = Math.max(
+        0,
+        DEFAULT_PRACTICE_MAX_ATTEMPTS - attemptCount
+    );
+
+    const isMaxAttempts = !attemptsLoading && attemptsLeft === 0;
     const timeLabel = `${item.timeSetting} min`;
     const dateLabel = new Date(item.createdAt).toLocaleDateString();
 
@@ -117,7 +152,7 @@ export default function DiscoveryPatientCard({ item }: DiscoveryPatientCardProps
                             <ChatBubbleLeftRightIcon className="w-4 h-4 text-[#235697]/70" />
                             <span>Feedback ({item.feedbackCount})</span>
                         </div>
-                        
+
                         {/* HIỂN THỊ TÊN CHUYÊN GIA (EXPERT) */}
                         {item.experts?.[0]?.name && (
                             <div className="flex items-center gap-1.5">
@@ -161,11 +196,10 @@ export default function DiscoveryPatientCard({ item }: DiscoveryPatientCardProps
                             type="button"
                             onClick={() => router.push(`/practice/${item.patientId}?tab=about`)}
                             // LUÔN CHO VIEW: Gỡ bỏ disabled và cơ chế cursor-not-allowed
-                            className={`group/btn shrink-0 text-sm font-lato-bold pl-4 pr-3 py-2 xl:pl-5 xl:pr-4 xl:py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition-all duration-300 ${
-                                isMaxAttempts 
-                                    ? 'bg-amber-500/10 text-amber-700 hover:bg-amber-600 hover:text-white' 
+                            className={`group/btn shrink-0 text-sm font-lato-bold pl-4 pr-3 py-2 xl:pl-5 xl:pr-4 xl:py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition-all duration-300 ${isMaxAttempts
+                                    ? 'bg-amber-500/10 text-amber-700 hover:bg-amber-600 hover:text-white'
                                     : 'bg-[#00B7FF]/20 text-[#235697] hover:bg-[#235697] hover:text-white'
-                            }`}
+                                }`}
                         >
                             {isMaxAttempts ? 'View Details' : 'Join Practice'}
                             <ArrowRightIcon

@@ -27,7 +27,7 @@ export interface CreateSessionDTO {
     readonly patientId: string;
     readonly moduleId: string;
     readonly discussionType: string;
-    readonly guidelinesId: string | null;
+    readonly guidelinesId?: string | null;
     readonly status: 'Practicing';
 }
 
@@ -45,6 +45,16 @@ export interface ActiveSessionResponse {
 
 const BASE = '/practice-session/api/practice-sessions';
 
+export const TERMINAL_SESSION_STATUSES: PracticeStatus[] = [
+    'Completed',
+    'Abandoned',
+    'Submitted',
+];
+
+export function isTerminalStatus(status: PracticeStatus): boolean {
+    return TERMINAL_SESSION_STATUSES.includes(status);
+}
+
 export class ApiHttpError extends Error {
     readonly status: number;
     readonly url: string;
@@ -59,7 +69,8 @@ export class ApiHttpError extends Error {
 
 async function patchJson<T>(
     url: string,
-    body: unknown
+    body: unknown,
+    options?: { keepalive?: boolean }
 ): Promise<T> {
     const token = getCookie('accessToken');
     const res = await fetch(`${API_BASE_URL}${url}`, {
@@ -69,6 +80,7 @@ async function patchJson<T>(
             ...NGROK_SKIP_BROWSER_WARNING_HEADER,
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
+        keepalive: options?.keepalive,
         body: JSON.stringify(body),
     });
     if (!res.ok) {
@@ -112,9 +124,35 @@ async function patchStatusWithFallback(
     );
 }
 
+function patchAbandonedKeepalive(sessionId: string): void {
+    const token = getCookie('accessToken');
+    void fetch(`${API_BASE_URL}${BASE}/${sessionId}/status`, {
+        method: 'PATCH',
+        keepalive: true,
+        headers: {
+            'Content-Type': 'application/json',
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ status: 'Abandoned' }),
+    });
+}
+
 export const practiceSessionService = {
-    create: async (payload: CreateSessionDTO): Promise<{ id: string }> =>
-        clientApi.post<{ id: string }, CreateSessionDTO>(BASE, payload),
+    create: async (payload: CreateSessionDTO): Promise<{ id: string }> => {
+        const body: Record<string, unknown> = {
+            id: payload.id,
+            learnerId: payload.learnerId,
+            patientId: payload.patientId,
+            moduleId: payload.moduleId,
+            discussionType: payload.discussionType,
+            status: payload.status,
+        };
+        if (payload.guidelinesId != null) body.guidelinesId = payload.guidelinesId;
+
+        console.log('[practiceSessionService.create] Sending payload:', JSON.stringify(body));
+        return clientApi.post<{ id: string }>(BASE, body);
+    },
 
     getById: async (sessionId: string): Promise<PracticeSessionDto> =>
         clientApi.get<PracticeSessionDto>(`${BASE}/${sessionId}`),
@@ -133,14 +171,27 @@ export const practiceSessionService = {
     ): Promise<UpdateStatusResponse> =>
         patchStatusWithFallback(sessionId, status),
 
+    markAbandonedOnUnload: (sessionId: string): void => {
+        patchAbandonedKeepalive(sessionId);
+    },
+
     getActive: async (
         learnerId: string,
         patientId: string
     ): Promise<ActiveSessionResponse | null> => {
         try {
-            return await clientApi.get<ActiveSessionResponse>(
+            const session = await clientApi.get<ActiveSessionResponse>(
                 `${BASE}/active?learnerId=${encodeURIComponent(learnerId)}&patientId=${encodeURIComponent(patientId)}`
             );
+
+            if (session && isTerminalStatus(session.status)) {
+                console.warn(
+                    `[practiceSessionService.getActive] Session ${session.sessionId} has terminal status "${session.status}" — ignoring.`
+                );
+                return null;
+            }
+
+            return session;
         } catch {
             return null;
         }
