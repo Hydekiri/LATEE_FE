@@ -73,7 +73,7 @@ export function TabInstructions({ patient, onSave, saving, readonly }: TabInstru
                     <BookOpen className="w-5 h-5 text-[#235697]" />
                     Case Instructions
                 </h3>
-                {dirty && (
+                {dirty && !readonly && (
                     <button
                         onClick={() => void handleSave()}
                         disabled={saving}
@@ -93,6 +93,7 @@ export function TabInstructions({ patient, onSave, saving, readonly }: TabInstru
                         type="text"
                         value={inst.role}
                         onChange={(e) => updateField("role", e.target.value)}
+                        readOnly={readonly} 
                         placeholder="Medical Learner"
                         className={inputClass}
                     />
@@ -103,6 +104,7 @@ export function TabInstructions({ patient, onSave, saving, readonly }: TabInstru
                         type="text"
                         value={inst.tone}
                         onChange={(e) => updateField("tone", e.target.value)}
+                        readOnly={readonly} 
                         placeholder="Short answers unless asked directly"
                         className={inputClass}
                     />
@@ -117,6 +119,7 @@ export function TabInstructions({ patient, onSave, saving, readonly }: TabInstru
                     onChange={(e) => updateField("task", e.target.value)}
                     rows={3}
                     placeholder="Take a focused history from this patient..."
+                    readOnly={readonly}
                     className={`${inputClass} resize-none`}
                 />
             </div>
@@ -140,6 +143,7 @@ export function TabInstructions({ patient, onSave, saving, readonly }: TabInstru
                                 type="text"
                                 value={step}
                                 onChange={(e) => setProcAt(i, e.target.value)}
+                                readOnly={readonly} 
                                 className={inputClass}
                                 placeholder={`Step ${i + 1}`}
                             />
@@ -170,6 +174,7 @@ export function TabInstructions({ patient, onSave, saving, readonly }: TabInstru
                                 type="text"
                                 value={rule}
                                 onChange={(e) => setRuleAt(i, e.target.value)}
+                                readOnly={readonly} 
                                 className={inputClass}
                                 placeholder={`Rule ${i + 1}`}
                             />

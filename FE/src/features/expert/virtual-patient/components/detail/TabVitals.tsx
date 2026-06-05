@@ -69,7 +69,7 @@ export function TabVitals({ patient, onSave, saving, readonly }: TabVitalsProps)
                     <Activity className="w-5 h-5 text-[#235697]" />
                     <h3 className="text-base font-black text-slate-800">Vital Signs Configuration</h3>
                 </div>
-                {dirty && (
+                {dirty && !readonly && (
                     <button
                         onClick={() => void handleSave()}
                         disabled={saving}
@@ -92,6 +92,7 @@ export function TabVitals({ patient, onSave, saving, readonly }: TabVitalsProps)
                                 type={type}
                                 value={vitals[key] ?? ""}
                                 onChange={(e) => setVital(key, e.target.value, type)}
+                                readOnly={readonly}   
                                 placeholder={placeholder}
                                 step={type === "number" ? "0.1" : undefined}
                                 className="flex-1 px-3 py-2 text-sm font-bold border border-slate-200 rounded-lg bg-white focus:outline-none focus:border-[#235697] focus:ring-2 focus:ring-[#235697]/10 transition-all font-mono"

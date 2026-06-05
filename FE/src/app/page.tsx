@@ -63,7 +63,7 @@ export default async function Home() {
 
           {/* RIGHT IMAGE - DOCTOR */}
           <div className="hidden md:flex relative mt-10 lg:mt-0 justify-center lg:block">
-            <div className="lg:absolute lg:bottom-[-100px] lg:right-[-20px] xl:right-0 xl:bottom-[-164px] z-10 pointer-events-none">
+            <div className="lg:absolute lg:-bottom-25 lg:-right-5xl:right-0 xl:-bottom-41 z-10 pointer-events-none">
               <Image
                 src="/images/LandingDOC.webp"
                 alt="doctor"

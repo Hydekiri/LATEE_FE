@@ -40,11 +40,11 @@ export function TabLearningObjectives({ patient, onSave, saving, readonly }: Tab
                 <div className="flex items-center gap-2">
                     <button
                         onClick={add}
-                        className="flex items-center gap-1.5 px-3 py-2 border border-[#235697] text-[#235697] text-xs font-bold rounded-lg hover:bg-[#235697]/5 transition-all"
+                        className="flex items-center gap-1.5 px-3 py-2 border border-[#235697] text-[#235697] text-xs font-bold rounded-lg hover:bg-[#235697] hover:text-white transition-all"
                     >
                         <Plus className="w-3.5 h-3.5" /> Add Objective
                     </button>
-                    {dirty && (
+                    {dirty && !readonly && (
                         <button
                             onClick={() => void handleSave()}
                             disabled={saving}
@@ -61,12 +61,15 @@ export function TabLearningObjectives({ patient, onSave, saving, readonly }: Tab
                 <div className="py-10 text-center border-2 border-dashed border-slate-200 rounded-xl">
                     <Target className="w-8 h-8 text-slate-300 mx-auto mb-3" />
                     <p className="text-slate-400 text-sm font-medium mb-2">No learning objectives defined yet.</p>
-                    <button
-                        onClick={add}
-                        className="text-[#235697] font-bold text-sm hover:underline"
-                    >
-                        + Add first objective
-                    </button>
+                    {!readonly && (
+                        <button
+                            onClick={add}
+                            className="text-[#235697] font-bold text-sm hover:underline"
+                        >
+                            + Add first objective
+                        </button>
+                    )}
+                    
                 </div>
             ) : (
                 <div className="space-y-2">
@@ -76,6 +79,7 @@ export function TabLearningObjectives({ patient, onSave, saving, readonly }: Tab
                             <textarea
                                 value={obj}
                                 onChange={(e) => setAt(i, e.target.value)}
+                                readOnly={readonly}   
                                 rows={2}
                                 placeholder={`Learning objective ${i + 1}`}
                                 className="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#235697] focus:ring-2 focus:ring-[#235697]/10 transition-all resize-none"

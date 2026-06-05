@@ -119,7 +119,7 @@ export default function VirtualPatientDetailFeature({ patientId }: VirtualPatien
                     <VPLevelBadge level={patient.level} size="md" />
 
                     {isReadonly && (
-                        <span className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-600 text-xs font-bold">
+                        <span className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-50 border border-amber-600 rounded-lg text-amber-600 text-xs font-bold">
                             <ShieldAlert className="w-3.5 h-3.5" />
                             Read Only
                         </span>
