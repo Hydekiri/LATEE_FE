@@ -161,8 +161,9 @@ export const ReasoningChat = ({
                                 ? 'Reasoning complete, please submit your diagnosis'
                                 : 'Type your reasoning here...'
                         }
-                        className="w-full pl-5 pr-14 py-4 border-[1.5px]
-                        focus:outline-none text-sm shadow-sm
+                        className="w-full pl-5 pr-14 py-4 border-[1.5px] border-gray-300
+                        focus:outline-none focus:border-[#235697] focus:ring-1 focus:ring-[#235697]
+                        hover:border-gray-400 text-sm shadow-sm
                         transition-all duration-300 rounded-xl
                         disabled:cursor-not-allowed
                         disabled:bg-gray-100 disabled:border-gray-300 disabled:text-gray-400"
