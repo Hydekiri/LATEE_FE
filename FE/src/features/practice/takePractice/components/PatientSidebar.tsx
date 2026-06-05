@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Clock, Folder, Sparkles } from 'lucide-react';
 import { ConfirmModal } from '@/src/features/practice/takePractice/components/ConfirmModal';
 import { useRouter } from 'next/navigation';
-import { useState, useMemo } from 'react';
+import { useState, useMemo , useEffect} from 'react';
 
 interface PatientSidebarProps {
     id: string;
@@ -44,6 +44,11 @@ export const PatientSidebar = ({
         setIsShowConfirmModal(false);
         router.push(`/practice/${id}/reasoning?sessionId=${sessionId}`);
     };
+    useEffect(() => {
+        if (remainingSeconds === 0 && elapsed > 0) {
+            router.push(`/practice/${id}/reasoning?sessionId=${sessionId}`);
+        }
+    }, [remainingSeconds, elapsed, id, sessionId, router]);
 
     const displayAvatar = avatarUrl || '/images/VirtualPatient/VP5.jpeg';
 

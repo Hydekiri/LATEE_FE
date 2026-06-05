@@ -3,14 +3,16 @@ import { Clock, Sparkles } from 'lucide-react';
 
 interface ReasoningSidebarProps {
     onEndConversationClick: () => void;
-    countdownDisplay: string;  
-    progressPercent: number;   
+    countdownDisplay: string;
+    progressPercent: number;
+    isTimedOut?: boolean;
 }
 
-export const ReasoningSidebar = ({ 
-    onEndConversationClick, 
-    countdownDisplay, 
-    progressPercent 
+export const ReasoningSidebar = ({
+    onEndConversationClick,
+    countdownDisplay,
+    progressPercent,
+    isTimedOut = false,
 }: ReasoningSidebarProps) => {
     return (
         <aside className="w-72 bg-white border-r border-gray-200 flex flex-col h-full shrink-0">
@@ -40,17 +42,25 @@ export const ReasoningSidebar = ({
                         <span>Time Remaining</span>
                         <Clock className="w-3 h-3" />
                     </div>
-                    <div className="text-2xl font-bold text-[#235697] mb-2 font-mono tabular-nums">
-                        {countdownDisplay}
+                    <div className={`text-2xl font-bold mb-2 font-mono tabular-nums transition-colors ${
+                        isTimedOut
+                            ? 'text-red-600'
+                            : progressPercent <= 10
+                            ? 'text-red-500 animate-pulse'
+                            : 'text-[#235697]'
+                    }`}>
+                        {isTimedOut ? '00:00' : countdownDisplay}
                     </div>
                     <div className="relative w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                            className="absolute left-0 top-0 h-full bg-[#235697] transition-all duration-500"
-                            style={{ width: `${progressPercent}%` }}
-                        ></div>
+                        <div
+                            className={`absolute left-0 top-0 h-full transition-all duration-500 ${
+                                isTimedOut || progressPercent <= 10 ? 'bg-red-500' : 'bg-[#235697]'
+                            }`}
+                            style={{ width: isTimedOut ? '0%' : `${progressPercent}%` }}
+                        />
                     </div>
                     <div className="text-right text-[10px] text-gray-400 mt-1">
-                        {Math.round(progressPercent)}%
+                        {isTimedOut ? '0%' : `${Math.round(progressPercent)}%`}
                     </div>
                 </div>
             </div>
@@ -58,9 +68,13 @@ export const ReasoningSidebar = ({
             <div className="p-4 border-t border-gray-100">
                 <button
                     onClick={onEndConversationClick}
-                    className="w-full bg-[#235697] text-white font-semibold py-3 rounded-lg hover:bg-[#1d4880] transition"
+                    className={`w-full font-semibold py-3 rounded-lg transition ${
+                        isTimedOut
+                            ? 'bg-red-600 text-white hover:bg-red-700 animate-pulse'
+                            : 'bg-[#235697] text-white hover:bg-[#1d4880]'
+                    }`}
                 >
-                    Submit
+                    {isTimedOut ? '⏰ Submit Now' : 'Submit'}
                 </button>
             </div>
         </aside>

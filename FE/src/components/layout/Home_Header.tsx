@@ -51,15 +51,18 @@ export default function Home_Header({ page }: NavbarProps) {
             setIsMounted(true);
             const email = getCookie("userEmail");
             const userName = getCookie("username");
+            
             if (email && userName) {
-                setUserInfo({
+                setUserInfo((prev) => ({
                     email,
                     name: userName.charAt(0).toUpperCase() + userName.slice(1),
-                    avatarUrl: userInfo?.avatarUrl
-                });
+                    avatarUrl: prev?.avatarUrl 
+                }));
             }
         }, 0);
-    }, []);
+
+        return () => clearTimeout(timer); 
+    }, []); 
     const handleLogout = async () => {
         try {
             await logoutApi();
