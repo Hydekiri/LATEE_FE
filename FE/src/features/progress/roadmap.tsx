@@ -413,7 +413,7 @@ export default function RoadmapPage() {
             {/* Modal New Roadmap */}
             {showCreateRoadmapModal ? (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
-                    <div className="w-full max-w-2xl rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_-35px_rgba(15,23,42,0.45)]">
+                    <div className="w-full max-w-4xl rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_80px_-35px_rgba(15,23,42,0.45)]">
                         <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#235697]">Create New Roadmap</p>
@@ -444,14 +444,14 @@ export default function RoadmapPage() {
                                     value={createRoadmapForm.userTarget}
                                     onChange={(e) => setCreateRoadmapForm(prev => ({ ...prev, userTarget: e.target.value }))}
                                     placeholder="What is your learning goal? What would you like to improve?"
-                                    className="mt-2 h-24 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-[#1BA7D9] focus:ring-2 focus:ring-[#1BA7D9]/20"
+                                    className="mt-2 h-48 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-[#1BA7D9] focus:ring-2 focus:ring-[#1BA7D9]/20"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700">Total Days Available</label>
                                 <input
                                     type="number"
-                                    value={createRoadmapForm.totalDaysAvailable}
+                                    value={4}
                                     onChange={(e) => setCreateRoadmapForm(prev => ({ ...prev, totalDaysAvailable: parseInt(e.target.value) || 15 }))}
                                     min="1"
                                     max="365"
