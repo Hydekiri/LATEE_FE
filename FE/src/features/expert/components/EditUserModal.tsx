@@ -186,7 +186,7 @@ export default function EditUserModal({
                             <div className="relative w-fit">
                                 <img
                                     src={
-                                        form.avatar_url ||
+                                        form.avatarUrl ||
                                         avatarFallback
                                     }
                                     alt={form.name}

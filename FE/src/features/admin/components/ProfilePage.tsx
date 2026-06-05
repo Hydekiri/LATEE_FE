@@ -240,7 +240,7 @@ export default function ProfilePage({
 
                                         <img
                                             src={
-                                                form.avatar_url ||
+                                                form.avatarUrl ||
                                                 avatarFallback
                                             }
                                             alt={form.name}

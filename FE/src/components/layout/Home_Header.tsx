@@ -51,18 +51,18 @@ export default function Home_Header({ page }: NavbarProps) {
             setIsMounted(true);
             const email = getCookie("userEmail");
             const userName = getCookie("username");
-            
+
             if (email && userName) {
                 setUserInfo((prev) => ({
                     email,
                     name: userName.charAt(0).toUpperCase() + userName.slice(1),
-                    avatarUrl: prev?.avatarUrl 
+                    avatarUrl: prev?.avatarUrl
                 }));
             }
         }, 0);
 
-        return () => clearTimeout(timer); 
-    }, []); 
+        return () => clearTimeout(timer);
+    }, []);
     const handleLogout = async () => {
         try {
             await logoutApi();
@@ -131,21 +131,22 @@ export default function Home_Header({ page }: NavbarProps) {
                                         <Bell className="w-6 h-6 text-white" />
                                         <span className="absolute top-1 right-2 w-2 h-2 bg-red-500 rounded-full border border-[#235697]"></span>
                                     </button>
-
-                                    <div className="flex items-center gap-3 pl-2">
-                                        <div className="w-10 h-10 rounded-full bg-white overflow-hidden relative border-2 border-white/50">
-                                            <Image src={userInfo?.avatarUrl ?? "/images/ava1.jpg"} alt="Avatar" fill sizes="40px" className="object-cover" />
+                                    <Link href="/profile" className="flex items-center gap-2">
+                                        <div className="flex items-center gap-3 pl-2">
+                                            <div className="w-10 h-10 rounded-full bg-white overflow-hidden relative border-2 border-white/50">
+                                                <Image src={userInfo?.avatarUrl ?? "/images/ava1.jpg"} alt="Avatar" fill sizes="40px" className="object-cover" />
+                                            </div>
+                                            <div className="flex flex-col text-white">
+                                                <span className="font-bold text-sm max-w-25 truncate">{userInfo.name}</span>
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="text-xs text-blue-200 hover:text-white text-left underline transition"
+                                                >
+                                                    Log out
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col text-white">
-                                            <span className="font-bold text-sm max-w-25 truncate">{userInfo.name}</span>
-                                            <button
-                                                onClick={handleLogout}
-                                                className="text-xs text-blue-200 hover:text-white text-left underline transition"
-                                            >
-                                                Log out
-                                            </button>
-                                        </div>
-                                    </div>
+                                    </Link>
                                 </>
                             ) : (
                                 <>

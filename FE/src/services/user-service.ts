@@ -129,3 +129,31 @@ export async function adminDashboardStats() {
         throw error;
     };
 }
+
+export async function uploadAvatar(userId: string, file: File): Promise<string> {
+    try {
+        const accessToken = getCookie("accessToken");
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${API_BASE_URL}/user/api/users/${userId}/avatar`, {
+            method: "POST",
+            headers: {
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+                ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+            },
+            body: formData
+        });
+
+        if (!res.ok) {
+            const msg = await res.text();
+            throw new Error(msg || "Failed to upload avatar");
+        }
+
+        const { avatarUrl } = await res.json();
+        return avatarUrl;
+    } catch (error) {
+        console.error("Error uploading avatar:", error);
+        throw error;
+    }
+}

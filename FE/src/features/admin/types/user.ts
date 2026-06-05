@@ -9,7 +9,7 @@ export interface User {
   address?: string;
   role: "Learner" | "Expert" | "Admin";
   status: "active" | "inactive";
-  avatar_url?: string;
+  avatarUrl?: string;
   createdAt: string;
   updatedAt: string;
 
