@@ -27,20 +27,20 @@ export interface RoadmapResponse {
     created_at: Date;
 }
 
-export default async function generateRoadmap(historyPractice: string, userTarget: string, totalDaysAvailable: number): Promise<RoadmapResponse | null> {
+export default async function generateRoadmap(learnerId: string, userTarget: string, totalDaysAvailable: number): Promise<RoadmapResponse | null> {
     try {
         const accessToken = getCookie("accessToken");
 
         const response = await fetch(`${API_BASE_URL}/roadmap/api/roadmap/generate-roadmap`, {
             method: 'POST',
             headers: {
-                    ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
                 ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             },
             body: JSON.stringify({
-                "historyPractice": historyPractice,
+                "learnerId": learnerId,
                 "userTarget": userTarget,
                 "totalDaysAvailable": totalDaysAvailable
             }),
@@ -103,7 +103,6 @@ export async function getLatestRoadmap() {
             headers: {
                 ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 'Content-Type': 'application/json',
-                ...NGROK_SKIP_BROWSER_WARNING_HEADER,
                 ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
             }
         });

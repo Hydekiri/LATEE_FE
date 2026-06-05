@@ -4,6 +4,7 @@ import type { GenerateRoadmapResponse, RoadmapItem } from '@/src/services/roadma
 import React, { useEffect, useState } from "react";
 import { ChevronRight, Star, Sparkles, CalendarDays, Target, Clock3 } from "lucide-react";
 import generateRoadmap, { getLatestRoadmap, updateRoadmapWithId } from "@/src/services/roadmap-service";
+import { getCookie } from "@/src/utils/cookies";
 
 export interface RoadmapData {
     roadmap_id: string;
@@ -39,14 +40,14 @@ function ProgressBar({ value }: { value: number }) {
 export default function RoadmapPage() {
     const [roadmapListState, setRoadmapListState] = useState<RoadmapData>(roadmapData);
     const [loadLastedRoadmap, setLoadLastedRoadmap] = useState<boolean>(false);
-    
-    const [isLoading, setIsLoading] = useState<boolean>(true); 
-    
+
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+
     const [selectedRoadmapItem, setSelectedRoadmapItem] = useState<RoadmapItem | null>(null);
     const [showCreateRoadmapModal, setShowCreateRoadmapModal] = useState<boolean>(false);
     const [isGeneratingRoadmap, setIsGeneratingRoadmap] = useState<boolean>(false);
     const [createRoadmapForm, setCreateRoadmapForm] = useState({
-        historyPractice: "",
+        learnerId: "",
         userTarget: "",
         totalDaysAvailable: 0
     });
@@ -55,7 +56,7 @@ export default function RoadmapPage() {
     const progress = roadmapListState.roadmap.length > 0
         ? Math.round((roadmapListState.roadmap.filter(item => item.status === "done").length / roadmapListState.roadmap.length) * 100)
         : 0;
-        
+
     const cumulativeDays = roadmapListState.roadmap.reduce<number[]>((acc, item) => {
         const prev = acc.length ? acc[acc.length - 1] : 0;
         acc.push(prev + item.amount_of_time_days);
@@ -65,6 +66,7 @@ export default function RoadmapPage() {
     useEffect(() => {
         if (!loadLastedRoadmap) {
             getLatestRoadmap().then(async (result) => {
+                console.log("[DEBUG] Latest roadmap loaded:", result);
                 if (result && result.content) {
                     const content = result.content;
                     setRoadmapListState({
@@ -143,26 +145,27 @@ export default function RoadmapPage() {
     function closeCreateRoadmapModal(): void {
         setShowCreateRoadmapModal(false);
         setCreateRoadmapForm({
-            historyPractice: "",
+            learnerId: "",
             userTarget: "",
             totalDaysAvailable: 15
         });
     }
 
     async function handleCreateRoadmap(): Promise<void> {
-        if (!createRoadmapForm.historyPractice.trim() || !createRoadmapForm.userTarget.trim()) {
+        if (!createRoadmapForm.userTarget.trim()) {
             alert("Please fill in all fields");
             return;
         }
 
         setIsGeneratingRoadmap(true);
         try {
+            const learnerId = getCookie("userId");
             const result = await generateRoadmap(
-                createRoadmapForm.historyPractice,
+                learnerId || createRoadmapForm.learnerId,
                 createRoadmapForm.userTarget,
                 createRoadmapForm.totalDaysAvailable
             );
-            
+
             if (result && result.content) {
                 setRoadmapListState({
                     roadmap_id: result.roadmap_id,
@@ -205,15 +208,15 @@ export default function RoadmapPage() {
             style={{ backgroundImage: "url('/images/bg111.jpg')" }}>
             <div className="mx-auto max-w-[90%] px-4 py-8 sm:px-6 lg:px-8">
                 <div className="rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_60px_-30px_rgba(15,23,42,0.25)] overflow-hidden">
-                    <RoadmapOverview 
-                        title={roadmapListState.title} 
-                        goal={roadmapListState.goal} 
-                        progress={progress} 
-                        totalDays={totalDays} 
-                        latestVersion={roadmapListState.roadmap_version} 
-                        numberOfSteps={roadmapListState.roadmap.length} 
-                        numberOfDoneSteps={roadmapListState.roadmap.filter(item => item.status === "done").length} 
-                        onCreateRoadmap={() => setShowCreateRoadmapModal(true)} 
+                    <RoadmapOverview
+                        title={roadmapListState.title}
+                        goal={roadmapListState.goal}
+                        progress={progress}
+                        totalDays={totalDays}
+                        latestVersion={roadmapListState.roadmap_version}
+                        numberOfSteps={roadmapListState.roadmap.length}
+                        numberOfDoneSteps={roadmapListState.roadmap.filter(item => item.status === "done").length}
+                        onCreateRoadmap={() => setShowCreateRoadmapModal(true)}
                     />
 
                     <div className="px-6 py-8 lg:px-8 min-h-[400px]">
@@ -426,7 +429,7 @@ export default function RoadmapPage() {
                         </div>
 
                         <div className="space-y-4 px-6 py-6">
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-semibold text-slate-700">Practice History</label>
                                 <textarea
                                     value={createRoadmapForm.historyPractice}
@@ -434,7 +437,7 @@ export default function RoadmapPage() {
                                     placeholder="Describe your practice history and experience..."
                                     className="mt-2 h-24 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-[#1BA7D9] focus:ring-2 focus:ring-[#1BA7D9]/20"
                                 />
-                            </div>
+                            </div> */}
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700">Your Target / Goal</label>
                                 <textarea
@@ -508,7 +511,7 @@ function RoadmapOverview({ title, goal, progress, totalDays, latestVersion, numb
                 <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
                     Goal: {goal}
                 </p>
-                
+
                 <div className="mt-5 grid gap-4 sm:grid-cols-3">
                     <div className="rounded-2xl bg-slate-50 p-4">
                         <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
