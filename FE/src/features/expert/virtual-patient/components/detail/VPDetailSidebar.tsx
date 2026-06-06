@@ -6,11 +6,12 @@ import type { VirtualPatientDetail, UpdateVPRequest } from "@/src/types/virtual-
 import { buildVPBasePayload } from "@/src/utils/vp-payload";
 interface VPDetailSidebarProps {
     readonly patient: VirtualPatientDetail;
-    readonly onSave:  (payload: UpdateVPRequest) => Promise<void>;
-    readonly saving:  boolean;
+    readonly onSave: (payload: UpdateVPRequest) => Promise<void>;
+    readonly saving: boolean;
+    readonly readonly?: boolean;
 }
 
-export function VPDetailSidebar({ patient, onSave, saving }: VPDetailSidebarProps) {
+export function VPDetailSidebar({ patient, onSave, saving, readonly }: VPDetailSidebarProps) {
     const createdLabel = new Date(patient.createdAt).toLocaleDateString("en-US", {
         year: "numeric", month: "long", day: "numeric",
     });
@@ -18,16 +19,16 @@ export function VPDetailSidebar({ patient, onSave, saving }: VPDetailSidebarProp
         year: "numeric", month: "long", day: "numeric",
     });
 
-    const totalAttempts  = patient.stats?.totalAttempts  ?? 0;
-    const avgScore       = patient.stats?.avgScore       ?? 0;
+    const totalAttempts = patient.stats?.totalAttempts ?? 0;
+    const avgScore = patient.stats?.avgScore ?? 0;
     const completionRate = patient.stats?.completionRate ?? 0;
     const [timingDirty, setTimingDirty] = useState(false);
-    const [newRule,    setNewRule]    = useState("");
+    const [newRule, setNewRule] = useState("");
     const [rulesDirty, setRulesDirty] = useState(false);
 
-    const [timeSetting,  setTimeSetting]  = useState(() => patient.timeSetting);
+    const [timeSetting, setTimeSetting] = useState(() => patient.timeSetting);
     const [argumentTime, setArgumentTime] = useState(() => patient.argumentTime);
-    const [rules,        setRules]        = useState<string[]>(() => [...(patient.caseRule?.rules ?? [])]);
+    const [rules, setRules] = useState<string[]>(() => [...(patient.caseRule?.rules ?? [])]);
 
     const handleTimingSave = async () => {
         await onSave({ ...buildVPBasePayload(patient), timeSetting, argumentTime });
@@ -92,6 +93,7 @@ export function VPDetailSidebar({ patient, onSave, saving }: VPDetailSidebarProp
                                 type="number"
                                 min={1} max={120}
                                 value={timeSetting}
+                                readOnly={readonly} 
                                 onChange={(e) => { setTimeSetting(Number(e.target.value)); setTimingDirty(true); }}
                                 className="w-16 text-right text-sm font-black text-slate-800 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-[#235697]"
                             />
@@ -105,6 +107,7 @@ export function VPDetailSidebar({ patient, onSave, saving }: VPDetailSidebarProp
                                 type="number"
                                 min={1} max={120}
                                 value={argumentTime}
+                                readOnly={readonly} 
                                 onChange={(e) => { setArgumentTime(Number(e.target.value)); setTimingDirty(true); }}
                                 className="w-16 text-right text-sm font-black text-slate-800 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:border-[#235697]"
                             />
@@ -115,7 +118,7 @@ export function VPDetailSidebar({ patient, onSave, saving }: VPDetailSidebarProp
                         <span className="text-xs font-black text-slate-600">Total Session</span>
                         <span className="text-sm font-black text-[#235697]">{timeSetting + argumentTime} min</span>
                     </div>
-                    {timingDirty && (
+                    {timingDirty && !readonly && (
                         <button
                             onClick={handleTimingSave}
                             disabled={saving}

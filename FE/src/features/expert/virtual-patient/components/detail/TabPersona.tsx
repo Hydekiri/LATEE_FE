@@ -36,7 +36,7 @@ export function TabPersona({ patient, onSave, saving, readonly }: TabPersonaProp
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <h3 className="text-base font-black text-slate-800">AI Persona Configuration</h3>
-                {dirty && (
+                {dirty && !readonly && (
                     <button
                         onClick={() => void handleSave()}
                         disabled={saving}
@@ -57,6 +57,7 @@ export function TabPersona({ patient, onSave, saving, readonly }: TabPersonaProp
                     type="text"
                     value={emotionalState}
                     onChange={(e) => { setEmotionalState(e.target.value); mark(); }}
+                    readOnly={readonly}   
                     placeholder="e.g. Anxious, Calm, Distressed"
                     className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#235697] focus:ring-2 focus:ring-[#235697]/10 transition-all"
                 />
@@ -71,6 +72,7 @@ export function TabPersona({ patient, onSave, saving, readonly }: TabPersonaProp
                 <textarea
                     value={behaviors}
                     onChange={(e) => { setBehaviors(e.target.value); mark(); }}
+                    readOnly={readonly}
                     rows={4}
                     placeholder={"Low pain tolerance\nGives brief answers initially\nResistant to invasive questions"}
                     className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#235697] focus:ring-2 focus:ring-[#235697]/10 transition-all resize-none font-mono"
@@ -86,6 +88,7 @@ export function TabPersona({ patient, onSave, saving, readonly }: TabPersonaProp
                 <input
                     type="text"
                     value={symptom}
+                    readOnly={readonly}   
                     onChange={(e) => { setSymptom(e.target.value); mark(); }}
                     placeholder="e.g. Right lower quadrant pain"
                     className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#235697] focus:ring-2 focus:ring-[#235697]/10 transition-all"
@@ -100,6 +103,7 @@ export function TabPersona({ patient, onSave, saving, readonly }: TabPersonaProp
                 <textarea
                     value={medicalHistory}
                     onChange={(e) => { setMedicalHistory(e.target.value); mark(); }}
+                    readOnly={readonly}
                     rows={5}
                     placeholder="Past medical history, medications, allergies..."
                     className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#235697] focus:ring-2 focus:ring-[#235697]/10 transition-all resize-none"
