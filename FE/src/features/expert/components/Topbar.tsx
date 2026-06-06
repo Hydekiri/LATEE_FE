@@ -17,19 +17,19 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         const timer = setTimeout(() => {
             setMounted(true);
         }, 0);
-        return () => clearTimeout(timer); 
+        return () => clearTimeout(timer);
     }, []);
 
     const localUsername = mounted ? (getCookie("username") || "Default Expert") : "Expert";
-    const localUserImgURL = mounted ? (getCookie("avatarURL") || avatarURL.expert) : avatarURL.expert;
+    const localUserImgURL = mounted ? (getCookie("avatarUrl") || avatarURL.expert) : avatarURL.expert;
     const dateLabel = mounted
         ? new Date().toLocaleDateString("en-US", {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            })
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        })
         : "";
 
     return (

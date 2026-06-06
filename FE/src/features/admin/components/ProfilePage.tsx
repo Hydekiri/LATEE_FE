@@ -17,15 +17,16 @@ import {
 } from "@/src/features/admin/types/user";
 
 import { avatarURL } from "@/src/features/admin/components/UsersTable";
+import AvatarUploadModal from "@/src/features/profile/AvatarUploadModal";
 
 const emptyProfile: ExpertProfile = {
-    eid: "",
+    id: "",
     ssn: "",
-    bio_quote: "",
-    education_detail: "",
-    title_position: "",
-    expertise_skill: "",
-    social_link: "",
+    bioQuote: "",
+    educationDetail: "",
+    titlePosition: "",
+    expertiseSkill: "",
+    socialLink: "",
 };
 
 const inputClass =
@@ -46,20 +47,12 @@ export default function ProfilePage({
     adminName: string;
     adminAvatarURL: string;
 }) {
-    const [isSidebarOpen, setIsSidebarOpen] =
-        useState(false);
-
-    const [form, setForm] =
-        useState<User | null>(null);
-
-    const [originalForm, setOriginalForm] =
-        useState<User | null>(null);
-
-    const [loadingUser, setLoadingUser] =
-        useState(true);
-
-    const [loading, setLoading] =
-        useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [form, setForm] = useState<User | null>(null);
+    const [originalForm, setOriginalForm] = useState<User | null>(null);
+    const [loadingUser, setLoadingUser] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [showAvatarModal, setShowAvatarModal] = useState(false);
 
     useEffect(() => {
         async function fetchUser() {
@@ -77,6 +70,7 @@ export default function ProfilePage({
                 };
 
                 setForm(normalizedUser);
+                console.log("Normalized ADMIN data:", normalizedUser);
                 setOriginalForm(normalizedUser);
             } catch (error) {
                 console.error(error);
@@ -207,16 +201,16 @@ export default function ProfilePage({
                     }
                     adminId={adminId}
                     username={adminName}
-                    userImgURL={adminAvatarURL}
+                    userImgURL={form.avatarUrl || avatarFallback}
                 />
 
                 {/* CONTENT */}
-                <main className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
+                <main className="flex-1 overflow-y-auto no-scrollbar">
+                    <div className="bg-linear-to-r from-[#1ba7d9] to-[#235697] py-6">
+                        <div className="mx-auto w-full max-w-6xl">
 
-                    <div className="mx-auto w-full max-w-6xl">
-
-                        {/* PAGE HEADER */}
-                        {/* <div className="mb-8">
+                            {/* PAGE HEADER */}
+                            {/* <div className="mb-8">
 
                             <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
                                 My Profile
@@ -227,476 +221,485 @@ export default function ProfilePage({
                             </p>
                         </div> */}
 
-                        {/* PROFILE CARD */}
-                        <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
+                            {/* PROFILE CARD */}
+                            <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
 
-                            {/* HEADER */}
-                            <div className="border-b border-neutral-200 px-6 py-6 md:px-8">
+                                {/* HEADER */}
+                                <div className="border-b border-neutral-200 px-6 py-6 md:px-8">
 
-                                <div className="flex flex-col gap-5 md:flex-row md:items-center">
+                                    <div className="flex flex-col gap-5 md:flex-row md:items-center">
 
-                                    {/* AVATAR */}
-                                    <div className="relative w-fit">
+                                        {/* AVATAR */}
+                                        <div className="relative w-fit">
 
-                                        <img
-                                            src={
-                                                form.avatarUrl ||
-                                                avatarFallback
-                                            }
-                                            alt={form.name}
-                                            className="h-[96px] w-[96px] rounded-full object-cover ring-4 ring-neutral-100"
-                                        />
-
-                                        <label
-                                            htmlFor="avatar-upload"
-                                            className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white bg-black text-white shadow-md transition hover:scale-105"
-                                        >
-                                            <Camera className="h-4 w-4" />
-                                        </label>
-
-                                        <input
-                                            id="avatar-upload"
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                        />
-                                    </div>
-
-                                    {/* INFO */}
-                                    <div className="min-w-0 flex-1">
-
-                                        <div className="flex flex-wrap items-center gap-3">
-
-                                            <h2 className="truncate text-2xl font-semibold text-neutral-900">
-                                                {form.name}
-                                            </h2>
-
-                                            <span className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600">
-                                                {form.role}
-                                            </span>
-
-                                            <span
-                                                className={`rounded-full px-3 py-1 text-xs font-medium ${form.status ===
-                                                    "active"
-                                                    ? "bg-emerald-100 text-emerald-700"
-                                                    : "bg-neutral-100 text-neutral-600"
-                                                    }`}
-                                            >
-                                                {
-                                                    form.status
+                                            <img
+                                                src={
+                                                    form.avatarUrl ||
+                                                    avatarFallback
                                                 }
-                                            </span>
+                                                alt={form.name}
+                                                className="h-[96px] w-[96px] rounded-full object-cover ring-4 ring-neutral-100"
+                                            />
+
+                                            <label
+                                                onClick={() => setShowAvatarModal(true)}
+                                                className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white bg-black text-white shadow-md transition hover:scale-105"
+                                            >
+                                                <Camera className="h-4 w-4" />
+                                            </label>
+
+                                            <input
+                                                id="avatar-upload"
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                            />
                                         </div>
 
-                                        <p className="mt-2 text-sm text-neutral-500">
-                                            {
-                                                form.email
-                                            }
-                                        </p>
+                                        {/* INFO */}
+                                        <div className="min-w-0 flex-1">
 
-                                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
-                                            <span>
-                                                Created{" "}
-                                                {new Date(
-                                                    form.createdAt
-                                                ).toLocaleDateString()}
-                                            </span>
+                                            <div className="flex flex-wrap items-center gap-3">
 
-                                            <span>
-                                                •
-                                            </span>
+                                                <h2 className="truncate text-2xl font-semibold text-neutral-900">
+                                                    {form.name}
+                                                </h2>
 
-                                            <span>
-                                                Updated{" "}
-                                                {new Date(
-                                                    form.updatedAt
-                                                ).toLocaleDateString()}
-                                            </span>
+                                                <span className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600">
+                                                    {form.role}
+                                                </span>
+
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-medium ${form.status ===
+                                                        "active"
+                                                        ? "bg-emerald-100 text-emerald-700"
+                                                        : "bg-neutral-100 text-neutral-600"
+                                                        }`}
+                                                >
+                                                    {
+                                                        form.status
+                                                    }
+                                                </span>
+                                            </div>
+
+                                            <p className="mt-2 text-sm text-neutral-500">
+                                                {
+                                                    form.email
+                                                }
+                                            </p>
+
+                                            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
+                                                <span>
+                                                    Created{" "}
+                                                    {new Date(
+                                                        form.createdAt
+                                                    ).toLocaleDateString()}
+                                                </span>
+
+                                                <span>
+                                                    •
+                                                </span>
+
+                                                <span>
+                                                    Updated{" "}
+                                                    {new Date(
+                                                        form.updatedAt
+                                                    ).toLocaleDateString()}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* BODY */}
-                            <div className="space-y-6 px-6 py-6 md:px-8">
+                                {/* BODY */}
+                                <div className="space-y-6 px-6 py-6 md:px-8">
 
-                                {/* PERSONAL */}
-                                <section className="rounded-2xl border border-neutral-200 p-6">
+                                    {/* PERSONAL */}
+                                    <section className="rounded-2xl border border-neutral-200 p-6">
 
-                                    <div className="mb-6">
-                                        <h3 className="text-base font-semibold text-neutral-900">
-                                            Personal Information
-                                        </h3>
+                                        <div className="mb-6">
+                                            <h3 className="text-base font-semibold text-neutral-900">
+                                                Personal Information
+                                            </h3>
 
-                                        <p className="mt-1 text-sm text-neutral-500">
-                                            Manage your personal details and contact information.
-                                        </p>
-                                    </div>
+                                            <p className="mt-1 text-sm text-neutral-500">
+                                                Manage your personal details and contact information.
+                                            </p>
+                                        </div>
 
-                                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
 
-                                        {/* NAME */}
-                                        <label>
-                                            <span className={labelClass}>
-                                                Name
-                                            </span>
+                                            {/* NAME */}
+                                            <label>
+                                                <span className={labelClass}>
+                                                    Name
+                                                </span>
 
-                                            <input
-                                                type="text"
-                                                value={
-                                                    form.name ||
-                                                    ""
-                                                }
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setForm(
-                                                        {
-                                                            ...form,
-                                                            name: e
-                                                                .target
-                                                                .value,
-                                                        }
-                                                    )
-                                                }
-                                                className={
-                                                    inputClass
-                                                }
-                                            />
-                                        </label>
-
-                                        {/* PHONE */}
-                                        <label>
-                                            <span className={labelClass}>
-                                                Phone
-                                            </span>
-
-                                            <input
-                                                type="text"
-                                                value={
-                                                    form.phone ||
-                                                    ""
-                                                }
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setForm(
-                                                        {
-                                                            ...form,
-                                                            phone: e
-                                                                .target
-                                                                .value,
-                                                        }
-                                                    )
-                                                }
-                                                className={
-                                                    inputClass
-                                                }
-                                            />
-                                        </label>
-
-                                        {/* EMAIL */}
-                                        <label className="md:col-span-2">
-                                            <span className={labelClass}>
-                                                Email
-                                            </span>
-
-                                            <input
-                                                disabled
-                                                value={
-                                                    form.email ||
-                                                    ""
-                                                }
-                                                className={`${inputClass} cursor-not-allowed bg-neutral-100 text-neutral-500`}
-                                            />
-                                        </label>
-
-                                        {/* BIRTHDAY */}
-                                        <label>
-                                            <span className={labelClass}>
-                                                Birthday
-                                            </span>
-
-                                            <input
-                                                type="date"
-                                                min={
-                                                    minBirthday
-                                                }
-                                                max={
-                                                    maxBirthday
-                                                }
-                                                value={String(
-                                                    form.birthday
-                                                ).split(
-                                                    "T"
-                                                )[0]}
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setForm(
-                                                        {
-                                                            ...form,
-                                                            birthday:
-                                                                e
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        form.name ||
+                                                        ""
+                                                    }
+                                                    onChange={(
+                                                        e
+                                                    ) =>
+                                                        setForm(
+                                                            {
+                                                                ...form,
+                                                                name: e
                                                                     .target
                                                                     .value,
-                                                        }
-                                                    )
-                                                }
-                                                className={
-                                                    inputClass
-                                                }
-                                            />
-                                        </label>
+                                                            }
+                                                        )
+                                                    }
+                                                    className={
+                                                        inputClass
+                                                    }
+                                                />
+                                            </label>
 
-                                        {/* GENDER */}
-                                        <label>
-                                            <span className={labelClass}>
-                                                Gender
-                                            </span>
+                                            {/* PHONE */}
+                                            <label>
+                                                <span className={labelClass}>
+                                                    Phone
+                                                </span>
 
-                                            <select
-                                                value={form.gender || ""}
-                                                onChange={(e) =>
-                                                    setForm({
-                                                        ...form,
-                                                        gender: (e.target.value || undefined) as "Male" | "Female" | undefined,
-                                                    })
-                                                }
-                                                className={inputClass}
-                                            >
-                                                <option value="">
-                                                    Select gender
-                                                </option>
-
-                                                <option value="Male">
-                                                    Male
-                                                </option>
-
-                                                <option value="Female">
-                                                    Female
-                                                </option>
-                                            </select>
-                                        </label>
-
-                                        {/* ADDRESS */}
-                                        <label className="md:col-span-2">
-                                            <span className={labelClass}>
-                                                Address
-                                            </span>
-
-                                            <textarea
-                                                rows={3}
-                                                value={
-                                                    form.address ||
-                                                    ""
-                                                }
-                                                onChange={(
-                                                    e
-                                                ) =>
-                                                    setForm(
-                                                        {
-                                                            ...form,
-                                                            address:
-                                                                e
+                                                <input
+                                                    type="text"
+                                                    value={
+                                                        form.phone ||
+                                                        ""
+                                                    }
+                                                    onChange={(
+                                                        e
+                                                    ) =>
+                                                        setForm(
+                                                            {
+                                                                ...form,
+                                                                phone: e
                                                                     .target
                                                                     .value,
-                                                        }
-                                                    )
-                                                }
-                                                className={
-                                                    textareaClass
-                                                }
-                                            />
-                                        </label>
-                                    </div>
-                                </section>
+                                                            }
+                                                        )
+                                                    }
+                                                    className={
+                                                        inputClass
+                                                    }
+                                                />
+                                            </label>
 
-                                {/* EXPERT PROFILE */}
-                                {form.role ===
-                                    "Expert" && (
-                                        <section className="rounded-2xl border border-neutral-200 p-6">
+                                            {/* EMAIL */}
+                                            <label className="md:col-span-2">
+                                                <span className={labelClass}>
+                                                    Email
+                                                </span>
 
-                                            <div className="mb-6">
-                                                <h3 className="text-base font-semibold text-neutral-900">
-                                                    Expert Profile
-                                                </h3>
+                                                <input
+                                                    disabled
+                                                    value={
+                                                        form.email ||
+                                                        ""
+                                                    }
+                                                    className={`${inputClass} cursor-not-allowed bg-neutral-100 text-neutral-500`}
+                                                />
+                                            </label>
 
-                                                <p className="mt-1 text-sm text-neutral-500">
-                                                    Professional information and expertise.
-                                                </p>
-                                            </div>
+                                            {/* BIRTHDAY */}
+                                            <label>
+                                                <span className={labelClass}>
+                                                    Birthday
+                                                </span>
 
-                                            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                                <input
+                                                    type="date"
+                                                    min={
+                                                        minBirthday
+                                                    }
+                                                    max={
+                                                        maxBirthday
+                                                    }
+                                                    value={String(
+                                                        form.birthday
+                                                    ).split(
+                                                        "T"
+                                                    )[0]}
+                                                    onChange={(
+                                                        e
+                                                    ) =>
+                                                        setForm(
+                                                            {
+                                                                ...form,
+                                                                birthday:
+                                                                    e
+                                                                        .target
+                                                                        .value,
+                                                            }
+                                                        )
+                                                    }
+                                                    className={
+                                                        inputClass
+                                                    }
+                                                />
+                                            </label>
 
-                                                <label>
-                                                    <span className={labelClass}>
-                                                        Title / Position
-                                                    </span>
+                                            {/* GENDER */}
+                                            <label>
+                                                <span className={labelClass}>
+                                                    Gender
+                                                </span>
 
-                                                    <input
-                                                        value={
-                                                            form
-                                                                .profile
-                                                                ?.title_position ||
-                                                            ""
-                                                        }
-                                                        onChange={(
-                                                            e
-                                                        ) =>
-                                                            setProfileField(
-                                                                "title_position",
+                                                <select
+                                                    value={form.gender || ""}
+                                                    onChange={(e) =>
+                                                        setForm({
+                                                            ...form,
+                                                            gender: (e.target.value || undefined) as "Male" | "Female" | undefined,
+                                                        })
+                                                    }
+                                                    className={inputClass}
+                                                >
+                                                    <option value="">
+                                                        Select gender
+                                                    </option>
+
+                                                    <option value="Male">
+                                                        Male
+                                                    </option>
+
+                                                    <option value="Female">
+                                                        Female
+                                                    </option>
+                                                </select>
+                                            </label>
+
+                                            {/* ADDRESS */}
+                                            <label className="md:col-span-2">
+                                                <span className={labelClass}>
+                                                    Address
+                                                </span>
+
+                                                <textarea
+                                                    rows={3}
+                                                    value={
+                                                        form.address ||
+                                                        ""
+                                                    }
+                                                    onChange={(
+                                                        e
+                                                    ) =>
+                                                        setForm(
+                                                            {
+                                                                ...form,
+                                                                address:
+                                                                    e
+                                                                        .target
+                                                                        .value,
+                                                            }
+                                                        )
+                                                    }
+                                                    className={
+                                                        textareaClass
+                                                    }
+                                                />
+                                            </label>
+                                        </div>
+                                    </section>
+
+                                    {/* EXPERT PROFILE */}
+                                    {form.role ===
+                                        "Expert" && (
+                                            <section className="rounded-2xl border border-neutral-200 p-6">
+
+                                                <div className="mb-6">
+                                                    <h3 className="text-base font-semibold text-neutral-900">
+                                                        Expert Profile
+                                                    </h3>
+
+                                                    <p className="mt-1 text-sm text-neutral-500">
+                                                        Professional information and expertise.
+                                                    </p>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+                                                    <label>
+                                                        <span className={labelClass}>
+                                                            Title / Position
+                                                        </span>
+
+                                                        <input
+                                                            value={
+                                                                form
+                                                                    .profile
+                                                                    ?.titlePosition ||
+                                                                ""
+                                                            }
+                                                            onChange={(
                                                                 e
-                                                                    .target
-                                                                    .value
-                                                            )
-                                                        }
-                                                        className={
-                                                            inputClass
-                                                        }
-                                                    />
-                                                </label>
+                                                            ) =>
+                                                                setProfileField(
+                                                                    "titlePosition",
+                                                                    e
+                                                                        .target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className={
+                                                                inputClass
+                                                            }
+                                                        />
+                                                    </label>
 
-                                                <label>
-                                                    <span className={labelClass}>
-                                                        Expertise / Skill
-                                                    </span>
+                                                    <label>
+                                                        <span className={labelClass}>
+                                                            Expertise / Skill
+                                                        </span>
 
-                                                    <input
-                                                        value={
-                                                            form
-                                                                .profile
-                                                                ?.expertise_skill ||
-                                                            ""
-                                                        }
-                                                        onChange={(
-                                                            e
-                                                        ) =>
-                                                            setProfileField(
-                                                                "expertise_skill",
+                                                        <input
+                                                            value={
+                                                                form
+                                                                    .profile
+                                                                    ?.expertiseSkill ||
+                                                                ""
+                                                            }
+                                                            onChange={(
                                                                 e
-                                                                    .target
-                                                                    .value
-                                                            )
-                                                        }
-                                                        className={
-                                                            inputClass
-                                                        }
-                                                    />
-                                                </label>
+                                                            ) =>
+                                                                setProfileField(
+                                                                    "expertiseSkill",
+                                                                    e
+                                                                        .target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className={
+                                                                inputClass
+                                                            }
+                                                        />
+                                                    </label>
 
-                                                <label className="md:col-span-2">
-                                                    <span className={labelClass}>
-                                                        Education
-                                                    </span>
+                                                    <label className="md:col-span-2">
+                                                        <span className={labelClass}>
+                                                            Education
+                                                        </span>
 
-                                                    <input
-                                                        value={
-                                                            form
-                                                                .profile
-                                                                ?.education_detail ||
-                                                            ""
-                                                        }
-                                                        onChange={(
-                                                            e
-                                                        ) =>
-                                                            setProfileField(
-                                                                "education_detail",
+                                                        <input
+                                                            value={
+                                                                form
+                                                                    .profile
+                                                                    ?.educationDetail ||
+                                                                ""
+                                                            }
+                                                            onChange={(
                                                                 e
-                                                                    .target
-                                                                    .value
-                                                            )
-                                                        }
-                                                        className={
-                                                            inputClass
-                                                        }
-                                                    />
-                                                </label>
+                                                            ) =>
+                                                                setProfileField(
+                                                                    "educationDetail",
+                                                                    e
+                                                                        .target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className={
+                                                                inputClass
+                                                            }
+                                                        />
+                                                    </label>
 
-                                                <label className="md:col-span-2">
-                                                    <span className={labelClass}>
-                                                        Bio
-                                                    </span>
+                                                    <label className="md:col-span-2">
+                                                        <span className={labelClass}>
+                                                            Bio
+                                                        </span>
 
-                                                    <textarea
-                                                        rows={
-                                                            4
-                                                        }
-                                                        value={
-                                                            form
-                                                                .profile
-                                                                ?.bio_quote ||
-                                                            ""
-                                                        }
-                                                        onChange={(
-                                                            e
-                                                        ) =>
-                                                            setProfileField(
-                                                                "bio_quote",
+                                                        <textarea
+                                                            rows={
+                                                                4
+                                                            }
+                                                            value={
+                                                                form
+                                                                    .profile
+                                                                    ?.bioQuote ||
+                                                                ""
+                                                            }
+                                                            onChange={(
                                                                 e
-                                                                    .target
-                                                                    .value
-                                                            )
-                                                        }
-                                                        className={
-                                                            textareaClass
-                                                        }
-                                                    />
-                                                </label>
+                                                            ) =>
+                                                                setProfileField(
+                                                                    "bioQuote",
+                                                                    e
+                                                                        .target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className={
+                                                                textareaClass
+                                                            }
+                                                        />
+                                                    </label>
 
-                                                <label className="md:col-span-2">
-                                                    <span className={labelClass}>
-                                                        Social Link
-                                                    </span>
+                                                    <label className="md:col-span-2">
+                                                        <span className={labelClass}>
+                                                            Social Link
+                                                        </span>
 
-                                                    <input
-                                                        value={
-                                                            form
-                                                                .profile
-                                                                ?.social_link ||
-                                                            ""
-                                                        }
-                                                        onChange={(
-                                                            e
-                                                        ) =>
-                                                            setProfileField(
-                                                                "social_link",
+                                                        <input
+                                                            value={
+                                                                form
+                                                                    .profile
+                                                                    ?.socialLink ||
+                                                                ""
+                                                            }
+                                                            onChange={(
                                                                 e
-                                                                    .target
-                                                                    .value
-                                                            )
-                                                        }
-                                                        className={
-                                                            inputClass
-                                                        }
-                                                    />
-                                                </label>
-                                            </div>
-                                        </section>
-                                    )}
-                            </div>
+                                                            ) =>
+                                                                setProfileField(
+                                                                    "socialLink",
+                                                                    e
+                                                                        .target
+                                                                        .value
+                                                                )
+                                                            }
+                                                            className={
+                                                                inputClass
+                                                            }
+                                                        />
+                                                    </label>
+                                                </div>
+                                            </section>
+                                        )}
+                                </div>
 
-                            {/* FOOTER */}
-                            <div className="flex items-center justify-end gap-3 border-t border-neutral-200 bg-white px-6 py-5 md:px-8">
+                                {/* FOOTER */}
+                                <div className="flex items-center justify-end gap-3 border-t border-neutral-200 bg-white px-6 py-5 md:px-8">
 
-                                <button
-                                    disabled={
-                                        loading ||
-                                        !isChanged
-                                    }
-                                    onClick={
-                                        handleUpdate
-                                    }
-                                    className="flex h-11 min-w-[150px] items-center justify-center rounded-xl bg-black px-5 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    {loading ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        "Save Changes"
-                                    )}
-                                </button>
+                                    <button
+                                        disabled={
+                                            loading ||
+                                            !isChanged
+                                        }
+                                        onClick={
+                                            handleUpdate
+                                        }
+                                        className="flex h-11 min-w-[150px] items-center justify-center rounded-xl bg-black px-5 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {loading ? (
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                        ) : (
+                                            "Save Changes"
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         </div>
+                        {showAvatarModal && (
+                            <AvatarUploadModal
+                                userId={form.userId}
+                                currentAvatarUrl={form.avatarUrl}
+                                onSuccess={(newUrl) => setForm((prev) => prev ? { ...prev, avatarUrl: newUrl } : prev)}
+                                onClose={() => setShowAvatarModal(false)}
+                            />
+                        )}
                     </div>
                 </main>
             </div>

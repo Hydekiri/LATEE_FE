@@ -17,13 +17,13 @@ export interface User {
 }
 
 export interface ExpertProfile {
-  eid: string;
+  id: string;
   ssn: string;
-  bio_quote: string;
-  education_detail: string;
-  title_position: string;
-  expertise_skill: string;
-  social_link: string;
+  bioQuote: string;
+  educationDetail: string;
+  titlePosition: string;
+  expertiseSkill: string;
+  socialLink: string;
 }
 
 export interface UserUpdate {

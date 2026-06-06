@@ -12,13 +12,13 @@ import { avatarURL } from "@/src/features/admin/components/UsersTable";
 import AvatarUploadModal from "@/src/features/profile/AvatarUploadModal";
 
 const emptyProfile: ExpertProfile = {
-    eid: "",
+    id: "",
     ssn: "",
-    bio_quote: "",
-    education_detail: "",
-    title_position: "",
-    expertise_skill: "",
-    social_link: "",
+    bioQuote: "",
+    educationDetail: "",
+    titlePosition: "",
+    expertiseSkill: "",
+    socialLink: "",
 };
 
 const inputClass =
@@ -126,173 +126,175 @@ export default function LearnerProfilePage({
                 <Home_Header />
 
                 {/* CONTENT */}
-                <main className="flex-1 overflow-y-auto px-6 py-6 no-scrollbar">
-                    <div className="mx-auto w-full max-w-6xl">
-                        {/* PROFILE CARD */}
-                        <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
-                            {/* HEADER */}
-                            <div className="border-b border-neutral-200 px-6 py-6 md:px-8">
-                                <div className="flex flex-col gap-5 md:flex-row md:items-center">
-                                    {/* AVATAR */}
-                                    <div className="relative w-fit">
-                                        <img
-                                            src={form.avatarUrl || avatarFallback}
-                                            alt={form.name}
-                                            className="h-[96px] w-[96px] rounded-full object-cover ring-4 ring-neutral-100"
-                                        />
-                                        <label
-                                            onClick={() => setShowAvatarModal(true)}
-                                            className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white bg-black text-white shadow-md transition hover:scale-105"
-                                        >
-                                            <Camera className="h-4 w-4" />
-                                        </label>
-                                        <input id="avatar-upload" type="file" accept="image/*" className="hidden" />
-                                    </div>
-
-                                    {/* INFO */}
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex flex-wrap items-center gap-3">
-                                            <h2 className="truncate text-2xl font-semibold text-neutral-900">{form.name}</h2>
-                                            <span className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600">{form.role}</span>
-                                            <span
-                                                className={`rounded-full px-3 py-1 text-xs font-medium ${form.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-neutral-100 text-neutral-600"
-                                                    }`}
+                <main className="flex-1 overflow-y-auto no-scrollbar">
+                    <div className="w-full py-6 bg-linear-to-r from-[#1ba7d9] to-[#235697]">
+                        <div className="mx-auto w-full max-w-6xl">
+                            {/* PROFILE CARD */}
+                            <div className="overflow-hidden rounded-3xl border border-neutral-200 bg-white shadow-sm">
+                                {/* HEADER */}
+                                <div className="border-b border-neutral-200 px-6 py-6 md:px-8">
+                                    <div className="flex flex-col gap-5 md:flex-row md:items-center">
+                                        {/* AVATAR */}
+                                        <div className="relative w-fit">
+                                            <img
+                                                src={form.avatarUrl || avatarFallback}
+                                                alt={form.name}
+                                                className="h-[96px] w-[96px] rounded-full object-cover ring-4 ring-neutral-100"
+                                            />
+                                            <label
+                                                onClick={() => setShowAvatarModal(true)}
+                                                className="absolute bottom-0 right-0 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white bg-black text-white shadow-md transition hover:scale-105"
                                             >
-                                                {form.status}
-                                            </span>
+                                                <Camera className="h-4 w-4" />
+                                            </label>
+                                            <input id="avatar-upload" type="file" accept="image/*" className="hidden" />
                                         </div>
-                                        <p className="mt-2 text-sm text-neutral-500">{form.email}</p>
-                                        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
-                                            <span>Created {new Date(form.createdAt).toLocaleDateString()}</span>
-                                            <span>•</span>
-                                            <span>Updated {new Date(form.updatedAt).toLocaleDateString()}</span>
+
+                                        {/* INFO */}
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex flex-wrap items-center gap-3">
+                                                <h2 className="truncate text-2xl font-semibold text-neutral-900">{form.name}</h2>
+                                                <span className="rounded-full border border-neutral-200 bg-neutral-50 px-3 py-1 text-xs font-medium text-neutral-600">{form.role}</span>
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-medium ${form.status === "active" ? "bg-emerald-100 text-emerald-700" : "bg-neutral-100 text-neutral-600"
+                                                        }`}
+                                                >
+                                                    {form.status}
+                                                </span>
+                                            </div>
+                                            <p className="mt-2 text-sm text-neutral-500">{form.email}</p>
+                                            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-neutral-400">
+                                                <span>Created {new Date(form.createdAt).toLocaleDateString()}</span>
+                                                <span>•</span>
+                                                <span>Updated {new Date(form.updatedAt).toLocaleDateString()}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            {/* BODY */}
-                            <div className="space-y-6 px-6 py-6 md:px-8">
-                                {/* PERSONAL */}
-                                <section className="rounded-2xl border border-neutral-200 p-6">
-                                    <div className="mb-6">
-                                        <h3 className="text-base font-semibold text-neutral-900">Personal Information</h3>
-                                        <p className="mt-1 text-sm text-neutral-500">Manage your personal details and contact information.</p>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                        {/* NAME */}
-                                        <label>
-                                            <span className={labelClass}>Name</span>
-                                            <input type="text" value={form.name || ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} />
-                                        </label>
-
-                                        {/* PHONE */}
-                                        <label>
-                                            <span className={labelClass}>Phone</span>
-                                            <input type="text" value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
-                                        </label>
-
-                                        {/* EMAIL */}
-                                        <label className="md:col-span-2">
-                                            <span className={labelClass}>Email</span>
-                                            <input disabled value={form.email || ""} className={`${inputClass} cursor-not-allowed bg-neutral-100 text-neutral-500`} />
-                                        </label>
-
-                                        {/* BIRTHDAY */}
-                                        <label>
-                                            <span className={labelClass}>Birthday</span>
-                                            <input
-                                                type="date"
-                                                min={minBirthday}
-                                                max={maxBirthday}
-                                                value={String(form.birthday).split("T")[0]}
-                                                onChange={(e) => setForm({ ...form, birthday: e.target.value })}
-                                                className={inputClass}
-                                            />
-                                        </label>
-
-                                        {/* GENDER */}
-                                        <label>
-                                            <span className={labelClass}>Gender</span>
-                                            <select
-                                                value={form.gender || ""}
-                                                onChange={(e) => setForm({ ...form, gender: (e.target.value || undefined) as "Male" | "Female" | undefined })}
-                                                className={inputClass}
-                                            >
-                                                <option value="">Select gender</option>
-                                                <option value="Male">Male</option>
-                                                <option value="Female">Female</option>
-                                            </select>
-                                        </label>
-
-                                        {/* ADDRESS */}
-                                        <label className="md:col-span-2">
-                                            <span className={labelClass}>Address</span>
-                                            <textarea rows={3} value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} className={textareaClass} />
-                                        </label>
-                                    </div>
-                                </section>
-
-                                {/* EXPERT PROFILE */}
-                                {form.role === "Expert" && (
+                                {/* BODY */}
+                                <div className="space-y-6 px-6 py-6 md:px-8">
+                                    {/* PERSONAL */}
                                     <section className="rounded-2xl border border-neutral-200 p-6">
                                         <div className="mb-6">
-                                            <h3 className="text-base font-semibold text-neutral-900">Expert Profile</h3>
-                                            <p className="mt-1 text-sm text-neutral-500">Professional information and expertise.</p>
+                                            <h3 className="text-base font-semibold text-neutral-900">Personal Information</h3>
+                                            <p className="mt-1 text-sm text-neutral-500">Manage your personal details and contact information.</p>
                                         </div>
 
                                         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                            {/* NAME */}
                                             <label>
-                                                <span className={labelClass}>Title / Position</span>
-                                                <input value={form.profile?.title_position || ""} onChange={(e) => setProfileField("title_position", e.target.value)} className={inputClass} />
+                                                <span className={labelClass}>Name</span>
+                                                <input type="text" value={form.name || ""} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} />
                                             </label>
 
+                                            {/* PHONE */}
                                             <label>
-                                                <span className={labelClass}>Expertise / Skill</span>
-                                                <input value={form.profile?.expertise_skill || ""} onChange={(e) => setProfileField("expertise_skill", e.target.value)} className={inputClass} />
+                                                <span className={labelClass}>Phone</span>
+                                                <input type="text" value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
                                             </label>
 
+                                            {/* EMAIL */}
                                             <label className="md:col-span-2">
-                                                <span className={labelClass}>Education</span>
-                                                <input value={form.profile?.education_detail || ""} onChange={(e) => setProfileField("education_detail", e.target.value)} className={inputClass} />
+                                                <span className={labelClass}>Email</span>
+                                                <input disabled value={form.email || ""} className={`${inputClass} cursor-not-allowed bg-neutral-100 text-neutral-500`} />
                                             </label>
 
-                                            <label className="md:col-span-2">
-                                                <span className={labelClass}>Bio</span>
-                                                <textarea rows={4} value={form.profile?.bio_quote || ""} onChange={(e) => setProfileField("bio_quote", e.target.value)} className={textareaClass} />
+                                            {/* BIRTHDAY */}
+                                            <label>
+                                                <span className={labelClass}>Birthday</span>
+                                                <input
+                                                    type="date"
+                                                    min={minBirthday}
+                                                    max={maxBirthday}
+                                                    value={String(form.birthday).split("T")[0]}
+                                                    onChange={(e) => setForm({ ...form, birthday: e.target.value })}
+                                                    className={inputClass}
+                                                />
                                             </label>
 
+                                            {/* GENDER */}
+                                            <label>
+                                                <span className={labelClass}>Gender</span>
+                                                <select
+                                                    value={form.gender || ""}
+                                                    onChange={(e) => setForm({ ...form, gender: (e.target.value || undefined) as "Male" | "Female" | undefined })}
+                                                    className={inputClass}
+                                                >
+                                                    <option value="">Select gender</option>
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                </select>
+                                            </label>
+
+                                            {/* ADDRESS */}
                                             <label className="md:col-span-2">
-                                                <span className={labelClass}>Social Link</span>
-                                                <input value={form.profile?.social_link || ""} onChange={(e) => setProfileField("social_link", e.target.value)} className={inputClass} />
+                                                <span className={labelClass}>Address</span>
+                                                <textarea rows={3} value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} className={textareaClass} />
                                             </label>
                                         </div>
                                     </section>
-                                )}
-                            </div>
 
-                            {/* FOOTER */}
-                            <div className="flex items-center justify-end gap-3 border-t border-neutral-200 bg-white px-6 py-5 md:px-8">
-                                <button
-                                    disabled={loading || !isChanged}
-                                    onClick={handleUpdate}
-                                    className="flex h-11 min-w-[150px] items-center justify-center rounded-xl bg-black px-5 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
-                                </button>
+                                    {/* EXPERT PROFILE */}
+                                    {form.role === "Expert" && (
+                                        <section className="rounded-2xl border border-neutral-200 p-6">
+                                            <div className="mb-6">
+                                                <h3 className="text-base font-semibold text-neutral-900">Expert Profile</h3>
+                                                <p className="mt-1 text-sm text-neutral-500">Professional information and expertise.</p>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                                <label>
+                                                    <span className={labelClass}>Title / Position</span>
+                                                    <input value={form.profile?.titlePosition || ""} onChange={(e) => setProfileField("titlePosition", e.target.value)} className={inputClass} />
+                                                </label>
+
+                                                <label>
+                                                    <span className={labelClass}>Expertise / Skill</span>
+                                                    <input value={form.profile?.expertiseSkill || ""} onChange={(e) => setProfileField("expertiseSkill", e.target.value)} className={inputClass} />
+                                                </label>
+
+                                                <label className="md:col-span-2">
+                                                    <span className={labelClass}>Education</span>
+                                                    <input value={form.profile?.educationDetail || ""} onChange={(e) => setProfileField("educationDetail", e.target.value)} className={inputClass} />
+                                                </label>
+
+                                                <label className="md:col-span-2">
+                                                    <span className={labelClass}>Bio</span>
+                                                    <textarea rows={4} value={form.profile?.bioQuote || ""} onChange={(e) => setProfileField("bioQuote", e.target.value)} className={textareaClass} />
+                                                </label>
+
+                                                <label className="md:col-span-2">
+                                                    <span className={labelClass}>Social Link</span>
+                                                    <input value={form.profile?.socialLink || ""} onChange={(e) => setProfileField("socialLink", e.target.value)} className={inputClass} />
+                                                </label>
+                                            </div>
+                                        </section>
+                                    )}
+                                </div>
+
+                                {/* FOOTER */}
+                                <div className="flex items-center justify-end gap-3 border-t border-neutral-200 bg-white px-6 py-5 md:px-8">
+                                    <button
+                                        disabled={loading || !isChanged}
+                                        onClick={handleUpdate}
+                                        className="flex h-11 min-w-[150px] items-center justify-center rounded-xl bg-black px-5 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {showAvatarModal && (
-                        <AvatarUploadModal
-                            userId={form.userId}
-                            currentAvatarUrl={form.avatarUrl}
-                            onSuccess={(newUrl) => setForm((prev) => prev ? { ...prev, avatarUrl: newUrl } : prev)}
-                            onClose={() => setShowAvatarModal(false)}
-                        />
-                    )}
+                        {showAvatarModal && (
+                            <AvatarUploadModal
+                                userId={form.userId}
+                                currentAvatarUrl={form.avatarUrl}
+                                onSuccess={(newUrl) => setForm((prev) => prev ? { ...prev, avatarUrl: newUrl } : prev)}
+                                onClose={() => setShowAvatarModal(false)}
+                            />
+                        )}
+                    </div>
 
                     <Testimonial />
                     <Footer />

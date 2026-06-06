@@ -18,13 +18,13 @@ const getUpdateUserErrorMessage = (error: unknown): string => {
 };
 
 const emptyProfile: ExpertProfile = {
-    eid: "",
+    id: "",
     ssn: "",
-    bio_quote: "",
-    education_detail: "",
-    title_position: "",
-    expertise_skill: "",
-    social_link: "",
+    bioQuote: "",
+    educationDetail: "",
+    titlePosition: "",
+    expertiseSkill: "",
+    socialLink: "",
 };
 
 const inputClass =
@@ -525,11 +525,11 @@ export default function EditUserModal({
 
                                             <input
                                                 value={
-                                                    form.profile?.title_position ?? ""
+                                                    form.profile?.titlePosition ?? ""
                                                 }
                                                 onChange={(e) =>
                                                     setProfileField(
-                                                        "title_position",
+                                                        "titlePosition",
                                                         e.target.value
                                                     )
                                                 }
@@ -545,11 +545,11 @@ export default function EditUserModal({
 
                                             <input
                                                 value={
-                                                    form.profile?.expertise_skill ?? ""
+                                                    form.profile?.expertiseSkill ?? ""
                                                 }
                                                 onChange={(e) =>
                                                     setProfileField(
-                                                        "expertise_skill",
+                                                        "expertiseSkill",
                                                         e.target.value
                                                     )
                                                 }
@@ -566,11 +566,11 @@ export default function EditUserModal({
                                             <input
                                                 value={
                                                     form.profile
-                                                        ?.education_detail ?? ""
+                                                        ?.educationDetail ?? ""
                                                 }
                                                 onChange={(e) =>
                                                     setProfileField(
-                                                        "education_detail",
+                                                        "educationDetail",
                                                         e.target.value
                                                     )
                                                 }
@@ -588,11 +588,11 @@ export default function EditUserModal({
                                                 rows={4}
                                                 value={
                                                     form.profile
-                                                        ?.bio_quote ?? ""
+                                                        ?.bioQuote ?? ""
                                                 }
                                                 onChange={(e) =>
                                                     setProfileField(
-                                                        "bio_quote",
+                                                        "bioQuote",
                                                         e.target.value
                                                     )
                                                 }
@@ -609,11 +609,11 @@ export default function EditUserModal({
                                             <input
                                                 value={
                                                     form.profile
-                                                        ?.social_link ?? ""
+                                                        ?.socialLink ?? ""
                                                 }
                                                 onChange={(e) =>
                                                     setProfileField(
-                                                        "social_link",
+                                                        "socialLink",
                                                         e.target.value
                                                     )
                                                 }
