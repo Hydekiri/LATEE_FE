@@ -7,7 +7,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCookie } from "@/src/utils/cookies";
 import { logoutApi } from '@/src/services/auth-service';
-import { LoadServerSideCurrentUserResponse } from "@/src/app/authFilterChain";
 
 type PageType = "Home" | "Practice" | "Assessment" | "Progress" | "Blog" | "About";
 
@@ -20,6 +19,7 @@ export default function Home_Header({ page }: NavbarProps) {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    
     const getValidAvatar = (url?: string | null) => {
         if (!url) return undefined;
         const v = url.trim();
@@ -35,7 +35,6 @@ export default function Home_Header({ page }: NavbarProps) {
         const rawAvatar = getCookie("avatarUrl");
         const avatarUrl = getValidAvatar(rawAvatar);
 
-        console.log("Loaded user info from cookies:", { email, userName, rawAvatar, avatarUrl });
         if (email && userName) {
             return {
                 email,
@@ -63,6 +62,7 @@ export default function Home_Header({ page }: NavbarProps) {
 
         return () => clearTimeout(timer); 
     }, []); 
+
     const handleLogout = async () => {
         try {
             await logoutApi();
@@ -89,7 +89,8 @@ export default function Home_Header({ page }: NavbarProps) {
     };
 
     return (
-        <nav className="w-full top-0 left-0 bg-linear-to-r from-[#1ba7d9] to-[#235697] shadow-md z-50 flex justify-center sticky">
+        // SỬA: Đổi z-50 thành z-40 để các modal/drawer z-[100] đè lên hoàn toàn
+        <nav className="w-full top-0 left-0 bg-linear-to-r from-[#1ba7d9] to-[#235697] shadow-md z-40 flex justify-center sticky">
             <div className="w-[86%] flex items-center justify-between py-3">
 
                 {/* --- 1. LOGO --- */}
@@ -108,8 +109,6 @@ export default function Home_Header({ page }: NavbarProps) {
 
                 {/* --- 2. DESKTOP MENU --- */}
                 <div className="hidden xl:flex items-center">
-
-                    {/* A. MENU LINKS */}
                     <div className="flex items-center gap-5 2xl:gap-10">
                         <Link href="/home" className={getLinkClasses("/home", "Home")}>Home</Link>
                         <Link href="/practice" className={getLinkClasses("/practice", "Practice")}>Practice Mode</Link>
@@ -119,10 +118,8 @@ export default function Home_Header({ page }: NavbarProps) {
                         <Link href="/about" className={getLinkClasses("/about", "About")}>About us</Link>
                     </div>
 
-                    {/* B. SPACER */}
                     <div className="h-8 w-px bg-white/20 ml-7.5 mr-7.5 2xl:ml-12.5 2xl:mr-12.5"></div>
 
-                    {/* C. USER ACTION AREA */}
                     <div className="flex items-center gap-4">
                         {isMounted ? (
                             userInfo ? (
@@ -182,7 +179,6 @@ export default function Home_Header({ page }: NavbarProps) {
                             <X className="w-7 h-7 text-white" />
                         </button>
 
-                        {/* Mobile User Info */}
                         {isMounted && userInfo && (
                             <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/20">
                                 <div className="w-12 h-12 rounded-full bg-white overflow-hidden relative border-2 border-white">
@@ -205,7 +201,6 @@ export default function Home_Header({ page }: NavbarProps) {
 
                             <div className="h-px bg-white/20 w-full my-4"></div>
 
-                            {/* Mobile Buttons */}
                             {isMounted && (
                                 userInfo ? (
                                     <button onClick={handleLogout} className="bg-white rounded-xl text-red-500 hover:bg-red-50 text-center py-3 font-bold shadow-md w-full transition">

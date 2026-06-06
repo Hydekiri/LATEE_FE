@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import {
     MagnifyingGlassIcon,
@@ -15,37 +15,85 @@ import { PracticeListPagination } from '@/src/features/practice/components/Pract
 import { PatientCardSkeleton } from '@/src/features/practice/components/PatientCardSkeleton';
 import { EmptyDiscoveryState } from '@/src/features/practice/components/EmptyDiscoveryState';
 import { DiscoveryGrid } from '@/src/features/practice/components/DiscoveryGrid';
+import {
+    QuickFilterChips,
+    type QuickFilterValue,
+} from '@/src/features/practice/components/subComponents/QuickFilterChips';
 
 import {
     DiscoverySortBy,
     FetchCasesFormState,
+    DiscoveryPatientItem,
 } from '@/src/types/discovery';
 
 const FetchCasesModal = dynamic(
-    () => import('@/src/features/practice/components/FetchCasesModal').then(m => ({ default: m.FetchCasesModal })),
+    () =>
+        import('@/src/features/practice/components/FetchCasesModal').then((m) => ({
+            default: m.FetchCasesModal,
+        })),
     { ssr: false }
 );
 
 const SORT_OPTIONS: { value: DiscoverySortBy; label: string }[] = [
-    { value: 'newest',      label: 'Newest' },
-    { value: 'oldest',      label: 'Oldest' },
-    { value: 'level_asc',   label: 'Level ↑' },
-    { value: 'level_desc',  label: 'Level ↓' },
-    { value: 'expert_asc',  label: 'Expert A→Z' },
+    { value: 'newest', label: 'Newest' },
+    { value: 'oldest', label: 'Oldest' },
+    { value: 'level_asc', label: 'Level ↑' },
+    { value: 'level_desc', label: 'Level ↓' },
+    { value: 'expert_asc', label: 'Expert A→Z' },
     { value: 'expert_desc', label: 'Expert Z→A' },
 ];
+
+const LEVEL_FILTER_VALUES: ReadonlySet<QuickFilterValue> = new Set([
+    'BEGINNER',
+    'INTERMEDIATE',
+    'ADVANCED',
+    'EXPERT',
+]);
+
+const GENDER_FILTER_VALUES: ReadonlySet<QuickFilterValue> = new Set([
+    'MALE',
+    'FEMALE',
+]);
+
+function applyQuickFilters(
+    items: readonly DiscoveryPatientItem[],
+    active: ReadonlySet<QuickFilterValue>
+): readonly DiscoveryPatientItem[] {
+    if (active.size === 0) return items;
+
+    const activeLevels = [...active].filter((v) =>
+        LEVEL_FILTER_VALUES.has(v)
+    );
+    const activeGenders = [...active].filter((v) =>
+        GENDER_FILTER_VALUES.has(v)
+    );
+
+    return items.filter((p) => {
+        const passLevel =
+            activeLevels.length === 0 ||
+            activeLevels.some(
+                (v) => p.level.toUpperCase() === v
+            );
+        const passGender =
+            activeGenders.length === 0 ||
+            activeGenders.some(
+                (v) => p.gender.toUpperCase() === v
+            );
+        return passLevel && passGender;
+    });
+}
 
 export function PracticeListContent() {
     const {
         loadState,
         fetchState,
-        patients,
+        patients: hookPatients,
         allPatients,
         availableOccupations,
         availableLevels,
         availableExperts,
-        totalFiltered,
-        totalPages,
+        totalFiltered: hookTotalFiltered,
+        totalPages: hookTotalPages,
         currentPage,
         uiFilter,
         error,
@@ -59,10 +107,87 @@ export function PracticeListContent() {
     } = usePracticeDiscovery();
 
     const [isFetchModalOpen, setIsFetchModalOpen] = useState(false);
+    const [quickFilters, setQuickFilters] = useState<ReadonlySet<QuickFilterValue>>(
+        new Set<QuickFilterValue>()
+    );
+
     const isLoading = loadState === 'loading' || loadState === 'checking';
     const isPoolEmpty = loadState === 'empty' && !hasDiscovery;
+    const quickFilteredAll = useMemo(
+        () => applyQuickFilters(allPatients, quickFilters),
+        [allPatients, quickFilters]
+    );
+
+    const quickActive = quickFilters.size > 0;
+
+    const totalFiltered = quickActive ? quickFilteredAll.length : hookTotalFiltered;
+    const PAGE_SIZE = 9;
+    const totalPages = quickActive
+        ? Math.max(1, Math.ceil(totalFiltered / PAGE_SIZE))
+        : hookTotalPages;
+
+    const patients = useMemo(() => {
+        if (!quickActive) return hookPatients;
+        let result = [...quickFilteredAll];
+        const q = uiFilter.search.trim().toLowerCase();
+        if (q) {
+            result = result.filter(
+                (p) =>
+                    p.name.toLowerCase().includes(q) ||
+                    p.chiefConcern.toLowerCase().includes(q) ||
+                    (p.symptom ?? '').toLowerCase().includes(q) ||
+                    (p.occupation ?? '').toLowerCase().includes(q) ||
+                    p.patientId.toLowerCase().includes(q)
+            );
+        }
+        if (uiFilter.level) {
+            result = result.filter(
+                (p) => p.level.toLowerCase() === uiFilter.level.toLowerCase()
+            );
+        }
+        if (uiFilter.occupation) {
+            result = result.filter(
+                (p) =>
+                    p.occupation != null &&
+                    p.occupation.toLowerCase().includes(uiFilter.occupation.toLowerCase())
+            );
+        }
+        if (uiFilter.expert) {
+            result = result.filter(
+                (p) => p.experts && p.experts.some((e) => e.name === uiFilter.expert)
+            );
+        }
+        const start = (currentPage - 1) * PAGE_SIZE;
+        return result.slice(start, start + PAGE_SIZE);
+    }, [quickActive, quickFilteredAll, hookPatients, uiFilter, currentPage]);
+
     const hasActiveFilter =
-        !!uiFilter.search || !!uiFilter.level || !!uiFilter.occupation || !!uiFilter.expert;
+        !!uiFilter.search ||
+        !!uiFilter.level ||
+        !!uiFilter.occupation ||
+        !!uiFilter.expert ||
+        quickFilters.size > 0;
+
+    const handleToggleQuickFilter = useCallback(
+        (value: QuickFilterValue) => {
+            setQuickFilters((prev) => {
+                const next = new Set(prev);
+                if (next.has(value)) {
+                    next.delete(value);
+                } else {
+                    next.add(value);
+                }
+                return next as ReadonlySet<QuickFilterValue>;
+            });
+            setPage(1);
+        },
+        [setPage]
+    );
+
+    const handleResetFilters = useCallback(() => {
+        resetFilters();
+        setQuickFilters(new Set<QuickFilterValue>());
+    }, [resetFilters]);
 
     const handleFetchSubmitWithClose = useCallback(
         async (form: FetchCasesFormState) => {
@@ -83,7 +208,7 @@ export function PracticeListContent() {
                 <button
                     onClick={retry}
                     className="px-6 py-2.5 rounded-lg bg-[#235697] text-white font-bold text-sm
-                    hover:bg-[#1BA7D9] transition-all shadow-sm"
+                            hover:bg-[#1BA7D9] transition-all shadow-sm"
                 >
                     Retry
                 </button>
@@ -95,17 +220,16 @@ export function PracticeListContent() {
         <>
             {/* ── Toolbar ── */}
             <div className="w-full flex flex-wrap gap-4 lg:gap-6 items-center justify-between mt-6 lg:mt-10">
-
                 <div className="flex-1 w-full min-w-70 sm:min-w-[320px]">
                     <div className="flex items-center py-2 border border-[#235697] rounded-lg bg-white
-                            px-4 lg:px-6 w-full shadow-sm hover:shadow-md transition-shadow">
+                                    px-4 lg:px-6 w-full shadow-sm hover:shadow-md transition-shadow">
                         <input
                             type="text"
                             value={uiFilter.search}
                             onChange={(e) => setUIFilter('search', e.target.value)}
                             placeholder="Search by name, concern, occupation..."
                             className="flex-1 font-semibold text-sm sm:text-base placeholder-[#235697]/60 outline-none
-                            text-[#235697] bg-transparent min-w-0"
+                                        text-[#235697] bg-transparent min-w-0"
                             aria-label="Search patients"
                         />
                         <MagnifyingGlassIcon className="w-5 h-5 text-[#235697]/60 shrink-0 ml-2" aria-hidden="true" />
@@ -113,8 +237,6 @@ export function PracticeListContent() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3 justify-start lg:justify-end w-full xl:w-auto">
-
-                    {/* Expert Filter */}
                     {availableExperts.length > 0 && (
                         <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
                             <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" aria-hidden="true" />
@@ -122,9 +244,9 @@ export function PracticeListContent() {
                                 value={uiFilter.expert || ''}
                                 onChange={(e) => setUIFilter('expert', e.target.value)}
                                 className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
-                                text-[#235697] font-semibold text-sm truncate
-                                hover:bg-[#235697] hover:text-white transition-all shadow-sm
-                                appearance-none cursor-pointer outline-none"
+                                        text-[#235697] font-semibold text-sm truncate
+                                        hover:bg-[#235697] hover:text-white transition-all shadow-sm
+                                        appearance-none cursor-pointer outline-none"
                                 aria-label="Filter by Expert"
                             >
                                 <option value="">All Experts</option>
@@ -135,16 +257,15 @@ export function PracticeListContent() {
                         </div>
                     )}
 
-                    {/* Level filter */}
                     <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
                         <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" aria-hidden="true" />
                         <select
                             value={uiFilter.level}
                             onChange={(e) => setUIFilter('level', e.target.value)}
                             className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
-                            text-[#235697] font-semibold text-sm truncate
-                            hover:bg-[#235697] hover:text-white transition-all shadow-sm
-                            appearance-none cursor-pointer outline-none"
+                                        text-[#235697] font-semibold text-sm truncate
+                                        hover:bg-[#235697] hover:text-white transition-all shadow-sm
+                                        appearance-none cursor-pointer outline-none"
                             aria-label="Filter by level"
                         >
                             <option value="">All Levels</option>
@@ -154,7 +275,6 @@ export function PracticeListContent() {
                         </select>
                     </div>
 
-                    {/* Occupation filter */}
                     {availableOccupations.length > 0 && (
                         <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-40">
                             <FunnelIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" aria-hidden="true" />
@@ -162,9 +282,9 @@ export function PracticeListContent() {
                                 value={uiFilter.occupation}
                                 onChange={(e) => setUIFilter('occupation', e.target.value)}
                                 className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
-                                text-[#235697] font-semibold text-sm truncate
-                                hover:bg-[#235697] hover:text-white transition-all shadow-sm
-                                appearance-none cursor-pointer outline-none"
+                                            text-[#235697] font-semibold text-sm truncate
+                                            hover:bg-[#235697] hover:text-white transition-all shadow-sm
+                                            appearance-none cursor-pointer outline-none"
                                 aria-label="Filter by occupation"
                             >
                                 <option value="">All Occupations</option>
@@ -175,16 +295,15 @@ export function PracticeListContent() {
                         </div>
                     )}
 
-                    {/* Sort */}
                     <div className="relative flex items-center w-full sm:w-auto flex-1 sm:flex-none min-w-35">
                         <ArrowsUpDownIcon className="absolute left-3 w-4 h-4 text-[#235697] pointer-events-none" aria-hidden="true" />
                         <select
                             value={uiFilter.sortBy}
                             onChange={(e) => setUIFilter('sortBy', e.target.value as DiscoverySortBy)}
                             className="w-full border border-[#235697] pl-9 pr-8 py-2.5 rounded-lg bg-white
-                            text-[#235697] font-semibold text-sm truncate
-                            hover:bg-[#235697] hover:text-white transition-all shadow-sm
-                            appearance-none cursor-pointer outline-none"
+                                        text-[#235697] font-semibold text-sm truncate
+                                        hover:bg-[#235697] hover:text-white transition-all shadow-sm
+                                        appearance-none cursor-pointer outline-none"
                             aria-label="Sort by"
                         >
                             {SORT_OPTIONS.map(({ value, label }) => (
@@ -193,14 +312,13 @@ export function PracticeListContent() {
                         </select>
                     </div>
 
-                    {/* Button Group (Reset + New) */}
                     <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
                         {hasActiveFilter && (
                             <button
-                                onClick={resetFilters}
+                                onClick={handleResetFilters}
                                 className="border border-gray-300 px-4 py-2.5 rounded-lg bg-white text-gray-500
-                                font-semibold text-sm hover:border-red-300 hover:text-red-500
-                                transition-all shadow-sm whitespace-nowrap outline-none flex-1 sm:flex-none text-center"
+                                            font-semibold text-sm hover:border-red-300 hover:text-red-500
+                                            transition-all shadow-sm whitespace-nowrap outline-none flex-1 sm:flex-none text-center"
                                 aria-label="Reset filters"
                             >
                                 Reset
@@ -210,9 +328,9 @@ export function PracticeListContent() {
                         <button
                             onClick={() => setIsFetchModalOpen(true)}
                             className="flex justify-center items-center gap-2 border border-[#235697] px-5 py-2.5
-                            rounded-lg bg-[#235697] text-white font-bold text-sm
-                            hover:bg-[#1BA7D9] hover:border-[#1BA7D9] transition-all shadow-sm
-                            whitespace-nowrap outline-none flex-1 sm:flex-none"
+                                        rounded-lg bg-[#235697] text-white font-bold text-sm
+                                        hover:bg-[#1BA7D9] hover:border-[#1BA7D9] transition-all shadow-sm
+                                        whitespace-nowrap outline-none flex-1 sm:flex-none"
                             aria-label="Fetch new cases"
                         >
                             <PlusIcon className="w-4 h-4" aria-hidden="true" />
@@ -222,9 +340,17 @@ export function PracticeListContent() {
                 </div>
             </div>
 
+            {/* ── Quick Filter Chips ── */}
+            <div className="w-full">
+                <QuickFilterChips
+                    selectedFilters={quickFilters}
+                    onToggle={handleToggleQuickFilter}
+                />
+            </div>
+
             {/* ── Pool count badge ── */}
             {!isLoading && allPatients.length > 0 && (
-                <div className="w-full flex items-center gap-2 mt-4">
+                <div className="w-full flex items-center gap-2">
                     <span className="text-xs text-gray-400 font-medium">
                         Your pool: <span className="text-[#235697] font-bold">{allPatients.length}</span> cases
                         {totalFiltered !== allPatients.length && (
@@ -264,7 +390,7 @@ export function PracticeListContent() {
                             No cases match your current filters.
                         </p>
                         <button
-                            onClick={resetFilters}
+                            onClick={handleResetFilters}
                             className="text-[#235697] font-semibold text-sm hover:underline"
                         >
                             Clear filters

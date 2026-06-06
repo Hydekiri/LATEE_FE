@@ -1,4 +1,3 @@
-// src/services/discovery-service.ts
 import { clientApi } from '@/src/utils/api-client';
 import {
     DiscoveryPatientItem,
@@ -9,7 +8,6 @@ import {
     SaveDiscoveryResponse,
 } from '@/src/types/discovery';
 
-// ── Shape returned by GET /discovery ──────────────────────────
 interface DiscoveryApiResponse {
     readonly items: readonly DiscoveryPatientItem[];
     readonly total: number;

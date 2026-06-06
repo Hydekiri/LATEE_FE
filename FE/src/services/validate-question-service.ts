@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '@/src/config/env';
-import { getCookie } from '../utils/cookies';
+import { getCookie } from "@/src/utils/cookies";
 import { NGROK_SKIP_BROWSER_WARNING_HEADER } from '@/src/utils/api-client';
 
 export interface ValidationMessageItem {
