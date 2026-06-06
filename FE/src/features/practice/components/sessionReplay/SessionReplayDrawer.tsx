@@ -76,7 +76,7 @@ export function SessionReplayDrawer({
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto"
+            className="fixed inset-0 z-100 flex items-start justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto"
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}

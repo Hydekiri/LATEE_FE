@@ -32,7 +32,7 @@ export function WarningsReplay({ warnings }: WarningsReplayProps) {
     };
 
     return (
-        <div className="divide-y divide-red-100/50 border border-[#972323] border-[1.5px] rounded-lg overflow-hidden">
+        <div className="divide-y divide-red-100/50 border-[#972323] border-[1.5px] rounded-lg overflow-hidden">
             {warnings.map((w) => {
                 const isOpen = openIds.has(w.warningId);
                 return (

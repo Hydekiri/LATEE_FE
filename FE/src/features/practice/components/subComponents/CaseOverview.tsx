@@ -184,7 +184,7 @@ export const CaseOverview = ({ data }: { data: PatientData }) => {
             {/* Loading state */}
             {drawerOpen && detailLoading && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-xs"
+                    className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-xs"
                     onClick={handleCloseDrawer}
                 >
                     <div className="bg-white rounded-2xl px-10 py-8 flex flex-col items-center gap-4 shadow-2xl border border-gray-100">
@@ -197,7 +197,7 @@ export const CaseOverview = ({ data }: { data: PatientData }) => {
             {/* Error state  */}
             {drawerOpen && !detailLoading && detailError && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50"
+                    className="fixed inset-0 z-100 flex items-center justify-center bg-black/50"
                     onClick={handleCloseDrawer}
                 >
                     <div className="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl mx-4">
