@@ -104,6 +104,31 @@ export async function updateUser(userid: string, data: Partial<User>) {
         //throw new Error(msg || "Update failed");
         console.error("Failed to update user:", msg);
     }
+
+    const expert_res = await fetch(`${API_BASE_URL}/user/api/experts/${userid}`, {
+        method: "PUT",
+        headers: {
+            'Content-Type': 'application/json',
+            ...NGROK_SKIP_BROWSER_WARNING_HEADER,
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+        },
+        body: JSON.stringify(
+            {
+                "expertId": userid,
+                "bioQuote": data.profile?.bioQoute,
+                "educationDetail": data.profile?.educationDetail,
+                "titlePosition": data.profile?.titlePosition,
+                "expertiseSkill": data.profile?.expertiseSkill,
+                "socialLink": data.profile?.socialLink,
+            }
+        ),
+    });
+
+    if (!expert_res.ok) {
+        const msg = await expert_res.text();
+        //throw new Error(msg || "Update failed");
+        console.error("Failed to update expert:", msg);
+    }
 }
 
 export async function adminDashboardStats() {

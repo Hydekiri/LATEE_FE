@@ -22,7 +22,7 @@ import AvatarUploadModal from "@/src/features/profile/AvatarUploadModal";
 const emptyProfile: ExpertProfile = {
     id: "",
     ssn: "",
-    bioQuote: "",
+    bioQoute: "",
     educationDetail: "",
     titlePosition: "",
     expertiseSkill: "",
@@ -619,14 +619,14 @@ export default function ProfilePage({
                                                             value={
                                                                 form
                                                                     .profile
-                                                                    ?.bioQuote ||
+                                                                    ?.bioQoute ||
                                                                 ""
                                                             }
                                                             onChange={(
                                                                 e
                                                             ) =>
                                                                 setProfileField(
-                                                                    "bioQuote",
+                                                                    "bioQoute",
                                                                     e
                                                                         .target
                                                                         .value

@@ -19,7 +19,7 @@ export interface User {
 export interface ExpertProfile {
   id: string;
   ssn: string;
-  bioQuote: string;
+  bioQoute: string;
   educationDetail: string;
   titlePosition: string;
   expertiseSkill: string;

@@ -20,7 +20,7 @@ const getUpdateUserErrorMessage = (error: unknown): string => {
 const emptyProfile: ExpertProfile = {
     id: "",
     ssn: "",
-    bioQuote: "",
+    bioQoute: "",
     educationDetail: "",
     titlePosition: "",
     expertiseSkill: "",
@@ -578,13 +578,10 @@ export default function EditUserModal({
 
                                             <textarea
                                                 rows={4}
-                                                value={
-                                                    form.profile
-                                                        ?.bioQuote ?? ""
-                                                }
+                                                value={form.profile?.bioQoute ?? ""}
                                                 onChange={(e) =>
                                                     setProfileField(
-                                                        "bioQuote",
+                                                        "bioQoute",
                                                         e.target.value
                                                     )
                                                 }

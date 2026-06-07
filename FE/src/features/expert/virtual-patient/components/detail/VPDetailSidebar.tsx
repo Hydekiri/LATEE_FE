@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Clock, Users, TrendingUp, Calendar, FileText, Save, Plus, X, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Clock, Users, TrendingUp, Calendar, FileText, Save, Loader2 } from "lucide-react";
 import type { VirtualPatientDetail, UpdateVPRequest } from "@/src/types/virtual-patient-expert";
 import { buildVPBasePayload } from "@/src/utils/vp-payload";
 interface VPDetailSidebarProps {
@@ -23,30 +23,30 @@ export function VPDetailSidebar({ patient, onSave, saving, readonly }: VPDetailS
     const avgScore = patient.stats?.avgScore ?? 0;
     const completionRate = patient.stats?.completionRate ?? 0;
     const [timingDirty, setTimingDirty] = useState(false);
-    const [newRule, setNewRule] = useState("");
-    const [rulesDirty, setRulesDirty] = useState(false);
+    // const [newRule, setNewRule] = useState("");
+    // const [rulesDirty, setRulesDirty] = useState(false);
 
     const [timeSetting, setTimeSetting] = useState(() => patient.timeSetting);
     const [argumentTime, setArgumentTime] = useState(() => patient.argumentTime);
-    const [rules, setRules] = useState<string[]>(() => [...(patient.caseRule?.rules ?? [])]);
+    // const [rules, setRules] = useState<string[]>(() => [...(patient.caseRule?.rules ?? [])]);
 
     const handleTimingSave = async () => {
         await onSave({ ...buildVPBasePayload(patient), timeSetting, argumentTime });
         setTimingDirty(false);
     };
 
-    const handleAddRule = () => {
-        const trimmed = newRule.trim();
-        if (!trimmed) return;
-        setRules((prev) => [...prev, trimmed]);
-        setNewRule("");
-        setRulesDirty(true);
-    };
+    // const handleAddRule = () => {
+    //     const trimmed = newRule.trim();
+    //     if (!trimmed) return;
+    //     setRules((prev) => [...prev, trimmed]);
+    //     setNewRule("");
+    //     setRulesDirty(true);
+    // };
 
-    const handleRemoveRule = (i: number) => {
-        setRules((prev) => prev.filter((_, idx) => idx !== i));
-        setRulesDirty(true);
-    };
+    // const handleRemoveRule = (i: number) => {
+    //     setRules((prev) => prev.filter((_, idx) => idx !== i));
+    //     setRulesDirty(true);
+    // };
 
     // const handleRulesSave = async () => {
     //     await onSave({

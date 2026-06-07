@@ -14,7 +14,7 @@ import AvatarUploadModal from "@/src/features/profile/AvatarUploadModal";
 const emptyProfile: ExpertProfile = {
     id: "",
     ssn: "",
-    bioQuote: "",
+    bioQoute: "",
     educationDetail: "",
     titlePosition: "",
     expertiseSkill: "",
@@ -261,7 +261,7 @@ export default function LearnerProfilePage({
 
                                                 <label className="md:col-span-2">
                                                     <span className={labelClass}>Bio</span>
-                                                    <textarea rows={4} value={form.profile?.bioQuote || ""} onChange={(e) => setProfileField("bioQuote", e.target.value)} className={textareaClass} />
+                                                    <textarea rows={4} value={form.profile?.bioQoute || ""} onChange={(e) => setProfileField("bioQoute", e.target.value)} className={textareaClass} />
                                                 </label>
 
                                                 <label className="md:col-span-2">

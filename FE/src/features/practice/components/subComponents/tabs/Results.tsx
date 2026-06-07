@@ -88,14 +88,10 @@ function formatDuration(minutes: number): string {
     return `${m} min ${s} sec`;
 }
 
-/**
- * Trả về ordinal suffix đúng cho mọi số nguyên dương.
- * Xử lý đặc biệt các số tận cùng 11, 12, 13 → "th".
- */
+
 function ordinalSuffix(n: number): string {
     const mod100 = n % 100;
 
-    // 11, 12, 13 luôn là "th"
     if (mod100 >= 11 && mod100 <= 13) return 'th';
 
     switch (n % 10) {
@@ -110,10 +106,7 @@ function ordinalSuffix(n: number): string {
     }
 }
 
-/**
- * Sắp xếp history theo createdAt tăng dần (cũ → mới).
- * Chỉ lấy các item Completed có evaluationId.
- */
+
 function buildOrderedAttempts(
     items: readonly PracticeHistoryItem[]
 ): PracticeHistoryItem[] {
@@ -129,9 +122,6 @@ function buildOrderedAttempts(
         );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Sub-components
-// ─────────────────────────────────────────────────────────────────────────────
 
 interface AttemptTabsProps {
     readonly items: readonly PracticeHistoryItem[];
@@ -150,7 +140,6 @@ function AttemptTabs({
     onPrev,
     onNext,
 }: AttemptTabsProps) {
-    // Chỉ render những slot thực sự tồn tại (không render slot trống)
     const slotIndices = [pairStart, pairStart + 1].filter(
         (idx) => idx < items.length
     );

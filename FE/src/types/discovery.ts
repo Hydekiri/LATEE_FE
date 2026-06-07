@@ -1,7 +1,3 @@
-// ============================================================
-// discovery.ts — Updated types for VP Discovery feature
-// ============================================================
-
 export interface DiscoveryAttemptSummary {
     readonly attempted: boolean;
     readonly attemptCount: number;
@@ -77,9 +73,6 @@ export type DiscoverySortBy =
     | 'expert_asc'
     | 'expert_desc';
 
-// -------------------------------------------------------
-// Client-side UI filter state=
-// -------------------------------------------------------
 export interface DiscoveryUIFilter {
     search: string;
     level: string;
@@ -95,9 +88,6 @@ export const DEFAULT_DISCOVERY_UI_FILTER: DiscoveryUIFilter = {
     expert: '', 
     sortBy: 'newest',
 };
-// -------------------------------------------------------
-// Fetch-cases form state=
-// -------------------------------------------------------
 export interface FetchCasesFormState {
     readonly level: string;         
     readonly gender: string;         

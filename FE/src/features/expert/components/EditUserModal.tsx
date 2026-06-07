@@ -20,7 +20,7 @@ const getUpdateUserErrorMessage = (error: unknown): string => {
 const emptyProfile: ExpertProfile = {
     id: "",
     ssn: "",
-    bioQuote: "",
+    bioQoute: "",
     educationDetail: "",
     titlePosition: "",
     expertiseSkill: "",
@@ -58,15 +58,7 @@ export default function EditUserModal({
                 console.log("[INFO] SELECT USER:", data);
                 const normalizedUser: User = {
                     ...data,
-                    profile: data.profile ? {
-                        eid: data.profile.id,
-                        ssn: data.profile.ssn,
-                        bio_quote: data.profile.bioQoute,
-                        education_detail: data.profile.educationDetail,
-                        title_position: data.profile.titlePosition,
-                        expertise_skill: data.profile.expertiseSkill,
-                        social_link: data.profile.socialLink,
-                    } : emptyProfile
+                    profile: data.profile ?? emptyProfile
                 };
 
                 setForm(normalizedUser);
@@ -588,11 +580,11 @@ export default function EditUserModal({
                                                 rows={4}
                                                 value={
                                                     form.profile
-                                                        ?.bioQuote ?? ""
+                                                        ?.bioQoute ?? ""
                                                 }
                                                 onChange={(e) =>
                                                     setProfileField(
-                                                        "bioQuote",
+                                                        "bioQoute",
                                                         e.target.value
                                                     )
                                                 }

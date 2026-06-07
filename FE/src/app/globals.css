@@ -29,7 +29,6 @@
 }
 
 @layer utilities {
-  /* ===== MAPPING INTER ===== */
   .font-inter-thin { font-family: var(--font-inter) !important; font-weight: 100; }
   .font-inter-thin-i { font-family: var(--font-inter) !important; font-weight: 100; font-style: italic; }
   .font-inter-extralight { font-family: var(--font-inter) !important; font-weight: 200; }
@@ -49,7 +48,6 @@
   .font-inter-black { font-family: var(--font-inter) !important; font-weight: 900; }
   .font-inter-black-i { font-family: var(--font-inter) !important; font-weight: 900; font-style: italic; }
 
-  /* ===== MAPPING LATO ===== */
   .font-lato-thin { font-family: var(--font-lato) !important; font-weight: 100; }
   .font-lato-thin-i { font-family: var(--font-lato) !important; font-weight: 100; font-style: italic; }
   .font-lato-l { font-family: var(--font-lato) !important; font-weight: 300; }
@@ -57,7 +55,6 @@
   .font-lato-r { font-family: var(--font-lato) !important; font-weight: 400; }
   .font-lato-i { font-family: var(--font-lato) !important; font-weight: 400; font-style: italic; }
   
-  /* Lato Google Fonts không có 500/600, sẽ tự động fallback sang 400/700 gần nhất */
   .font-lato-medium { font-family: var(--font-lato) !important; font-weight: 500; } 
   .font-lato-medium-i { font-family: var(--font-lato) !important; font-weight: 500; font-style: italic; }
   .font-lato-semibold { font-family: var(--font-lato) !important; font-weight: 600; } 
@@ -70,8 +67,23 @@
   .font-lato-black { font-family: var(--font-lato) !important; font-weight: 900; }
   .font-lato-black-i { font-family: var(--font-lato) !important; font-weight: 900; font-style: italic; }
 
-  /* ===== TAHOMA & CODE ===== */
   .font-tahoma { font-family: var(--font-tahoma) !important; font-weight: 400; }
   .font-tahoma-b { font-family: var(--font-tahoma) !important; font-weight: 700; }
   .font-code { font-family: var(--font-mono) !important; }
+}
+
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
 }

@@ -20,7 +20,7 @@ import { getCookie } from "@/src/utils/cookies";
 const emptyProfile: ExpertProfile = {
     id: "",
     ssn: "",
-    bioQuote: "",
+    bioQoute: "",
     educationDetail: "",
     titlePosition: "",
     expertiseSkill: "",
@@ -51,7 +51,7 @@ export default function ExpertProfileFeature() {
                 const adminId = getCookie("userId") || "";
 
                 const data = await getUserById(adminId);
-                console.log("Fetched user data:", data);
+                console.log("Fetched expert data:", data);
                 const normalizedUser: User = {
                     ...data,
                     profile: data.profile || emptyProfile,
@@ -545,26 +545,10 @@ export default function ExpertProfileFeature() {
                                                         </span>
 
                                                         <textarea
-                                                            rows={
-                                                                4
-                                                            }
-                                                            value={
-                                                                form.profile?.bioQuote ||
-                                                                ""
-                                                            }
-                                                            onChange={(
-                                                                e
-                                                            ) =>
-                                                                setProfileField(
-                                                                    "bioQuote",
-                                                                    e
-                                                                        .target
-                                                                        .value
-                                                                )
-                                                            }
-                                                            className={
-                                                                textareaClass
-                                                            }
+                                                            rows={4}
+                                                            value={form.profile?.bioQoute ?? ""}
+                                                            onChange={(e) => setProfileField("bioQoute", e.target.value)}
+                                                            className={textareaClass}
                                                         />
                                                     </label>
 
