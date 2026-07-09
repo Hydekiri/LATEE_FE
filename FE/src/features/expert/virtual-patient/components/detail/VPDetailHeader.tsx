@@ -17,7 +17,7 @@ export function VPDetailHeader({ patient }: VPDetailHeaderProps) {
                 <div className="w-20 h-20 rounded-2xl overflow-hidden relative shrink-0 bg-[#A7E6FF]/30 border-2 border-[#235697]/10 shadow-sm">
                     {patient.avatarImage ? (
                         <Image
-                            src={patient.avatarImage}
+                            src="/images/bgLearner2.jpg"
                             alt={patient.name}
                             fill
                             sizes="80px"
